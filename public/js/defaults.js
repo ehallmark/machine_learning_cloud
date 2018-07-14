@@ -444,56 +444,39 @@ $(document).ready(function() {
                                                         if(value==='delete') {
                                                             if(axis.axis.categories !== true) {
                                                                 var category = axis.axis.categories[axisIndex];
-                                                                var options = axis.chart.options;
-                                                                if(isYAxis) {
-                                                                    options.yAxis[0]['categories'].splice(axisIndex, 1);
-                                                                    axis.axis.setCategories(options.yAxis[0]['categories']);
-                                                                } else {
-                                                                    options.xAxis[0]['categories'].splice(axisIndex, 1);
-                                                                    axis.axis.setCategories(options.xAxis[0]['categories']);
-                                                                }
-                                                                for(var i = 0; i < options.series.length; i++) {
-                                                                    var series = options.series[i];
-                                                                    var datapoints = series.data.slice(0);
-                                                                    var points = axis.chart.series[i].data.slice(0); // cloned
-                                                                    var to_keep = [];
+                                                                axis.axis.categories.splice(axisIndex, 1);
+                                                                axis.axis.setCategories(axis.axis.categories);
+                                                                for(var i = 0; i < axis.chart.series.length; i++) {
+                                                                    var datapoints = axis.chart.series[i].data.slice(0); // cloned
                                                                     for(var j = 0; j < datapoints.length; j++) {
                                                                         var point = datapoints[j];
                                                                         if(point) {
                                                                             if(isYAxis) {
-                                                                                if(point[1]!==axisIndex) {
-                                                                                    if (point[1]>axisIndex) {
-                                                                                        point[1] = point[1] - 1;
-                                                                                        points[j].update(point, false);
+                                                                                if(point.y!==axisIndex) {
+                                                                                    if (point.y>axisIndex) {
+                                                                                        point.update({y : point.y-1}, false);
                                                                                     }
-                                                                                    to_keep.push(point);
                                                                                 } else {
-                                                                                    points[j].remove(false);
+                                                                                    point.remove(false);
                                                                                 }
                                                                             } else {
-                                                                                if(point.length==3) {
+                                                                                if(point.hasOwnProperty('value')) {
                                                                                     // heat map
-                                                                                    if(point[0]!==axisIndex) {
-                                                                                        if (point[0]>axisIndex) {
-                                                                                            point[0] = point[0] - 1;
-                                                                                            points[j].update(point, false);
+                                                                                    if(point.x===axisIndex) {
+                                                                                        if (point.x>axisIndex) {
+                                                                                            point.update({x: point.x-1}, false);
                                                                                         }
-                                                                                        to_keep.push(point);
                                                                                     } else {
-                                                                                        points[j].remove(false);
+                                                                                        point.remove(false);
                                                                                     }
                                                                                 } else { // regular
-                                                                                    if(point[0]===category) {
-                                                                                        points[j].remove(false);
-                                                                                    } else {
-                                                                                        to_keep.push(point);
+                                                                                    if(point.name===category) {
+                                                                                        point.remove(false);
                                                                                     }
                                                                                 }
                                                                             }
                                                                         }
                                                                     }
-                                                                    series.data=to_keep;
-                                                                    axis.axis.isDirty=true;
                                                                     axis.chart.redraw(true);
 
                                                                 }
@@ -524,25 +507,16 @@ $(document).ready(function() {
                                                                 var userVal = $input.val();
                                                                 if(axis.axis.categories !== true) {
                                                                     var category = axis.axis.categories[axisIndex];
-                                                                    var options = axis.chart.options;
-                                                                    if(isYAxis) {
-                                                                        options.yAxis[0]['categories'][axisIndex] = userVal;
-                                                                        axis.axis.update({categories: options.yAxis[0]['categories']});
-                                                                    } else {
-                                                                        options.xAxis[0]['categories'][axisIndex] = userVal;
-                                                                        axis.axis.update({categories: options.xAxis[0]['categories']});
-                                                                    }
-                                                                    for(var i = 0; i < options.series.length; i++) {
-                                                                        var series = options.series[i];
-                                                                        var datapoints = series.data;
-                                                                        var points = axis.chart.series[i].data.slice(0); // create a clone
+                                                                    axis.axis.categories[axisIndex] = userVal;
+                                                                    axis.axis.update({categories: axis.axis.categories});
+                                                                    for(var i = 0; i < axis.chart.series.length; i++) {
+                                                                        var datapoints = axis.chart.series[i].data.slice(0); // create a clone
                                                                         for(var j = 0; j < datapoints.length; j++) {
                                                                             var point = datapoints[j];
                                                                             if(point) {
                                                                                 if(!isYAxis) {
                                                                                     if(point.length==2 && point[0]===category) {
-                                                                                        point[0] = userVal;
-                                                                                        points[j].update(points, false);
+                                                                                        point.update({name: userVal}, false);
                                                                                     }
                                                                                 }
                                                                             }
@@ -599,10 +573,14 @@ $(document).ready(function() {
                                                 e.preventDefault();
                                                 e.stopPropagation();
                                                 var value = null;
-                                                if(point.hasOwnProperty('value')) {
+                                                var dataLabel = null;
+                                                if(point.hasOwnProperty('dataLabel') && point.dataLabel.hasOwnProperty('element')) {
+                                                    dataLabel = $(point.dataLabel.element);
+                                                }
+                                                if(point.hasOwnProperty('value'));
                                                     value = point.value;
                                                 } else {
-                                                    value = point.y
+                                                    value = point.name;
                                                 }
                                                 var oldHtml = $li.html();
                                                 var $form = $('<form><input class="form-control" type="text" /><button>Update</button></form>');
@@ -632,7 +610,7 @@ $(document).ready(function() {
                                                     if(point.hasOwnProperty('value')) {
                                                         point.update({value: userVal});
                                                     } else {
-                                                        point.update({y: userVal});
+                                                        point.update({name: userVal});
                                                     }
 
                                                     alert('UserVal: '+userVal);
