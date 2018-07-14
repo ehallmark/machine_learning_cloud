@@ -21,6 +21,20 @@ var newContextMenu = function(e) {
     return $container;
 };
 
+var isDrilldownChart = function(chart) {
+    for(var i = 0; i < chart.yAxis.length; i++) {
+        if(chart.yAxis[i].hasOwnProperty('ddPoints') && ! $.isEmptyObject(chart.yAxis[i].ddPoints)) {
+            return true;
+        }
+    }
+    for(var i = 0; i < chart.yAxis.length; i++) {
+        if(chart.xAxis[i].hasOwnProperty('ddPoints') && ! $.isEmptyObject(chart.xAxis[i].ddPoints)) {
+            return true;
+        }
+    }
+    return false;
+};
+
 $(document).ready(function() {
 
 
@@ -411,7 +425,7 @@ $(document).ready(function() {
                                         var labels = axisOpts['labels'];
                                         labels['events'] = {
                                             contextmenu: function(e) {
-                                                if(!this.axis.hasOwnProperty('ddPoints') || $.isEmptyObject(this.axis.ddPoints)) {
+                                                if(!isDrilldownChart(this.chart)) {
                                                     var $target = $(e.currentTarget);
                                                     var axis = this;
                                                     var isYAxis = axis.axis.coll === 'yAxis';
@@ -549,7 +563,7 @@ $(document).ready(function() {
                             }
                             var clickEvents = {
                                 contextmenu: function(e) {
-                                    if(!this.hasOwnProperty('drilldown')) {
+                                    if(this.hasOwnProperty('series') && !isDrilldownChart(this.series.chart)) {
                                         var point = this;
                                         var chartId = $(point.series.chart.renderTo).attr('id');
                                         var value = this.options.name;
