@@ -591,8 +591,8 @@ $(document).ready(function() {
                                                 var $input = $li.find('input');
                                                 var $inputY = null;
                                                 if($input.length==2) {
-                                                    $inputY = $(input.get(1));
-                                                    $input = $(input.get(0));
+                                                    $inputY = $($input.get(1));
+                                                    $input = $($input.get(0));
                                                     $inputY.val(point.y);
                                                     $input.val(point.name);
                                                 } else {
