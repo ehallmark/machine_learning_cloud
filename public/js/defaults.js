@@ -22,9 +22,6 @@ var newContextMenu = function(e) {
 };
 
 var isDrilldownChart = function(chart) {
-    if(chart.hasOwnProperty('drilldown')) {
-        return true;
-    }
     for(var i = 0; i < chart.yAxis.length; i++) {
         if(chart.yAxis[i].hasOwnProperty('ddPoints') && ! $.isEmptyObject(chart.yAxis[i].ddPoints)) {
             return true;
@@ -35,7 +32,11 @@ var isDrilldownChart = function(chart) {
             return true;
         }
     }
-
+    for(var i = 0; i < chart.series.length; i++) {
+        if(chart.series[i].hasOwnProperty('data') && chart.series[i].data.length>0 && chart.series[i].data[0].hasOwnProperty('drilldown')) {
+            return true;
+        }
+    }
     return false;
 };
 
