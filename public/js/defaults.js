@@ -464,9 +464,7 @@ $(document).ready(function() {
                                                                                 if(point[1]!==axisIndex) {
                                                                                     if (point[1]>axisIndex) {
                                                                                         point[1] = point[1] - 1;
-                                                                                        points[j].update({
-                                                                                            y: point[1]
-                                                                                        }, false);
+                                                                                        points[j].update(point, false);
                                                                                     }
                                                                                 } else {
                                                                                     points[j].remove(false);
@@ -477,9 +475,7 @@ $(document).ready(function() {
                                                                                     if(point[0]!==axisIndex) {
                                                                                         if (point[0]>axisIndex) {
                                                                                             point[0] = point[0] - 1;
-                                                                                            points[j].update({
-                                                                                                x: point[0]
-                                                                                            }, false);
+                                                                                            points[j].update(point, false);
                                                                                         }
                                                                                     } else {
                                                                                         points[j].remove(false);
@@ -603,13 +599,12 @@ $(document).ready(function() {
                                                     value = point.y
                                                 }
                                                 var oldHtml = $li.html();
-                                                $li.html('<hr /><input class="form-control" type="text" />');
+                                                var $form = $('<form><input class="form-control" type="text" /><button>Update</button></form>');
+                                                $li.html('<hr />');
                                                 $li.addClass('nohover');
                                                 var $input = $li.find('input');
                                                 $input.val(value);
-                                                var $button = $('<button>Update</button>');
-                                                $li.append($button);
-
+                                                $li.append($form);
                                                 $(document).on("click",function(){
                                                     $li.html(oldHtml);
                                                     $li.removeClass('nohover');
@@ -617,11 +612,11 @@ $(document).ready(function() {
                                                     $(document).off("click");
                                                     $lis.off('click');
                                                 });
-                                                $li.on('click', function(e) {
+                                                $form.on('click', function(e) {
                                                     e.stopPropagation();
                                                 });
-                                                $button.on('click', function(e) {
-                                                    $form.off('submit');
+                                                $form.on('submit', function(e) {
+                                                    e.preventDefault();
                                                     var userVal = $input.val();
                                                     var categories = point.axis.categories;
                                                     var options = point.series.chart.options;
