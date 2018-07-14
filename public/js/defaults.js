@@ -585,9 +585,9 @@ $(document).ready(function() {
                                                 var $form = $('<form><input class="form-control" type="text" /><button>Update</button></form>');
                                                 $li.html('<hr />');
                                                 $li.addClass('nohover');
-                                                var $input = $li.find('input');
                                                 $input.val(value);
                                                 $li.append($form);
+                                                var $input = $li.find('input');
                                                 $(document).on("click",function(){
                                                     $li.html(oldHtml);
                                                     $li.removeClass('nohover');
