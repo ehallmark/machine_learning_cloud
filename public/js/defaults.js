@@ -462,14 +462,16 @@ $(document).ready(function() {
                                                                         }
                                                                     }
                                                                     series['data'] = to_keep;
+                                                                    axis.chart.series[i].setData(series['data']);
 
                                                                 }
                                                                 if(isYAxis) {
                                                                     options.yAxis[0]['categories'].splice(axisIndex, 1);
+                                                                    axis.axis.setCategories(options.yAxis[0]['categories']);
                                                                 } else {
                                                                     options.xAxis[0]['categories'].splice(axisIndex, 1);
+                                                                    axis.axis.setCategories(options.xAxis[0]['categories']);
                                                                 }
-                                                                axis.chart.update(options);
                                                             }
                                                         } else if(value==='edit') {
                                                             e.preventDefault();
@@ -497,6 +499,13 @@ $(document).ready(function() {
                                                                 if(axis.axis.categories !== true) {
                                                                     var category = axis.axis.categories[axisIndex];
                                                                     var options = axis.chart.options;
+                                                                    if(isYAxis) {
+                                                                        options.yAxis[0]['categories'][axisIndex] = userVal;
+                                                                        axis.axis.update({categories: options.yAxis[0]['categories']});
+                                                                    } else {
+                                                                        options.xAxis[0]['categories'][axisIndex] = userVal;
+                                                                        axis.axis.update({categories: options.xAxis[0]['categories']});
+                                                                    }
                                                                     for(var i = 0; i < options.series.length; i++) {
                                                                         var series = options.series[i];
                                                                         var datapoints = series.data; // create a clone
@@ -510,13 +519,8 @@ $(document).ready(function() {
                                                                                 }
                                                                             }
                                                                         }
+                                                                        axis.chart.series[i].setData(datapoints);
                                                                     }
-                                                                    if(isYAxis) {
-                                                                        options.yAxis[0]['categories'][axisIndex] = userVal;
-                                                                    } else {
-                                                                        options.xAxis[0]['categories'][axisIndex] = userVal;
-                                                                    }
-                                                                    axis.chart.update(options);
                                                                 }
                                                                 $(document).trigger('click');
                                                             });
@@ -593,7 +597,11 @@ $(document).ready(function() {
                                                     var data = series.data;
                                                     var datapoint = data[pointIndex];
                                                     datapoint[datapoint.length-1] = userVal;
-                                                    point.series.chart.update(options);
+                                                    if(point.hasOwnProperty('value')) {
+                                                        point.update({value: userVal});
+                                                    } else {
+                                                        point.update({y: userVal});
+                                                    }
 
                                                     alert('UserVal: '+userVal);
                                                     $(document).trigger('click');
