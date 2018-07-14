@@ -561,7 +561,7 @@ $(document).ready(function() {
                                                 var series = options.series[seriesIndex];
                                                 var data = series.data;
                                                 data.splice(pointIndex, 1);
-                                                point.series.chart.update(options);
+                                                point.remove();
 
                                             } else if (value==='edit') {
                                                 e.preventDefault();
@@ -594,6 +594,7 @@ $(document).ready(function() {
                                                     var datapoint = data[pointIndex];
                                                     datapoint[datapoint.length-1] = userVal;
                                                     point.series.chart.update(options);
+
                                                     alert('UserVal: '+userVal);
                                                     $(document).trigger('click');
                                                 });
