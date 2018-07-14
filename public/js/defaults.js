@@ -562,10 +562,6 @@ $(document).ready(function() {
                                             $li.off('click');
                                             var value = $li.attr('value');
                                             if(value==='delete') {
-                                                var options = point.series.chart.options;
-                                                var series = options.series[seriesIndex];
-                                                var data = series.data;
-                                                data.splice(pointIndex, 1);
                                                 point.remove();
 
                                             } else if (value==='edit') {
@@ -619,11 +615,6 @@ $(document).ready(function() {
                                                     if(isPieChart) {
                                                         $inputY.val();
                                                     }
-                                                    var options = point.series.chart.options;
-                                                    var series = options.series[seriesIndex];
-                                                    var data = series.data;
-                                                    var datapoint = data[pointIndex];
-                                                    datapoint[datapoint.length-1] = userVal;
                                                     if(point.hasOwnProperty('value')) {
                                                         userVal = Number(userval);
                                                         point.update({value: userVal});
