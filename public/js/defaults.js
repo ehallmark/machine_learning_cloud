@@ -481,6 +481,7 @@ $(document).ready(function() {
                                                                 }
                                                                 axis.axis.categories.splice(axisIndex, 1);
                                                                 axis.axis.setCategories(axis.axis.categories);
+                                                                axis.axis.isDirty=true;
                                                                 axis.chart.redraw(true);
                                                             }
 
