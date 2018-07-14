@@ -579,15 +579,29 @@ $(document).ready(function() {
                                                 if(point.hasOwnProperty('value')) {
                                                     value = point.value;
                                                 } else {
-                                                    value = point.name;
+                                                    value = point.y;
                                                 }
                                                 var oldHtml = $li.html();
-                                                var $form = $('<form><input class="form-control" type="text" /><button>Update</button></form>');
+                                                var isPieChart = point.series.type.toLowerCase()==='pie';
+                                                var $form = null;
+                                                if(isPieChart) {
+                                                    $form = $('<form><input class="form-control" type="text" /><input class="form-control" type="text" /><button>Update</button></form>');
+                                                } else {
+                                                    $form = $('<form><input class="form-control" type="text" /><button>Update</button></form>');
+                                                }
                                                 $li.html('<hr />');
                                                 $li.addClass('nohover');
                                                 $li.append($form);
                                                 var $input = $li.find('input');
-                                                $input.val(value);
+                                                var $inputY = null;
+                                                if($input.length==2) {
+                                                    $inputY = $(input.get(1));
+                                                    $input = $(input.get(0));
+                                                    $inputY.val(point.y);
+                                                    $input.val(point.name);
+                                                } else {
+                                                    $input.val(value);
+                                                }
                                                 $(document).on("click",function(){
                                                     $li.html(oldHtml);
                                                     $li.removeClass('nohover');
@@ -601,18 +615,28 @@ $(document).ready(function() {
                                                 $form.on('submit', function(e) {
                                                     e.preventDefault();
                                                     var userVal = $input.val();
+                                                    var userY = null;
+                                                    if(isPieChart) {
+                                                        $inputY.val();
+                                                    }
                                                     var options = point.series.chart.options;
                                                     var series = options.series[seriesIndex];
                                                     var data = series.data;
                                                     var datapoint = data[pointIndex];
                                                     datapoint[datapoint.length-1] = userVal;
                                                     if(point.hasOwnProperty('value')) {
+                                                        userVal = Number(userval);
                                                         point.update({value: userVal});
                                                     } else {
-                                                        point.update({name: userVal});
+                                                        if(isPieChart) {
+                                                            userY = Number(userY);
+                                                            point.update({name: userVal, y: userY});
+                                                        } else {
+                                                            userVal = Number(userVal);
+                                                            point.update({y: userVal});
+                                                        }
                                                     }
 
-                                                    alert('UserVal: '+userVal);
                                                     $(document).trigger('click');
                                                 });
 
