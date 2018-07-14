@@ -586,7 +586,6 @@ $(document).ready(function() {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                     $form.off('submit');
-                                                    $(document).trigger('click');
                                                     var userVal = $input.val();
                                                     var categories = point.axis.categories;
                                                     var options = point.series.chart.options;
@@ -596,6 +595,7 @@ $(document).ready(function() {
                                                     datapoint[datapoint.length-1] = userVal;
                                                     point.series.chart.update(options);
                                                     alert('UserVal: '+userVal);
+                                                    $(document).trigger('click');
                                                 });
 
                                                 $(document).on("click",function(){
