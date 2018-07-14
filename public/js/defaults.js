@@ -1,11 +1,27 @@
 var selectionCache = new Set([]);
+
+var newContextMenu = function(e) {
+    $('#context-menu-cntnr').remove();
+    var menu = $(document.body).append('<div id="context-menu-cntnr">'+
+                                    '<ul id="context-menu-items">'+
+                                    '  <li value="delete">Remove this Point</li>'+
+                                    '  <li value="edit">Edit this Point</li>'+
+                                    '</ul>'+
+                                '</div>');
+    var $container = $('#context-menu-cntnr');
+    $container.css("left",e.pageX);
+    $container.css("top",e.pageY);
+    function startFocusOut(){
+    $(document).on("click",function(){
+    $container.hide();
+    $(document).off("click");
+    });
+    }
+    $container.fadeIn(200, startFocusOut());
+    return $container;
+};
+
 $(document).ready(function() {
-    $(document.body).append('<div id="context-menu-cntnr">'+
-                                '<ul id="context-menu-items">'+
-                                '  <li value="delete">Remove this Point</li>'+
-                                '  <li value="edit">Edit this Point</li>'+
-                                '</ul>'+
-                            '</div>');
 
 
     $('.loader').show();
@@ -400,23 +416,10 @@ $(document).ready(function() {
                                                     var axis = this;
                                                     var isYAxis = axis.axis.coll === 'yAxis';
                                                     var axisIndex = axis.value;
-                                                    $(document).trigger('click');
-                                                    $(document).off('click');
-                                                    var $container = $('#context-menu-cntnr');
-                                                    $container.css("left",e.pageX);
-                                                    $container.css("top",e.pageY);
-                                                    function startFocusOut(){
-                                                      $(document).on("click",function(){
-                                                        $container.hide();
-                                                        $(document).off("click");
-                                                      });
-                                                    }
-                                                    $container.fadeIn(200, startFocusOut());
+                                                    var $container = newContextMenu(e);
                                                     var $lis = $container.find('li');
-                                                    $lis.off('click');
                                                     $lis.on('click', function(e){
                                                         var $li = $(this);
-                                                        $lis.off('click');
                                                         var value = $li.attr('value');
                                                         if(value==='delete') {
                                                             if(axis.axis.categories !== true) {
@@ -478,7 +481,6 @@ $(document).ready(function() {
                                                             var $input = $li.find('input');
                                                             $input.val(value);
                                                             var $form = $li.find('form');
-                                                            $(document).off('click');
                                                             $(document).on("click",function(){
                                                                 $li.html(oldHtml);
                                                                 $li.removeClass('nohover');
@@ -550,25 +552,12 @@ $(document).ready(function() {
                                         var value = this.options.name;
                                         var seriesIndex = this.series.index;
                                         var pointIndex = this.index;
-                                        $(document).trigger('click');
-                                        $(document).off('click');
-                                        var $container = $('#context-menu-cntnr');
-                                        $container.css("left",e.pageX);
-                                        $container.css("top",e.pageY);
-                                        function startFocusOut(){
-                                          $(document).on("click",function(){
-                                            $container.hide();
-                                            $(document).off("click");
-                                          });
-                                        }
-                                        $container.fadeIn(200, startFocusOut());
+                                        var $container = newContextMenu();
                                         var $lis = $container.find('li');
-                                        $lis.off('click');
                                         $lis.on('click', function(e){
                                             var $li = $(this);
                                             var value = $li.attr('value');
                                             if(value==='delete') {
-                                                $lis.off('click');
                                                 var options = point.series.chart.options;
                                                 var series = options.series[seriesIndex];
                                                 var data = series.data;
@@ -599,6 +588,7 @@ $(document).ready(function() {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                     $form.off('submit');
+                                                    $(document).trigger('click');
                                                     var userVal = $input.val();
                                                     var categories = point.axis.categories;
                                                     var options = point.series.chart.options;
@@ -609,10 +599,8 @@ $(document).ready(function() {
                                                     var newChart = Highcharts.chart(point.series.chart.renderTo, options);
                                                     newChart.redraw();
                                                     alert('UserVal: '+userVal);
-                                                    $(document).trigger('click');
                                                 });
 
-                                                $(document).off('click');
                                                 $(document).on("click",function(){
                                                     $li.html(oldHtml);
                                                     $li.removeClass('nohover');
