@@ -420,6 +420,7 @@ $(document).ready(function() {
                                                     var $lis = $container.find('li');
                                                     $lis.on('click', function(e){
                                                         var $li = $(this);
+                                                        $li.off('click');
                                                         var value = $li.attr('value');
                                                         if(value==='delete') {
                                                             if(axis.axis.categories !== true) {
@@ -483,7 +484,7 @@ $(document).ready(function() {
                                                             $(document).on("click",function(){
                                                                 $li.html(oldHtml);
                                                                 $li.removeClass('nohover');
-                                                                $container.hide();
+                                                                $container.remove();
                                                                 $(document).off("click");
                                                             });
                                                             $input.on('click', function(e) {
@@ -491,7 +492,6 @@ $(document).ready(function() {
                                                             });
                                                             $form.on('submit', function(e) {
                                                                 e.preventDefault();
-                                                                e.stopPropagation();
                                                                 $form.off('submit');
                                                                 var userVal = $input.val();
                                                                 if(axis.axis.categories !== true) {
@@ -554,14 +554,14 @@ $(document).ready(function() {
                                         var $lis = $container.find('li');
                                         $lis.on('click', function(e){
                                             var $li = $(this);
+                                            $li.off('click');
                                             var value = $li.attr('value');
                                             if(value==='delete') {
                                                 var options = point.series.chart.options;
                                                 var series = options.series[seriesIndex];
                                                 var data = series.data;
                                                 data.splice(pointIndex, 1);
-                                                var newChart = Highcharts.chart(point.series.chart.renderTo, options);
-                                                newChart.redraw();
+                                                axis.chart.update(options);
 
                                             } else if (value==='edit') {
                                                 e.preventDefault();
