@@ -552,7 +552,7 @@ $(document).ready(function() {
                                         var value = this.options.name;
                                         var seriesIndex = this.series.index;
                                         var pointIndex = this.index;
-                                        var $container = newContextMenu();
+                                        var $container = newContextMenu(e);
                                         var $lis = $container.find('li');
                                         $lis.on('click', function(e){
                                             var $li = $(this);
