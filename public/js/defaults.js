@@ -22,16 +22,20 @@ var newContextMenu = function(e) {
 };
 
 var isDrilldownChart = function(chart) {
+    if(chart.hasOwnProperty('drilldownLevels') && chart.drilldownLevels.length > 0) {
+        return true;
+    }
     for(var i = 0; i < chart.yAxis.length; i++) {
         if(chart.yAxis[i].hasOwnProperty('ddPoints') && ! $.isEmptyObject(chart.yAxis[i].ddPoints)) {
             return true;
         }
     }
-    for(var i = 0; i < chart.yAxis.length; i++) {
+    for(var i = 0; i < chart.xAxis.length; i++) {
         if(chart.xAxis[i].hasOwnProperty('ddPoints') && ! $.isEmptyObject(chart.xAxis[i].ddPoints)) {
             return true;
         }
     }
+
     return false;
 };
 
