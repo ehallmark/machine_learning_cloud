@@ -613,7 +613,7 @@ $(document).ready(function() {
                                                     var userVal = $input.val();
                                                     var userY = null;
                                                     if(isPieChart) {
-                                                        $inputY.val();
+                                                        userY = $inputY.val();
                                                     }
                                                     if(point.hasOwnProperty('value')) {
                                                         userVal = Number(userVal);
