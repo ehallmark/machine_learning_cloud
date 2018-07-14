@@ -616,7 +616,7 @@ $(document).ready(function() {
                                                         $inputY.val();
                                                     }
                                                     if(point.hasOwnProperty('value')) {
-                                                        userVal = Number(userval);
+                                                        userVal = Number(userVal);
                                                         point.update({value: userVal});
                                                     } else {
                                                         if(isPieChart) {
