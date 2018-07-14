@@ -22,7 +22,7 @@ var newContextMenu = function(e) {
 };
 
 var isDrilldownChart = function(chart) {
-    if(chart.hasOwnProperty('drilldownLevels') && chart.drilldownLevels.length > 0) {
+    if(chart.hasOwnProperty('drilldown')) {
         return true;
     }
     for(var i = 0; i < chart.yAxis.length; i++) {
