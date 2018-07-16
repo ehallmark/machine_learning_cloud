@@ -53,7 +53,7 @@ public class ZipFileIterator implements WebIterator {
     }
 
     public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean testing) {
-        this(dataDownloader,destinationPrefix,true, true,file->false,testing);
+        this(dataDownloader,destinationPrefix,false, true,file->false,testing);
     }
 
     @Override

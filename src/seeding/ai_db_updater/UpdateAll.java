@@ -43,7 +43,7 @@ public class UpdateAll {
                     if (AssetToAssigneeMap.getAssigneeToHumanMap() == null) {
                         AssetToAssigneeMap.setAssigneeToHumanMap(HumanNamePredictionPipelineManager.loadPipelineManager().loadPredictions());
                     }
-                    UpdateBaseApplicationData.main(args);
+                   // UpdateBaseApplicationData.main(args);
                     DataIngester.finishCurrentMongoBatch();
                     if (AssetToAssigneeMap.getAssigneeToHumanMap() != null) {
                         HumanNamePredictionPipelineManager.loadPipelineManager().savePredictions(AssetToAssigneeMap.getAssigneeToHumanMap());

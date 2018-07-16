@@ -83,6 +83,9 @@ public class Flag {
     public static  Function<Flag,Function<String,?>> dateTransformationFunction(DateTimeFormatter format) {
          return flag->(str)->{
              String date = str!=null&&str.endsWith("00")?str.substring(0,str.length()-1)+"1":str;
+             if(date!=null&&date.startsWith("0000")) {
+                 return null;
+             }
              try {
                  return LocalDate.parse(date,format).format(DateTimeFormatter.ISO_DATE);
              } catch(Exception e) {
