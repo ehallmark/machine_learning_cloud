@@ -283,8 +283,8 @@ public class USPTOHandler extends NestedHandler {
 
     private void saveElasticSearch(String name, Map<String,Object> doc) {
         //System.out.println("Ingesting GSON for " + name + ": " + new Gson().toJson(doc));
-        final String sql = "insert into patents_global (publication_number_full,publication_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,invention_title,invention_title_lang,abstract,abstract_lang,claims,claims_lang,description,description_lang,inventor,assignee,inventor_harmonized,inventor_harmonized_cc,assignee_harmonized,assignee_harmonized_cc,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date,means_present,length_of_smallest_ind_claim) values " +
-                "(?,?,?,?::date,?::date,?::date,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?::date[],?,?) on conflict do nothing";
+        final String sql = "insert into patents_global (publication_number_full,publication_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,invention_title,invention_title_lang,abstract,abstract_lang,claims,claims_lang,description,description_lang,inventor,assignee,inventor_harmonized,inventor_harmonized_cc,assignee_harmonized,assignee_harmonized_cc,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date,num_claims,means_present,length_of_smallest_ind_claim) values " +
+                "(?,?,?,?::date,?::date,?::date,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?::date[],?,?,?) on conflict (publication_number_full) do update set (num_claims,means_present,length_of_smallest_ind_claim)=(excluded.num_claims,excluded.means_present,excluded.length_of_smallest_ind_claim)";
 
         try {
             PreparedStatement ps = Database.getConn().prepareStatement(sql);
@@ -424,15 +424,20 @@ public class USPTOHandler extends NestedHandler {
                     ps.setObject(30, (Object[]) null);
                 }
             }
-            if(doc.containsKey(Attributes.MEANS_PRESENT)) {
-                ps.setObject(31, Boolean.valueOf((String)doc.get(Attributes.MEANS_PRESENT)));
+            if(doc.containsKey(Attributes.CLAIMS)) {
+                ps.setObject(31, ((List)doc.get(Attributes.CLAIMS)).size());
             } else {
                 ps.setObject(31, null);
             }
-            if(doc.containsKey(Attributes.LENGTH_OF_SMALLEST_IND_CLAIM)) {
-                ps.setObject(32, Integer.valueOf((String)doc.get(Attributes.LENGTH_OF_SMALLEST_IND_CLAIM)));
+            if(doc.containsKey(Attributes.MEANS_PRESENT)) {
+                ps.setObject(32, Boolean.valueOf((String)doc.get(Attributes.MEANS_PRESENT)));
             } else {
                 ps.setObject(32, null);
+            }
+            if(doc.containsKey(Attributes.LENGTH_OF_SMALLEST_IND_CLAIM)) {
+                ps.setObject(33, Integer.valueOf((String)doc.get(Attributes.LENGTH_OF_SMALLEST_IND_CLAIM)));
+            } else {
+                ps.setObject(33, null);
             }
             ps.executeUpdate();
             if(cnt.getAndIncrement()%10000==9999) {
