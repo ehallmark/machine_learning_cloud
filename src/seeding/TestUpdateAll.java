@@ -6,14 +6,8 @@ import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
 import seeding.data_downloader.AppDataDownloader;
 import seeding.data_downloader.PatentDataDownloader;
-import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 
 import java.io.File;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.function.Function;
 
 /**
@@ -22,21 +16,8 @@ import java.util.function.Function;
 public class TestUpdateAll {
     public static void main(String[] args) throws Exception {
         boolean seedApplications = false;
-        Function<File,Boolean> orFunction = something->true; /*file -> {
-            String name = file.getName();
-            try {
-                LocalDate fileDate = LocalDate.parse(name, DateTimeFormatter.ISO_DATE);
-                return fileDate.getYear()>2015;
-            } catch(Exception e) {
-            }
-            return false;
-        };*/
-
+        Function<File,Boolean> orFunction = something->true;
         // test update patent grant
-        SimilarPatentServer.loadAttributes(true,false);
-        Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
-        computableAttributes.forEach(attr->attr.initMaps());
-        USPTOHandler.setComputableAttributes(computableAttributes);
         String topLevelTag;
         if(seedApplications) {
             topLevelTag = "us-patent-application";

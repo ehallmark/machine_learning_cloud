@@ -5,23 +5,17 @@ package seeding.ai_db_updater.handlers;
  */
 
 import com.google.gson.Gson;
-import elasticsearch.DataIngester;
-import lombok.Setter;
 import seeding.Constants;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
-import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
 
@@ -31,8 +25,6 @@ public class USPTOHandler extends NestedHandler {
     private static final AtomicLong errors = new AtomicLong(0);
     private static boolean debug = false;
     protected final String topLevelTag;
-    @Setter
-    protected static Collection<ComputableAttribute> computableAttributes;
     protected boolean applications;
     private boolean testing;
     public USPTOHandler(String topLevelTag, boolean applications, boolean testing) {
@@ -45,9 +37,6 @@ public class USPTOHandler extends NestedHandler {
     protected void initAndAddFlagsAndEndFlags() {
         int batchSize = 5000;
         List<EndFlag> nestedEndFlags = new ArrayList<>();
-        Collection<String> attrsToIngest = Stream.of(
-                Stream.of(Constants.LATEST_ASSIGNEE+"."+Constants.FIRST_NAME, Constants.LATEST_ASSIGNEE+"."+Constants.LAST_NAME),
-                SimilarPatentServer.getAllStreamingAttributeNames().stream()).flatMap(s->s).collect(Collectors.toSet());
 
         // application flags
         EndFlag documentFlag = new EndFlag(topLevelTag) {
@@ -55,7 +44,7 @@ public class USPTOHandler extends NestedHandler {
             public void save() {
                 try {
                     //debug(this, debug, attrsToIngest);
-                    Map<String, Object> toIngest = getTransform(attrsToIngest);
+                    Map<String, Object> toIngest = getTransform(null);
                     Object name = toIngest.get(Constants.NAME);
                     if (name == null){
                         System.out.println("NO NAME!!!!!!!!!!");
@@ -114,16 +103,6 @@ public class USPTOHandler extends NestedHandler {
                             }
                         }
                     });
-                    // update computable attrs
-                    if(computableAttributes!=null) {
-                        computableAttributes.forEach(attr -> {
-                            if (applications) {
-                                attr.handleApplicationData(name.toString(), toIngest);
-                            } else {
-                                attr.handlePatentData(name.toString(), toIngest);
-                            }
-                        });
-                    }
                     synchronized (USPTOHandler.class) {
                         //queue.put(name.toString(), toIngest);
                         if(cnt.getAndIncrement() % batchSize == batchSize-1) {
@@ -131,11 +110,14 @@ public class USPTOHandler extends NestedHandler {
                         }
                         if(!testing) {
                             saveElasticSearch(name.toString(), toIngest);
+                        } else {
+                            if(testing)System.out.println("GSON for "+name+": "+new Gson().toJson(toIngest));
                         }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
                 } finally {
                     // clear dataqueues
+
                     dataQueue.clear();
                     nestedEndFlags.forEach(endFlag->endFlag.dataQueue.clear());
                 }
@@ -170,8 +152,7 @@ public class USPTOHandler extends NestedHandler {
             }
             @Override
             public void save() {
-                dataQueue.add(getTransform(attrsToIngest));
-                if(testing)System.out.println(new Gson().toJson(dataQueue.get(dataQueue.size()-1)));
+                dataQueue.add(getTransform(null));
             }
         };
         citationFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -191,7 +172,7 @@ public class USPTOHandler extends NestedHandler {
             }
             @Override
             public void save() {
-                dataQueue.add(getTransform(attrsToIngest));
+                dataQueue.add(getTransform(null));
             }
         };
         applicantFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -209,7 +190,7 @@ public class USPTOHandler extends NestedHandler {
             }
             @Override
             public void save() {
-                dataQueue.add(getTransform(attrsToIngest));
+                dataQueue.add(getTransform(null));
             }
         };
         inventorFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -227,7 +208,7 @@ public class USPTOHandler extends NestedHandler {
             }
             @Override
             public void save() {
-                dataQueue.add(getTransform(attrsToIngest));
+                dataQueue.add(getTransform(null));
             }
         };
         agentFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -246,7 +227,7 @@ public class USPTOHandler extends NestedHandler {
             @Override
             public void save() {
                 //debug(this,debug,Arrays.asList(Constants.JAPANESE_ASSIGNEE, Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE));
-                dataQueue.add(getTransform(attrsToIngest));
+                dataQueue.add(getTransform(null));
             }
         };
         assigneeFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -266,7 +247,7 @@ public class USPTOHandler extends NestedHandler {
             @Override
             public void save() {
                 //debug(this,debug,Arrays.asList(Constants.JAPANESE_ASSIGNEE, Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE));
-                if(dataQueue.isEmpty()) dataQueue.add(getTransform(attrsToIngest));
+                if(dataQueue.isEmpty()) dataQueue.add(getTransform(null));
             }
         };
         latestAssignee.compareFunction = Flag.endsWithCompareFunction;
@@ -287,7 +268,7 @@ public class USPTOHandler extends NestedHandler {
             @Override
             public void save() {
                 //debug(this,debug, Arrays.asList(Constants.MEANS_PRESENT,Constants.CLAIM_LENGTH,Constants.PARENT_CLAIM_NUM,Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH));
-                dataQueue.add(getTransform(attrsToIngest));
+                dataQueue.add(getTransform(null));
             }
         };
         endFlags.add(claimFlag);
@@ -333,7 +314,7 @@ public class USPTOHandler extends NestedHandler {
             }
             @Override
             public void save() {
-                Map<String,Object> resultMap = getTransform(attrsToIngest);
+                Map<String,Object> resultMap = getTransform(null);
                 if(currentTag != null) {
                     resultMap.put(Constants.RELATION_TYPE, currentTag);
                 }
@@ -360,20 +341,13 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     public void save() {
-        if(!testing) {
-            if (computableAttributes != null) {
-                computableAttributes.forEach(attr -> {
-                    attr.save();
-                });
-            }
-        }
     }
 
     private void saveElasticSearch(String name, Map<String,Object> doc) {
         Object filingName = doc.get(Constants.FILING_NAME);
+        if(testing)System.out.println("Ingesting GSON for "+name+": "+new Gson().toJson(doc));
         if(filingName != null) {
-            if(debug)System.out.println("filing: "+filingName);
-            DataIngester.ingestBulk(name, doc, true);
+//            DataIngester.ingestBulk(name, doc, true);
         }
     }
 
