@@ -429,8 +429,16 @@ public class USPTOHandler extends NestedHandler {
                     ps.setObject(30, (Object[]) null);
                 }
             }
-            ps.setObject(31, doc.get(Attributes.MEANS_PRESENT));
-            ps.setObject(32, doc.get(Attributes.LENGTH_OF_SMALLEST_IND_CLAIM));
+            if(doc.containsKey(Attributes.MEANS_PRESENT)) {
+                ps.setObject(31, Boolean.valueOf((String)doc.get(Attributes.MEANS_PRESENT)));
+            } else {
+                ps.setObject(31, null);
+            }
+            if(doc.containsKey(Attributes.LENGTH_OF_SMALLEST_IND_CLAIM)) {
+                ps.setObject(32, Integer.valueOf((String)doc.get(Attributes.LENGTH_OF_SMALLEST_IND_CLAIM)));
+            } else {
+                ps.setObject(32, null);
+            }
             System.out.println("Executing Ps: "+ps.toString());
             ps.executeUpdate();
 
