@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 public class USPTOHandler extends NestedHandler {
     private static final AtomicLong cnt = new AtomicLong(0);
     private static final AtomicLong errors = new AtomicLong(0);
-    private static boolean debug = false;
     protected final String topLevelTag;
     protected boolean applications;
     private boolean testing;
@@ -345,7 +344,7 @@ public class USPTOHandler extends NestedHandler {
 
     private void saveElasticSearch(String name, Map<String,Object> doc) {
         Object filingName = doc.get(Constants.FILING_NAME);
-        if(testing)System.out.println("Ingesting GSON for "+name+": "+new Gson().toJson(doc));
+        System.out.println("Ingesting GSON for "+name+": "+new Gson().toJson(doc));
         if(filingName != null) {
 //            DataIngester.ingestBulk(name, doc, true);
         }
