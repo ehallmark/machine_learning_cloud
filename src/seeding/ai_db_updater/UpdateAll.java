@@ -2,7 +2,6 @@ package seeding.ai_db_updater;
 
 import elasticsearch.DataIngester;
 import models.assignee.normalization.human_name_prediction.HumanNamePredictionPipelineManager;
-import models.classification_models.UpdateClassificationModels;
 import models.similarity_models.UpdateSimilarityModels;
 import models.value_models.graphical.UpdateGraphicalModels;
 import org.nd4j.linalg.api.buffer.DataBuffer;
@@ -72,7 +71,7 @@ public class UpdateAll {
                 } else if (arg.equals("7")) {
                     UpdateWIPOTechnologies.main(args);
                 } else if (arg.equals("8")) {
-                    UpdateAssignmentData.main(args);
+                   // UpdateAssignmentData.main(args);
                     DataIngester.finishCurrentMongoBatch();
                     Database.main(args);
                 } else if (arg.equals("9")) {
