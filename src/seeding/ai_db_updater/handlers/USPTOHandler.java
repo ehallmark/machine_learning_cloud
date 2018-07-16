@@ -8,8 +8,9 @@ import com.google.gson.Gson;
 import seeding.Constants;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
-import user_interface.ui_models.portfolios.PortfolioList;
+import seeding.google.elasticsearch.Attributes;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,19 +45,20 @@ public class USPTOHandler extends NestedHandler {
                 try {
                     //debug(this, debug, attrsToIngest);
                     Map<String, Object> toIngest = getTransform(null);
-                    Object name = toIngest.get(Constants.NAME);
-                    if (name == null){
+                    String pub_num = (String)toIngest.get(Attributes.PUBLICATION_NUMBER);
+                    String app_num = (String)toIngest.get(Attributes.APPLICATION_NUMBER_FORMATTED);
+                    if (pub_num == null){
                         System.out.println("NO NAME!!!!!!!!!!");
                         if(errors.getAndIncrement()%10==0) {
                             System.out.println(errors.get());
                         }
                         return;
                     }
-                    // add result type
-                    if(applications) {
-                        toIngest.put(Constants.DOC_TYPE, PortfolioList.Type.applications.toString());
-                    } else {
-                        toIngest.put(Constants.DOC_TYPE, PortfolioList.Type.patents.toString());
+                    String name = toIngest.getOrDefault(Attributes.COUNTRY_CODE, "US")+pub_num+toIngest.get(Attributes.KIND_CODE);
+                    toIngest.put(Attributes.PUBLICATION_NUMBER_FULL, name);
+                    toIngest.put(Attributes.PUBLICATION_NUMBER_WITH_COUNTRY, toIngest.getOrDefault(Attributes.COUNTRY_CODE, "US")+pub_num);
+                    if(app_num!=null) {
+                        toIngest.put(Attributes.APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY, toIngest.getOrDefault(Attributes.COUNTRY_CODE, "US") + app_num);
                     }
                     nestedEndFlags.forEach(endFlag -> {
                         List<Map<String, Object>> data = endFlag.dataQueue;
@@ -65,41 +67,7 @@ public class USPTOHandler extends NestedHandler {
                             // add as array
                             toIngest.put(endFlag.dbName, data.stream().map(map -> map.values().stream().findAny().orElse(null)).filter(d -> d != null).collect(Collectors.toList()));
                         } else {
-                            if(endFlag.dbName.equals(Constants.LATEST_ASSIGNEE)) {
-                                Map<String,Object> latestAssigneeData = data.stream().filter(map -> map.size() > 0).findAny().orElse(null);
-                                if(latestAssigneeData!=null) {
-                                    toIngest.put(endFlag.dbName, latestAssigneeData);
-                                    // computable assignee data
-                                    Object assigneeName = latestAssigneeData.get(Constants.ASSIGNEE);
-                                    boolean isHuman = false;
-                                    if(assigneeName==null) {
-                                        Object firstName = latestAssigneeData.get(Constants.FIRST_NAME);
-                                        Object lastName = latestAssigneeData.get(Constants.LAST_NAME);
-                                        if(firstName!=null&&lastName!=null) {
-                                            assigneeName = lastName.toString().trim()+", "+firstName.toString().trim();
-                                            if(assigneeName.toString().length()<4) assigneeName = null;
-                                        }
-                                        if(assigneeName!=null) {
-                                            isHuman = true;
-                                            latestAssigneeData.put(Constants.ASSIGNEE,assigneeName);
-                                        }
-                                    }
-                                    if(assigneeName!=null) {
-                                        latestAssigneeData.put(Constants.IS_HUMAN,isHuman);
-                                    }
-                                }
-                            } else {
-                                toIngest.put(endFlag.dbName, data.stream().filter(map -> map.size() > 0).map(d->{
-                                    if((endFlag.dbName.equals(Constants.CITATIONS)||d.containsKey(Constants.STATE))&&!d.containsKey(Constants.COUNTRY)) {
-                                        d.put(Constants.COUNTRY,"US");
-                                        if(testing&&endFlag.dbName.endsWith(Constants.CITATIONS)) {
-                                            System.out.println("Citation data: "+new Gson().toJson(d));
-
-                                        }
-                                    }
-                                    return d;
-                                }).collect(Collectors.toList()));
-                            }
+                            toIngest.put(endFlag.dbName, data.stream().filter(map -> map.size() > 0).collect(Collectors.toList()));
                         }
                     });
                     synchronized (USPTOHandler.class) {
@@ -108,15 +76,14 @@ public class USPTOHandler extends NestedHandler {
                             System.out.println(cnt.get());
                         }
                         if(!testing) {
-                            saveElasticSearch(name.toString(), toIngest);
+                            saveElasticSearch(name, toIngest);
                         } else {
-                            if(testing)System.out.println("GSON for "+name+": "+new Gson().toJson(toIngest));
+                            System.out.println("GSON for "+name+": "+new Gson().toJson(toIngest));
                         }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
                 } finally {
                     // clear dataqueues
-
                     dataQueue.clear();
                     nestedEndFlags.forEach(endFlag->endFlag.dataQueue.clear());
                 }
@@ -126,43 +93,62 @@ public class USPTOHandler extends NestedHandler {
 
         Flag publicationReference = Flag.parentFlag("publication-reference");
         documentFlag.addChild(publicationReference);
-        publicationReference.addChild(Flag.simpleFlag("doc-number",Constants.NAME, documentFlag).withTransformationFunction(Flag.unknownDocumentHandler));
-        publicationReference.addChild(Flag.dateFlag("date",Constants.PUBLICATION_DATE,documentFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
-        publicationReference.addChild(Flag.simpleFlag("country",Constants.COUNTRY,documentFlag));
-        publicationReference.addChild(Flag.simpleFlag("kind",Constants.DOC_KIND,documentFlag));
+        publicationReference.addChild(Flag.simpleFlag("doc-number",Attributes.PUBLICATION_NUMBER, documentFlag).withTransformationFunction(Flag.unknownDocumentHandler));
+        publicationReference.addChild(Flag.dateFlag("date",Attributes.PUBLICATION_DATE,documentFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
+        publicationReference.addChild(Flag.simpleFlag("country",Attributes.COUNTRY_CODE,documentFlag));
+        publicationReference.addChild(Flag.simpleFlag("kind",Attributes.KIND_CODE,documentFlag));
 
         Flag applicationReference = Flag.parentFlag("application-reference");
         documentFlag.addChild(applicationReference);
-        applicationReference.addChild(Flag.dateFlag("date",Constants.FILING_DATE,documentFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
-        applicationReference.addChild(Flag.simpleFlag("country",Constants.FILING_COUNTRY,documentFlag));
-        applicationReference.addChild(Flag.simpleFlag("doc-number",Constants.FILING_NAME,documentFlag).withTransformationFunction(Flag.filingDocumentHandler));
-        documentFlag.addChild(Flag.simpleFlag("abstract", Constants.ABSTRACT,documentFlag));
-        documentFlag.addChild(Flag.simpleFlag("invention-title",Constants.INVENTION_TITLE,documentFlag));
-        documentFlag.addChild(Flag.integerFlag("length-of-grant",Constants.LENGTH_OF_GRANT,documentFlag));
-        documentFlag.addChild(Flag.simpleFlag("us-claim-statement",Constants.CLAIM_STATEMENT,documentFlag));
+        applicationReference.addChild(Flag.dateFlag("date",Attributes.FILING_DATE,documentFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
+        applicationReference.addChild(Flag.simpleFlag("country",Attributes.COUNTRY_CODE,documentFlag));
+        applicationReference.addChild(Flag.simpleFlag("doc-number",Attributes.APPLICATION_NUMBER_FORMATTED,documentFlag).withTransformationFunction(Flag.filingDocumentHandler));
+        documentFlag.addChild(Flag.simpleFlag("abstract", Attributes.ABSTRACT,documentFlag));
+        documentFlag.addChild(Flag.simpleFlag("invention-title",Attributes.INVENTION_TITLE,documentFlag));
 
         Flag priorityClaims = Flag.parentFlag("priority-claim");
         documentFlag.addChild(priorityClaims);
-        priorityClaims.addChild(Flag.dateFlag("date",Constants.PRIORITY_DATE, documentFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
+        priorityClaims.addChild(Flag.dateFlag("date",Attributes.PRIORITY_DATE, documentFlag).withTransformationFunction(f -> val -> {
+            Object date = Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE).apply(f).apply(val);
+            if(date!=null && f.getEndFlag().getDataMap().containsKey(f)) {
+                Object prevDate = Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE).apply(f).apply(f.getEndFlag().getDataMap().get(f));
+                if(prevDate!=null) {
+                    LocalDate prev = LocalDate.parse((String)prevDate, DateTimeFormatter.ISO_DATE);
+                    LocalDate curr = LocalDate.parse((String)date, DateTimeFormatter.ISO_DATE);
+                    if(curr.isAfter(prev)) {
+                        return prevDate; // want the earliest priority date
+                    }
+                }
+            }
+            return date;
+        }));
 
         EndFlag citationFlag = new EndFlag("citation") {
             {
-                dbName = Constants.CITATIONS;
+                dbName = Attributes.CITATIONS;
             }
             @Override
             public void save() {
-                dataQueue.add(getTransform(null));
+                Map<String, Object> transform = getTransform(null);
+                if(transform.containsKey(Attributes.CITED_PUBLICATION_NUMBER)) {
+                    transform.put(Attributes.CITED_PUBLICATION_NUMBER_WITH_COUNTRY, (String)transform.get(Attributes.COUNTRY_CODE)+transform.get(Attributes.CITED_PUBLICATION_NUMBER));
+                    transform.put(Attributes.CITED_PUBLICATION_NUMBER_WITH_COUNTRY, (String)transform.get(Attributes.COUNTRY_CODE)+transform.get(Attributes.CITED_PUBLICATION_NUMBER)+transform.get(Attributes.KIND_CODE));
+                }
+                if(transform.containsKey(Attributes.CITED_APPLICATION_NUMBER_FORMATTED)) {
+                    transform.put(Attributes.CITED_APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY, (String)transform.get(Attributes.COUNTRY_CODE)+transform.get(Attributes.CITED_APPLICATION_NUMBER_FORMATTED));
+                }
+                dataQueue.add(transform);
             }
         };
         citationFlag.compareFunction = Flag.endsWithCompareFunction;
         endFlags.add(citationFlag);
         Flag patCit = Flag.parentFlag("patcit");
-        patCit.addChild(Flag.simpleFlag("doc-number",Constants.NAME,citationFlag).withTransformationFunction(Flag.unknownDocumentHandler));
-        patCit.addChild(Flag.simpleFlag("country",Constants.COUNTRY,citationFlag));
-        patCit.addChild(Flag.simpleFlag("kind",Constants.DOC_KIND,citationFlag));
-        patCit.addChild(Flag.dateFlag("date",Constants.CITED_DATE,citationFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
+        patCit.addChild(Flag.simpleFlag("doc-number",Attributes.CITED_PUBLICATION_NUMBER,citationFlag).withTransformationFunction(Flag.unknownDocumentHandler));
+        patCit.addChild(Flag.simpleFlag("country",Attributes.COUNTRY_CODE,citationFlag));
+        patCit.addChild(Flag.simpleFlag("kind",Attributes.KIND_CODE,citationFlag));
+        patCit.addChild(Flag.dateFlag("date",Attributes.CITED_FILING_DATE,citationFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
         citationFlag.addChild(patCit);
-        citationFlag.addChild(Flag.simpleFlag("category",Constants.CITATION_CATEGORY,citationFlag));
+        citationFlag.addChild(Flag.simpleFlag("category",Attributes.CITED_CATEGORY,citationFlag));
 
         // parties
         EndFlag applicantFlag = new EndFlag("applicant") {
@@ -171,107 +157,83 @@ public class USPTOHandler extends NestedHandler {
             }
             @Override
             public void save() {
-                dataQueue.add(getTransform(null));
+                Map<String,Object> transform = getTransform(null);
+                String name =  transform.getOrDefault(Constants.LAST_NAME, "") + " " + transform.getOrDefault(Constants.FIRST_NAME, "");
+                name = name.trim().toUpperCase();
+                if(name.length() > 0) {
+                    transform.put(Attributes.ASSIGNEE_HARMONIZED, name);
+                    dataQueue.add(transform);
+                }
             }
         };
         applicantFlag.compareFunction = Flag.endsWithCompareFunction;
         endFlags.add(applicantFlag);
         applicantFlag.addChild(Flag.simpleFlag("last-name",Constants.LAST_NAME, applicantFlag));
         applicantFlag.addChild(Flag.simpleFlag("first-name",Constants.FIRST_NAME, applicantFlag));
-        applicantFlag.addChild(Flag.simpleFlag("city",Constants.CITY, applicantFlag));
-        applicantFlag.addChild(Flag.simpleFlag("state",Constants.STATE, applicantFlag));
-        applicantFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY, applicantFlag));
+        applicantFlag.addChild(Flag.simpleFlag("country",Attributes.ASSIGNEE_HARMONIZED_CC, applicantFlag));
 
 
         EndFlag inventorFlag = new EndFlag("inventor") {
             {
-                dbName = Constants.INVENTORS;
+                dbName = Attributes.INVENTORS;
             }
             @Override
             public void save() {
-                dataQueue.add(getTransform(null));
+                Map<String,Object> transform = getTransform(null);
+                String name =  transform.getOrDefault(Constants.LAST_NAME, "") + " " + transform.getOrDefault(Constants.FIRST_NAME, "");
+                name = name.trim().toUpperCase();
+                if(name.length()>0) {
+                    transform.put(Attributes.INVENTOR_HARMONIZED, name);
+                    dataQueue.add(transform);
+                }
             }
         };
         inventorFlag.compareFunction = Flag.endsWithCompareFunction;
         endFlags.add(inventorFlag);
         inventorFlag.addChild(Flag.simpleFlag("last-name",Constants.LAST_NAME, inventorFlag));
         inventorFlag.addChild(Flag.simpleFlag("first-name",Constants.FIRST_NAME, inventorFlag));
-        inventorFlag.addChild(Flag.simpleFlag("city",Constants.CITY, inventorFlag));
-        inventorFlag.addChild(Flag.simpleFlag("state",Constants.STATE, inventorFlag));
-        inventorFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY, inventorFlag));
-
-
-        EndFlag agentFlag = new EndFlag("agent") {
-            {
-                dbName = Constants.AGENTS;
-            }
-            @Override
-            public void save() {
-                dataQueue.add(getTransform(null));
-            }
-        };
-        agentFlag.compareFunction = Flag.endsWithCompareFunction;
-        endFlags.add(agentFlag);
-        agentFlag.addChild(Flag.simpleFlag("last-name",Constants.LAST_NAME, agentFlag));
-        agentFlag.addChild(Flag.simpleFlag("first-name",Constants.FIRST_NAME, agentFlag));
-        agentFlag.addChild(Flag.simpleFlag("city",Constants.CITY, agentFlag));
-        agentFlag.addChild(Flag.simpleFlag("state",Constants.STATE, agentFlag));
-        agentFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY, agentFlag));
+        inventorFlag.addChild(Flag.simpleFlag("country",Attributes.INVENTOR_HARMONIZED_CC, inventorFlag));
 
 
         EndFlag assigneeFlag = new EndFlag("assignee") {
             {
-                dbName = Constants.ASSIGNEES;
+                dbName = Attributes.ASSIGNEES;
             }
             @Override
             public void save() {
-                //debug(this,debug,Arrays.asList(Constants.JAPANESE_ASSIGNEE, Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE));
-                dataQueue.add(getTransform(null));
+                Map<String,Object> transform = getTransform(null);
+                if(!transform.containsKey(Attributes.ASSIGNEE_HARMONIZED)) {
+                    String name = transform.getOrDefault(Constants.LAST_NAME, "") + " " + transform.getOrDefault(Constants.FIRST_NAME, "");
+                    name = name.trim().toUpperCase();
+                    if(name.length()>0) {
+                        transform.put(Attributes.ASSIGNEE_HARMONIZED, name);
+                    }
+                }
+                if(transform.containsKey(Attributes.ASSIGNEE_HARMONIZED)) {
+                    dataQueue.add(transform);
+                }
             }
         };
         assigneeFlag.compareFunction = Flag.endsWithCompareFunction;
         endFlags.add(assigneeFlag);
         assigneeFlag.addChild(Flag.simpleFlag("last-name",Constants.LAST_NAME, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("first-name",Constants.FIRST_NAME, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("city",Constants.CITY, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("state",Constants.STATE, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("country",Attributes.ASSIGNEE_HARMONIZED_CC, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("role",Constants.ASSIGNEE_ROLE, assigneeFlag));
-        assigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
-
-        EndFlag latestAssignee = new EndFlag("assignee") {
-            {
-                dbName = Constants.LATEST_ASSIGNEE;
-            }
-            @Override
-            public void save() {
-                //debug(this,debug,Arrays.asList(Constants.JAPANESE_ASSIGNEE, Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE));
-                if(dataQueue.isEmpty()) dataQueue.add(getTransform(null));
-            }
-        };
-        latestAssignee.compareFunction = Flag.endsWithCompareFunction;
-        endFlags.add(latestAssignee);
-        latestAssignee.addChild(Flag.simpleFlag("last-name",Constants.LAST_NAME, latestAssignee));
-        latestAssignee.addChild(Flag.simpleFlag("first-name",Constants.FIRST_NAME, latestAssignee));
-        latestAssignee.addChild(Flag.simpleFlag("city",Constants.CITY, latestAssignee));
-        latestAssignee.addChild(Flag.simpleFlag("state",Constants.STATE, latestAssignee));
-        latestAssignee.addChild(Flag.simpleFlag("country",Constants.COUNTRY, latestAssignee));
-        latestAssignee.addChild(Flag.simpleFlag("role",Constants.ASSIGNEE_ROLE, latestAssignee));
-        latestAssignee.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, latestAssignee).withTransformationFunction(Flag.assigneeTransformationFunction));
+        assigneeFlag.addChild(Flag.simpleFlag("orgname", Attributes.ASSIGNEE_HARMONIZED, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
 
 
         EndFlag claimFlag = new EndFlag("claim") {
             {
-                dbName = Constants.CLAIMS;
+                dbName = Attributes.CLAIMS;
             }
             @Override
             public void save() {
-                //debug(this,debug, Arrays.asList(Constants.MEANS_PRESENT,Constants.CLAIM_LENGTH,Constants.PARENT_CLAIM_NUM,Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH));
                 dataQueue.add(getTransform(null));
             }
         };
         endFlags.add(claimFlag);
-        claimFlag.addChild(Flag.simpleFlag("claim",Constants.CLAIM,claimFlag).withTransformationFunction(Flag.claimTextFunction));
+        claimFlag.addChild(Flag.simpleFlag("claim",Attributes.CLAIMS,claimFlag).withTransformationFunction(Flag.claimTextFunction));
         claimFlag.addChild(Flag.integerFlag("num",Constants.CLAIM_NUM,claimFlag).isAttributesFlag(true).withTransformationFunction(f->s->{
             try {
                 return Integer.valueOf(s);
@@ -280,7 +242,7 @@ public class USPTOHandler extends NestedHandler {
             }
         }));
         claimFlag.addChild(Flag.integerFlag("claim",Constants.CLAIM_LENGTH,claimFlag).withTransformationFunction(f->s->s==null?0:s.split("\\s+").length));
-        claimFlag.addChild(Flag.integerFlag("claim",Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,claimFlag).setIsForeign(true).withTransformationFunction(Flag.smallestIndClaimTransformationFunction(documentFlag)));
+        claimFlag.addChild(Flag.integerFlag("claim",Attributes.LENGTH_OF_SMALLEST_IND_CLAIM,claimFlag).setIsForeign(true).withTransformationFunction(Flag.smallestIndClaimTransformationFunction(documentFlag)));
 
         Flag claimRefWrapper = Flag.parentFlag("claim-ref");
         claimFlag.addChild(claimRefWrapper);
@@ -292,7 +254,7 @@ public class USPTOHandler extends NestedHandler {
             }
         }));
         // means present data
-        claimFlag.addChild(Flag.booleanFlag("claim",Constants.MEANS_PRESENT,claimFlag).setIsForeign(true).withTransformationFunction(f->s->{
+        claimFlag.addChild(Flag.booleanFlag("claim",Attributes.MEANS_PRESENT,claimFlag).setIsForeign(true).withTransformationFunction(f->s->{
             String parentClaimNum = f.getDataForField(Constants.PARENT_CLAIM_NUM);
             boolean isIndependent = parentClaimNum==null || parentClaimNum.isEmpty();
             if(isIndependent) {
@@ -305,30 +267,7 @@ public class USPTOHandler extends NestedHandler {
             }
             return null; // prevent default behavior (must have isForeign set to true)
         }));
-
-        // related assets data
-        EndFlag relatedAssetsFlag = new EndFlag(Constants.RELATED_DOC_TYPE_LIST) {
-            {
-                dbName=Constants.PATENT_FAMILY;
-            }
-            @Override
-            public void save() {
-                Map<String,Object> resultMap = getTransform(null);
-                if(currentTag != null) {
-                    resultMap.put(Constants.RELATION_TYPE, currentTag);
-                }
-                dataQueue.add(resultMap);
-            }
-        };
-        endFlags.add(relatedAssetsFlag);
-        Flag docFlag = Flag.parentFlag("document-id");
-        docFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY,relatedAssetsFlag));
-        docFlag.addChild(Flag.simpleFlag("kind",Constants.DOC_KIND,relatedAssetsFlag));
-        docFlag.addChild(Flag.simpleFlag("doc-number",Constants.NAME,relatedAssetsFlag).withTransformationFunction(Flag.unknownDocumentHandler));
-        relatedAssetsFlag.addChild(docFlag);
-
         nestedEndFlags.addAll(endFlags.stream().filter(f->!f.equals(documentFlag)).collect(Collectors.toList()));
-
     }
 
     @Override

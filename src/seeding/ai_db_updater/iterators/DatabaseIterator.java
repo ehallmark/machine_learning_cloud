@@ -11,6 +11,7 @@ import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
+import seeding.google.elasticsearch.Attributes;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
@@ -79,7 +80,7 @@ public class DatabaseIterator {
         transformationFunctionMap.put(Constants.FILING_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.ASSIGNEE,Flag.assigneeTransformationFunction);
         transformationFunctionMap.put(Constants.CITED_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
-        transformationFunctionMap.put(Constants.CITATIONS+"."+Constants.NAME,Flag.unknownDocumentHandler);
+        transformationFunctionMap.put(Attributes.CITATIONS+"."+ Attributes.PUBLICATION_NUMBER,Flag.unknownDocumentHandler);
         transformationFunctionMap.put(Constants.CITATION_CATEGORY, f->text->{
             if(text==null || text.trim().length() == 0) return null;
             return text.trim().toLowerCase();
