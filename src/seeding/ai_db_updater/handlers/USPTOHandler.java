@@ -289,7 +289,7 @@ public class USPTOHandler extends NestedHandler {
     private void saveElasticSearch(String name, Map<String,Object> doc) {
         //System.out.println("Ingesting GSON for " + name + ": " + new Gson().toJson(doc));
         final String sql = "insert into patents_global (publication_number_full,publication_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,invention_title,invention_title_lang,abstract,abstract_lang,claims,claims_lang,description,description_lang,inventor,assignee,inventor_harmonized,inventor_harmonized_cc,assignee_harmonized,assignee_harmonized_cc,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date,means_present,length_of_smallest_ind_claim) values " +
-                "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict do nothing";
+                "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?::date[],?,?) on conflict do nothing";
 
         try {
             PreparedStatement ps = Database.getConn().prepareStatement(sql);
@@ -301,7 +301,7 @@ public class USPTOHandler extends NestedHandler {
             ps.setObject(6, doc.get(Attributes.PRIORITY_DATE));
             ps.setObject(7, doc.get(Attributes.COUNTRY_CODE));
             ps.setObject(8, doc.get(Attributes.KIND_CODE));
-            ps.setObject(8, doc.get(Attributes.APPLICATION_KIND));
+            ps.setObject(9, doc.get(Attributes.APPLICATION_KIND));
             ps.setObject(10, doc.get("-1"));
             {
                 Object title = doc.get(Attributes.INVENTION_TITLE);
@@ -405,7 +405,7 @@ public class USPTOHandler extends NestedHandler {
 
                     for(int i = 0; i < citations.size(); i++) {
                         Map<String,Object> citation = citations.get(i);
-                        cited_publication_number_full[i]=citation.get(Attributes.PUBLICATION_NUMBER_FULL);
+                        cited_publication_number_full[i]=citation.get(Attributes.CITED_PUBLICATION_NUMBER_FULL);
                         cited_application_number_full[i]=null;
                         cited_npl_text[i]=null;
                         cited_type[i]=null;
