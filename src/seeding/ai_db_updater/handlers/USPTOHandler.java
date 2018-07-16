@@ -302,7 +302,7 @@ public class USPTOHandler extends NestedHandler {
             ps.setObject(7, doc.get(Attributes.COUNTRY_CODE));
             ps.setObject(8, doc.get(Attributes.KIND_CODE));
             ps.setObject(9, doc.get(Attributes.APPLICATION_KIND));
-            ps.setObject(10, doc.get("-1"));
+            ps.setObject(10, "-1");
             {
                 Object title = doc.get(Attributes.INVENTION_TITLE);
                 if (title != null) {
