@@ -287,7 +287,7 @@ public class USPTOHandler extends NestedHandler {
     }
 
     private void saveElasticSearch(String name, Map<String,Object> doc) {
-        System.out.println("Ingesting GSON for " + name + ": " + new Gson().toJson(doc));
+        //System.out.println("Ingesting GSON for " + name + ": " + new Gson().toJson(doc));
         final String sql = "insert into patents_global (publication_number_full,publication_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,invention_title,invention_title_lang,abstract,abstract_lang,claims,claims_lang,description,description_lang,inventor,assignee,inventor_harmonized,inventor_harmonized_cc,assignee_harmonized,assignee_harmonized_cc,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date,means_present,length_of_smallest_ind_claim) values " +
                 "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict do nothing";
 
@@ -431,6 +431,7 @@ public class USPTOHandler extends NestedHandler {
             }
             ps.setObject(31, doc.get(Attributes.MEANS_PRESENT));
             ps.setObject(32, doc.get(Attributes.LENGTH_OF_SMALLEST_IND_CLAIM));
+            System.out.println("Executing Ps: "+ps.toString());
             ps.executeUpdate();
 
         } catch(Exception e) {
