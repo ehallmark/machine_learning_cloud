@@ -298,7 +298,7 @@ public class USPTOHandler extends NestedHandler {
             ps.setObject(3, doc.get(Attributes.APPLICATION_NUMBER_FORMATTED));
             ps.setObject(4, doc.get(Attributes.FILING_DATE));
             ps.setObject(5, doc.get(Attributes.PUBLICATION_DATE));
-            ps.setObject(6, doc.get(Attributes.PRIORITY_DATE));
+            ps.setObject(6, doc.getOrDefault(Attributes.PRIORITY_DATE, doc.get(Attributes.FILING_DATE)));
             ps.setObject(7, doc.get(Attributes.COUNTRY_CODE));
             ps.setObject(8, doc.get(Attributes.KIND_CODE));
             ps.setObject(9, doc.get(Attributes.APPLICATION_KIND));
