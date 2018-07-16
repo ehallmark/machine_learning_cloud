@@ -51,9 +51,7 @@ public class USPTOHandler extends NestedHandler {
                     String app_num = (String)toIngest.get(Attributes.APPLICATION_NUMBER_FORMATTED);
                     if (pub_num == null){
                         System.out.println("NO NAME!!!!!!!!!!");
-                        if(errors.getAndIncrement()%10==0) {
-                            System.out.println(errors.get());
-                        }
+                        errors.getAndIncrement();
                         return;
                     }
                     String name = toIngest.getOrDefault(Attributes.COUNTRY_CODE, "US")+pub_num+toIngest.get(Attributes.KIND_CODE);
@@ -74,9 +72,6 @@ public class USPTOHandler extends NestedHandler {
                     });
                     synchronized (USPTOHandler.class) {
                         //queue.put(name.toString(), toIngest);
-                        if(cnt.getAndIncrement() % batchSize == batchSize-1) {
-                            System.out.println(cnt.get());
-                        }
                         if(!testing) {
                             saveElasticSearch(name, toIngest);
                         } else {
@@ -439,8 +434,11 @@ public class USPTOHandler extends NestedHandler {
             } else {
                 ps.setObject(32, null);
             }
-            System.out.println("Executing Ps: "+ps.toString());
             ps.executeUpdate();
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Ingested: "+cnt.get()+"  Errors: "+errors.get());
+                Database.commit();
+            }
 
         } catch(Exception e) {
             e.printStackTrace();
