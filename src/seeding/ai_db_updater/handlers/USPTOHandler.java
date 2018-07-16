@@ -6,10 +6,12 @@ package seeding.ai_db_updater.handlers;
 
 import com.google.gson.Gson;
 import seeding.Constants;
+import seeding.Database;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.google.elasticsearch.Attributes;
 
+import java.sql.PreparedStatement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -104,6 +106,7 @@ public class USPTOHandler extends NestedHandler {
         applicationReference.addChild(Flag.simpleFlag("country",Attributes.COUNTRY_CODE,documentFlag));
         applicationReference.addChild(Flag.simpleFlag("doc-number",Attributes.APPLICATION_NUMBER_FORMATTED,documentFlag).withTransformationFunction(Flag.filingDocumentHandler));
         documentFlag.addChild(Flag.simpleFlag("abstract", Attributes.ABSTRACT,documentFlag));
+        documentFlag.addChild(Flag.simpleFlag("description", Attributes.DESCRIPTION,documentFlag));
         documentFlag.addChild(Flag.simpleFlag("invention-title",Attributes.INVENTION_TITLE,documentFlag));
 
         Flag priorityClaims = Flag.parentFlag("priority-claim");
@@ -132,12 +135,14 @@ public class USPTOHandler extends NestedHandler {
                 Map<String, Object> transform = getTransform(null);
                 if(transform.containsKey(Attributes.CITED_PUBLICATION_NUMBER)) {
                     transform.put(Attributes.CITED_PUBLICATION_NUMBER_WITH_COUNTRY, (String)transform.get(Attributes.COUNTRY_CODE)+transform.get(Attributes.CITED_PUBLICATION_NUMBER));
-                    transform.put(Attributes.CITED_PUBLICATION_NUMBER_WITH_COUNTRY, (String)transform.get(Attributes.COUNTRY_CODE)+transform.get(Attributes.CITED_PUBLICATION_NUMBER)+transform.get(Attributes.KIND_CODE));
+                    transform.put(Attributes.CITED_PUBLICATION_NUMBER_FULL, (String)transform.get(Attributes.COUNTRY_CODE)+transform.get(Attributes.CITED_PUBLICATION_NUMBER)+transform.get(Attributes.KIND_CODE));
                 }
                 if(transform.containsKey(Attributes.CITED_APPLICATION_NUMBER_FORMATTED)) {
                     transform.put(Attributes.CITED_APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY, (String)transform.get(Attributes.COUNTRY_CODE)+transform.get(Attributes.CITED_APPLICATION_NUMBER_FORMATTED));
                 }
-                dataQueue.add(transform);
+                if(transform.containsKey(Attributes.CITED_PUBLICATION_NUMBER)) {
+                    dataQueue.add(transform);
+                }
             }
         };
         citationFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -282,10 +287,154 @@ public class USPTOHandler extends NestedHandler {
     }
 
     private void saveElasticSearch(String name, Map<String,Object> doc) {
-        Object filingName = doc.get(Constants.FILING_NAME);
-        System.out.println("Ingesting GSON for "+name+": "+new Gson().toJson(doc));
-        if(filingName != null) {
-//            DataIngester.ingestBulk(name, doc, true);
+        System.out.println("Ingesting GSON for " + name + ": " + new Gson().toJson(doc));
+        final String sql = "insert into patents_global (publication_number_full,publication_number,application_number_formatted,filing_date,publication_date,priority_date,country_code,kind_code,application_kind,family_id,invention_title,invention_title_lang,abstract,abstract_lang,claims,claims_lang,description,description_lang,inventor,assignee,inventor_harmonized,inventor_harmonized_cc,assignee_harmonized,assignee_harmonized_cc,cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date,means_present,length_of_smallest_ind_claim) values " +
+                "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict do nothing";
+
+        try {
+            PreparedStatement ps = Database.getConn().prepareStatement(sql);
+            ps.setString(1, name);
+            ps.setObject(2, doc.get(Attributes.PUBLICATION_NUMBER));
+            ps.setObject(3, doc.get(Attributes.APPLICATION_NUMBER_FORMATTED));
+            ps.setObject(4, doc.get(Attributes.FILING_DATE));
+            ps.setObject(5, doc.get(Attributes.PUBLICATION_DATE));
+            ps.setObject(6, doc.get(Attributes.PRIORITY_DATE));
+            ps.setObject(7, doc.get(Attributes.COUNTRY_CODE));
+            ps.setObject(8, doc.get(Attributes.KIND_CODE));
+            ps.setObject(8, doc.get(Attributes.APPLICATION_KIND));
+            ps.setObject(10, doc.get("-1"));
+            {
+                Object title = doc.get(Attributes.INVENTION_TITLE);
+                if (title != null) {
+                    title = new String[]{(String) title};
+                    ps.setArray(11, Database.getConn().createArrayOf("varchar", (String[]) title));
+                    ps.setArray(12, Database.getConn().createArrayOf("varchar", new String[]{"en"}));
+                } else {
+                    ps.setObject(11, (Object[]) null);
+                    ps.setObject(12, (Object[]) null);
+                }
+            }
+            {
+                Object abstrac = doc.get(Attributes.ABSTRACT);
+                if (abstrac != null) {
+                    abstrac = new String[]{(String) abstrac};
+                    ps.setArray(13, Database.getConn().createArrayOf("varchar", (String[]) abstrac));
+                    ps.setArray(14, Database.getConn().createArrayOf("varchar", new String[]{"en"}));
+                } else {
+                    ps.setObject(13, (Object[]) null);
+                    ps.setObject(14, (Object[]) null);
+                }
+            }
+            {
+                Object claims = doc.get(Attributes.CLAIMS);
+                if (claims != null) {
+                    claims = String.join(" \n \n \n ", ((List<Map<String, Object>>) claims).stream().map(o -> (String) o.getOrDefault(Attributes.CLAIMS, "")).collect(Collectors.toList())).trim();
+                    claims = new String[]{(String) claims};
+                    ps.setArray(15, Database.getConn().createArrayOf("varchar", (String[]) claims));
+                    ps.setArray(16, Database.getConn().createArrayOf("varchar", new String[]{"en"}));
+                } else {
+                    ps.setObject(14, (Object[]) null);
+                    ps.setObject(16, (Object[]) null);
+                }
+            }
+            {
+                Object description = doc.get(Attributes.DESCRIPTION);
+                if (description != null) {
+                    description = new String[]{(String) description};
+                    ps.setArray(17, Database.getConn().createArrayOf("varchar", (String[]) description));
+                    ps.setArray(18, Database.getConn().createArrayOf("varchar", new String[]{"en"}));
+                } else {
+                    ps.setObject(17, (Object[]) null);
+                    ps.setObject(18, (Object[]) null);
+                }
+            }
+            {
+                List<Map<String,Object>>  inventors = (List<Map<String,Object>>) doc.get(Attributes.INVENTORS);
+                if(inventors!=null) {
+                    Object[] inventor_harmonized = new Object[inventors.size()];
+                    Object[] inventor_harmonized_cc = new Object[inventors.size()];
+                    for(int i = 0; i < inventors.size(); i++) {
+                        Map<String,Object> inventor = inventors.get(i);
+                        inventor_harmonized[i] = inventor.get(Attributes.INVENTOR_HARMONIZED);
+                        inventor_harmonized_cc[i] = inventor.getOrDefault(Attributes.INVENTOR_HARMONIZED_CC, "US");
+                    }
+
+                    ps.setArray(19, Database.getConn().createArrayOf("varchar", inventor_harmonized));
+                    ps.setArray(21, Database.getConn().createArrayOf("varchar", inventor_harmonized));
+                    ps.setArray(22, Database.getConn().createArrayOf("varchar", inventor_harmonized_cc));
+
+                } else {
+                    ps.setObject(19, (Object[]) null);
+                    ps.setObject(21, (Object[]) null);
+                    ps.setObject(22, (Object[]) null);
+                }
+            }
+            {
+                List<Map<String,Object>> assignees = (List<Map<String,Object>>)doc.get(Attributes.ASSIGNEES);
+                if(assignees==null) {
+                    assignees = (List<Map<String,Object>>)doc.get(Constants.APPLICANTS);
+                }
+                if(assignees!=null) {
+                    Object[] assignee_harmonized = new Object[assignees.size()];
+                    Object[] assignee_harmonized_cc = new Object[assignees.size()];
+                    for(int i = 0; i < assignees.size(); i++) {
+                        Map<String,Object> assignee = assignees.get(i);
+                        assignee_harmonized[i] = assignee.get(Attributes.ASSIGNEE_HARMONIZED);
+                        assignee_harmonized_cc[i] = assignee.getOrDefault(Attributes.ASSIGNEE_HARMONIZED_CC, "US");
+                    }
+
+                    ps.setArray(20, Database.getConn().createArrayOf("varchar", assignee_harmonized));
+                    ps.setArray(23, Database.getConn().createArrayOf("varchar", assignee_harmonized));
+                    ps.setArray(24, Database.getConn().createArrayOf("varchar", assignee_harmonized_cc));
+
+                } else {
+                    ps.setObject(20, (Object[]) null);
+                    ps.setObject(23, (Object[]) null);
+                    ps.setObject(24, (Object[]) null);
+                }
+            }
+            { //cited_publication_number_full,cited_application_number_full,cited_npl_text,cited_type,cited_category,cited_filing_date
+                List<Map<String,Object>> citations = (List<Map<String,Object>>)doc.get(Attributes.CITATIONS);
+                if(citations!=null) {
+                    Object[] cited_publication_number_full = new Object[citations.size()];
+                    Object[] cited_application_number_full = new Object[citations.size()];
+                    Object[] cited_npl_text = new Object[citations.size()];
+                    Object[] cited_type = new Object[citations.size()];
+                    Object[] cited_category = new Object[citations.size()];
+                    Object[] cited_filing_date = new Object[citations.size()];
+
+                    for(int i = 0; i < citations.size(); i++) {
+                        Map<String,Object> citation = citations.get(i);
+                        cited_publication_number_full[i]=citation.get(Attributes.PUBLICATION_NUMBER_FULL);
+                        cited_application_number_full[i]=null;
+                        cited_npl_text[i]=null;
+                        cited_type[i]=null;
+                        cited_category[i]=citation.get(Attributes.CITED_CATEGORY);
+                        cited_filing_date[i]=citation.get(Attributes.CITED_FILING_DATE);
+                    }
+
+                    ps.setArray(25, Database.getConn().createArrayOf("varchar", cited_publication_number_full));
+                    ps.setArray(26, Database.getConn().createArrayOf("varchar", cited_application_number_full));
+                    ps.setArray(27, Database.getConn().createArrayOf("varchar", cited_npl_text));
+                    ps.setArray(28, Database.getConn().createArrayOf("varchar", cited_type));
+                    ps.setArray(29, Database.getConn().createArrayOf("varchar", cited_category));
+                    ps.setArray(30, Database.getConn().createArrayOf("varchar", cited_filing_date));
+
+                } else {
+                    ps.setObject(25, (Object[]) null);
+                    ps.setObject(26, (Object[]) null);
+                    ps.setObject(27, (Object[]) null);
+                    ps.setObject(28, (Object[]) null);
+                    ps.setObject(29, (Object[]) null);
+                    ps.setObject(30, (Object[]) null);
+                }
+            }
+            ps.setObject(31, doc.get(Attributes.MEANS_PRESENT));
+            ps.setObject(32, doc.get(Attributes.LENGTH_OF_SMALLEST_IND_CLAIM));
+            ps.executeUpdate();
+
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 

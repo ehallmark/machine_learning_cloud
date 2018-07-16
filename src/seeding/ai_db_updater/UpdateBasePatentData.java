@@ -1,5 +1,6 @@
 package seeding.ai_db_updater;
 
+import seeding.Database;
 import seeding.ai_db_updater.handlers.NestedHandler;
 import seeding.ai_db_updater.handlers.USPTOHandler;
 import seeding.ai_db_updater.iterators.WebIterator;
@@ -26,6 +27,7 @@ public class UpdateBasePatentData {
         System.gc();
         System.gc();
         System.gc();
+        Database.close();
     }
 
     public static void main(String[] args) {

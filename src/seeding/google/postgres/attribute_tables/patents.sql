@@ -42,7 +42,9 @@ create table patents_global (
     cited_npl_text text[],
     cited_type varchar(32)[],
     cited_category varchar(32)[],
-    cited_filing_date date[]
+    cited_filing_date date[],
+    means_present boolean,
+    length_of_smallest_ind_claim integer
 );
 
 create index patents_global_first_assignee_idx on patents_global (assignee_harmonized);
