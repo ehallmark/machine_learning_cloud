@@ -150,7 +150,7 @@ $(document).ready(function() {
         if(!urlPrefix) {
             urlPrefix = "/secure";
         }
-        var $downloadForm = $('<form method="post" action="/'+urlPrefix+'/excel_generation"></form>');
+        var $downloadForm = $('<form method="post" action="'+urlPrefix+'/excel_generation"></form>');
         $downloadForm.appendTo('body').submit().remove();
     };
 
