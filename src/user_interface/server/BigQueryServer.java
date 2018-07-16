@@ -1255,6 +1255,10 @@ public class BigQueryServer extends SimilarPatentServer {
                 if(map==null) return null;
                 nonHumanAttrs = null;
                 headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
+                if(headers!=null && headers.contains("selection")) {
+                    headers = new ArrayList<>(headers);
+                    headers.remove("selection");
+                }
                 data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
                 title = "Data";
             }
