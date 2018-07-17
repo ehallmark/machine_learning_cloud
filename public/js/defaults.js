@@ -566,10 +566,11 @@ $(document).ready(function() {
                                             var point = data[p];
                                             if(point.hasOwnProperty('dataLabel')) {
                                                 var $dataLabel = $(point.dataLabel.text.element);
-                                                var $point = $(point.graphic.element);
-                                                $dataLabel.contextmenu(function(e) {
-                                                    $point.trigger('contextmenu');
-                                                });
+                                                $dataLabel.contextmenu(function(point) { return function(e) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    point.firePointEvent('contextmenu', e);
+                                                }}(point));
                                             }
                                         }
                                     }
