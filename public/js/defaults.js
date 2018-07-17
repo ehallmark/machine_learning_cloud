@@ -569,7 +569,7 @@ $(document).ready(function() {
                                                 $dataLabel.contextmenu(function(point) { return function(e) {
                                                     e.preventDefault();
                                                     e.stopPropagation();
-                                                    $(point.graphic.element).trigger("contextmenu", [e]);
+                                                    point.firePointEvent('contextmenu', e);
                                                 }}(point));
                                             }
                                         }
