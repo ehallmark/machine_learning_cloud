@@ -287,6 +287,8 @@ public class USPTOHandler extends NestedHandler {
                 "(?,?,?,?::date,?::date,?::date,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?::date[],?,?,?) on conflict (publication_number_full) do update set (num_claims,means_present,length_of_smallest_ind_claim)=(excluded.num_claims,excluded.means_present,excluded.length_of_smallest_ind_claim)";
 
         try {
+            if(!doc.containsKey(Attributes.FILING_DATE)) return;
+            
             PreparedStatement ps = Database.getConn().prepareStatement(sql);
             ps.setString(1, name);
             ps.setObject(2, doc.get(Attributes.PUBLICATION_NUMBER));
