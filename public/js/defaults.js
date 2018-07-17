@@ -565,8 +565,8 @@ $(document).ready(function() {
                                         for(var p = 0; p < data.length; p++) {
                                             var point = data[p];
                                             if(point.hasOwnProperty('dataLabel')) {
-                                                var $dataLabel = $(point.dataLabel);
-                                                var $point = $(point.graphic);
+                                                var $dataLabel = $(point.dataLabel.text.element);
+                                                var $point = $(point.graphic.element);
                                                 $dataLabel.contextmenu(function(e) {
                                                     $point.trigger('contextmenu');
                                                 });
@@ -609,10 +609,6 @@ $(document).ready(function() {
                                                 e.preventDefault();
                                                 e.stopPropagation();
                                                 var value = null;
-                                                var dataLabel = null;
-                                                if(point.hasOwnProperty('dataLabel') && point.dataLabel.hasOwnProperty('element')) {
-                                                    dataLabel = $(point.dataLabel.element);
-                                                }
                                                 if(point.hasOwnProperty('value')) {
                                                     value = point.value;
                                                 } else {
