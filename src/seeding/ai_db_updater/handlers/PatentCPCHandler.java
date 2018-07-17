@@ -1,12 +1,7 @@
 package seeding.ai_db_updater.handlers;
 
-import elasticsearch.DataIngester;
-import seeding.Constants;
-import seeding.Database;
 import tools.ClassCodeHandler;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +10,6 @@ import java.util.Set;
  * Created by ehallmark on 7/12/17.
  */
 public class PatentCPCHandler implements LineHandler {
-    protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     protected Map<String,Set<String>> patentToClassificationHash;
     public PatentCPCHandler(Map<String,Set<String>> patentToClassificationHash) {
         this.patentToClassificationHash=patentToClassificationHash;
@@ -27,21 +21,21 @@ public class PatentCPCHandler implements LineHandler {
 
     @Override
     public void handleLine(String line) {
-        if (line.length() >= 32) {
-            String patNum = line.substring(10, 17).trim();
-            if (assetToFilingMap.getPatentDataMap().containsKey(patNum)) {
-                String cpcSection = line.substring(17, 18);
-                String cpcClass = cpcSection + line.substring(18, 20);
-                String cpcSubclass = cpcClass + line.substring(20, 21);
-                String cpcMainGroup = cpcSubclass + line.substring(21, 25);
-                String cpcSubGroup = cpcMainGroup + line.substring(26, 32);
-                Set<String> data = patentToClassificationHash.get(patNum);
-                if(data==null) {
-                    data = new HashSet<>();
-                    patentToClassificationHash.put(patNum, data);
-                }
-                data.add(ClassCodeHandler.convertToHumanFormat(cpcSubGroup));
+        if (line.length() >= 33) {
+            String kind_code = line.substring(0,2).trim();
+            String patNum = line.substring(10, 18).trim();
+            String full_publication_number = "US"+patNum+kind_code;
+            String cpcSection = line.substring(18, 19);
+            String cpcClass = cpcSection + line.substring(19, 21);
+            String cpcSubclass = cpcClass + line.substring(21, 22);
+            String cpcMainGroup = cpcSubclass + line.substring(22, 26);
+            String cpcSubGroup = cpcMainGroup + line.substring(27, 33);
+            Set<String> data = patentToClassificationHash.get(full_publication_number);
+            if(data==null) {
+                data = new HashSet<>();
+                patentToClassificationHash.put(full_publication_number, data);
             }
+            data.add(ClassCodeHandler.convertToHumanFormat(cpcSubGroup));
         }
     }
 }

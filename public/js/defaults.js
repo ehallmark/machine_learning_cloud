@@ -518,7 +518,7 @@ $(document).ready(function() {
                                                                             var point = datapoints[j];
                                                                             if(point) {
                                                                                 if(!isYAxis) {
-                                                                                    if(point.length==2 && point[0]===category) {
+                                                                                    if(point.hasOwnProperty('name') && point.name===category) {
                                                                                         point.update({name: userVal}, false);
                                                                                     }
                                                                                 }
@@ -551,6 +551,30 @@ $(document).ready(function() {
                             if(!chartJson['plotOptions']['series'].hasOwnProperty('dataLabels')) {
                                 chartJson['plotOptions']['series']['dataLabels'] = {};
                             }
+                            if(!chartJson.hasOwnProperty('chart')) {
+                                chartJson['chart'] = {};
+                            }
+                            if(!chartJson['chart'].hasOwnProperty('events')) {
+                                chartJson['chart']['events'] = {};
+                            }
+                            if(!chartJson['chart']['events'].hasOwnProperty('redraw')) {
+                                // hack to allow clicking on data label instance of data point only
+                                chartJson['chart']['events']['redraw'] = function() {
+                                    for(var i = 0; i < this.series.length; i++) {
+                                        var data = this.series[i].data;
+                                        for(var p = 0; p < data.length; p++) {
+                                            var point = data[p];
+                                            if(point.hasOwnProperty('dataLabel')) {
+                                                var $dataLabel = $(point.dataLabel);
+                                                var $point = $(point.graphic);
+                                                $dataLabel.contextmenu(function(e) {
+                                                    $point.trigger('contextmenu');
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             var clickEvents = {
                                 contextmenu: function(e) {
                                     if(this.hasOwnProperty('series') && !isDrilldownChart(this.series.chart)) {
@@ -560,12 +584,25 @@ $(document).ready(function() {
                                         var seriesIndex = this.series.index;
                                         var pointIndex = this.index;
                                         var $container = newContextMenu(e);
+                                        $container.find('ul').append('<li value="view" >View Assets</li>')
                                         var $lis = $container.find('li');
                                         $lis.on('click', function(e){
                                             var $li = $(this);
                                             $li.off('click');
                                             var value = $li.attr('value');
-                                            if(value==='delete') {
+                                            var group1 = null;
+                                            var group2 = null;
+                                            if (value === 'view') {
+                                                if(point.hasOwnProperty('value')) {
+                                                    group1 = point.series.chart.xAxis[0].categories[point.x];
+                                                    group2 = point.series.chart.yAxis[0].categories[point.y];
+                                                } else if (point.hasOwnProperty('name')) {
+                                                    group1 = point.name;
+                                                    group2 = point.series.name;
+                                                }
+                                                alert("View group1 ("+group1+") group2 ("+group2+")");
+
+                                            } else if (value==='delete') {
                                                 point.remove();
 
                                             } else if (value==='edit') {
@@ -631,7 +668,6 @@ $(document).ready(function() {
                                                             point.update({y: userVal});
                                                         }
                                                     }
-
                                                     $(document).trigger('click');
                                                 });
 

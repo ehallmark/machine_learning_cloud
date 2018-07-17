@@ -43,6 +43,7 @@ create table patents_global (
     cited_type varchar(32)[],
     cited_category varchar(32)[],
     cited_filing_date date[],
+    num_claims integer,
     means_present boolean,
     length_of_smallest_ind_claim integer
 );

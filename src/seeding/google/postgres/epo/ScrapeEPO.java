@@ -73,11 +73,9 @@ public class ScrapeEPO {
     }
 
     private AtomicInteger cnt = new AtomicInteger(0);
-    private String getFamilyMembersForAssetHelper(String asset, String auth_token) throws Exception {
+    private String getFamilyMembersForAssetHelper(String asset, String auth_token, ProxyHandler proxyHandler) throws Exception {
         if(auth_token!=null) {
-            URL url = new URL("http://ops.epo.org/3.2/rest-services/family/publication/docdb/"+asset);
-            System.out.println(url);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpURLConnection connection = proxyHandler.getProxyUrlForApplication(asset, auth_token);
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Authorization","Bearer "+auth_token);
             InputStream content = connection.getInputStream();
@@ -90,7 +88,6 @@ public class ScrapeEPO {
             rd.close();
             return parseJsonDoc(result.toString());
         }
-
         return null;
     }
 
@@ -104,7 +101,7 @@ public class ScrapeEPO {
         return json;
     }
 
-    public void scrapeFamilyMembersForAssets(Set<String> assetsSeenSoFar, List<String> assets, int maxRetries, BufferedWriter writer, long timeoutMillis) {
+    public void scrapeFamilyMembersForAssets(List<String> assets, int maxRetries, BufferedWriter writer, long timeoutMillis, ProxyHandler proxyHandler) {
         AtomicReference<String> authToken;
         final long minTimeout = timeoutMillis;
         final long maxTimeout = timeoutMillis*10;
@@ -122,14 +119,12 @@ public class ScrapeEPO {
             while (retry.get() && tries.getAndIncrement() < maxRetries) {
                 retry.set(false);
                 try {
-                    String familyData = getFamilyMembersForAssetHelper(asset, authToken.get());
-                    assetsSeenSoFar.add(asset);
+                    String familyData = getFamilyMembersForAssetHelper(asset, authToken.get(), proxyHandler);
                     if (familyData != null) {
                         writer.write(familyData.replace("\n",""));
                         writer.write("\n");
                         writer.flush();
                     }
-                    saveCurrentResults(assetsSeenSoFar);
                 } catch(FileNotFoundException fne) {
                     System.out.println("Unable to find: "+asset);
                 } catch (Exception e) {
@@ -164,16 +159,6 @@ public class ScrapeEPO {
         }
     }
 
-    private void saveCurrentResults(Set<String> seenSoFar) {
-        Database.trySaveObject(seenSoFar, new File(assetsSeenFile.getAbsolutePath()));
-    }
-
-    private static Set<String> getOrCreate(File file) {
-        Set<String> set = (Set<String>) Database.tryLoadObject(file);
-        if(set==null) set= new HashSet<>();
-        return set;
-    }
-
     private static List<String> getAssetsWithoutFamilyIds(Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement("select country_code||publication_number from patents_global where family_id='-1' and publication_number is not null and country_code ='US' and not kind_code like 'S%' and not kind_code like 'H%' and not kind_code like 'P%'");
         ps.setFetchSize(100);
@@ -197,22 +182,47 @@ public class ScrapeEPO {
         return assets;
     };
 
+    private static void startProxies(int numProxies) throws Exception {
+        ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", "gcloud compute instance-groups managed create instance-group1 --base-instance-name test --size "+numProxies+" --template pair-proxy-template-v3 --zone us-west1-a");
+        Process process = ps.start();
+        process.waitFor();
+        TimeUnit.SECONDS.sleep(10);
+    }
+
+    private static void stopProxies() throws Exception {
+        ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", "gcloud compute instance-groups managed delete instance-group1 --zone us-west1-a");
+        Process process = ps.start();
+        process.waitFor();
+    }
+
     public static void main(String[] args) throws Exception{
-        Set<String> seenSoFar = getOrCreate(assetsSeenFile);
+        // START PROXIES
+        try {
+            startProxies(10);
+            long timeoutMillisBetweenRequests = 50;
+            Connection conn = Database.getConn();
 
-        long timeoutMillisBetweenRequests = 2000;
-        Connection conn = Database.getConn();
+            List<String> assets = getAssetsWithoutFamilyIds(conn).stream()
+                    .filter(asset -> !(asset.contains("D") || asset.contains("RE") || asset.contains("P") || asset.contains("H") || asset.contains("T")))
+                    .collect(Collectors.toList());
 
-        List<String> assets = getAssetsWithoutFamilyIds(conn).stream()
-                .filter(asset->!seenSoFar.contains(asset))
-                .collect(Collectors.toList());
+            ScrapeEPO fullDocumentScraper = new ScrapeEPO();
+            ProxyHandler proxyHandler = new ProxyHandler();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dataDir, "epo" + "_" + LocalDateTime.now().toString())));
+            fullDocumentScraper.scrapeFamilyMembersForAssets(assets, 10, writer, timeoutMillisBetweenRequests, proxyHandler);
+            writer.close();
 
-        ScrapeEPO fullDocumentScraper = new ScrapeEPO();
-
-        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dataDir, "epo" +"_"+ LocalDateTime.now().toString())));
-        fullDocumentScraper.scrapeFamilyMembersForAssets(seenSoFar, assets, 10, writer, timeoutMillisBetweenRequests);
-        writer.close();
-
-        conn.close();
+            conn.close();
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            // CLOSE PROXIES
+            try {
+                stopProxies();
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println("Error stopping proxies!!!!!!!");
+            }
+        }
     }
 }

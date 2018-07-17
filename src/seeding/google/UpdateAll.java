@@ -1,6 +1,8 @@
 package seeding.google;
 
 import seeding.Database;
+import seeding.ai_db_updater.UpdateBasePatentData;
+import seeding.ai_db_updater.UpdateClassificationHash;
 import seeding.google.postgres.*;
 import seeding.google.postgres.epo.IngestScrapedXMLIntoPostgres;
 import seeding.google.postgres.epo.ScrapeEPO;
@@ -24,6 +26,14 @@ public class UpdateAll {
             System.exit(1);
         }
 
+        // ingest latest us assets
+        try {
+            UpdateBasePatentData.main(args);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Exited during stage 1.5...");
+            System.exit(1);
+        }
         // scrape missing family ids
         try {
             IngestScrapedXMLIntoPostgres.main(args); // get pre
@@ -98,6 +108,14 @@ public class UpdateAll {
             System.exit(1);
         }
 
+        // cpc backup datasource
+        try {
+            UpdateClassificationHash.main(args);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Exited during stage 10...");
+            System.exit(1);
+        }
         // run helper sql commands to build dependent tables
         // TODO
 
