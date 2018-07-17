@@ -14,7 +14,7 @@ import seeding.data_downloader.PatentDataDownloader;
 public class UpdateBasePatentData {
     public static void ingestData(boolean seedApplications) {
         String topLevelTag;
-        if(seedApplications) {
+        if (seedApplications) {
             topLevelTag = "us-patent-application";
         } else {
             topLevelTag = "us-patent-grant";
@@ -27,11 +27,16 @@ public class UpdateBasePatentData {
         System.gc();
         System.gc();
         System.gc();
-        Database.close();
+        try {
+            Database.commit();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {
         ingestData(false);
         ingestData(true);
+        Database.close();
     }
 }
