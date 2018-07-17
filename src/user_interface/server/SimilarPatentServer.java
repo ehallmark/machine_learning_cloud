@@ -536,7 +536,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.TECHNOLOGY, TechnologyAttribute.getOrCreate());
             attributesMap.put(Constants.NAME, new AssetNumberAttribute());
             attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyAttribute());
-            attributesMap.put(Constants.AI_VALUE, new OverallEvaluator(false));
             attributesMap.put(Constants.REMAINING_LIFE, new RemainingLifeAttribute());
             attributesMap.put(Constants.CPC_CODES, new CPCComputedAttribute());
             attributesMap.put(Constants.EXPIRATION_DATE, new ExpirationDateAttribute());
@@ -2872,12 +2871,6 @@ public class SimilarPatentServer {
 
         loadStuff();
 
-        // perform quick search
-        try {
-            DataSearcher.searchForAssets(attributesMap.values(),Collections.emptyList(),Constants.AI_VALUE, SortOrder.DESC,100,getNestedAttrMap(),false,true);
-        } catch(Exception e) {
-            System.out.println("Error during presearch: "+e.getMessage());
-        }
 
         HelpPage.helpPage(false);
     }

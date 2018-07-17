@@ -126,9 +126,7 @@ public class SimilarityEngineController {
         int limit = extractInt(req, LIMIT_FIELD, 10);
         if(limit <=0)limit =1; // VERY IMPORTANT!!!!! limit < 0 means it will scroll through EVERYTHING
         int maxResultLimit = getResultLimitForRole(req.session(false).attribute("role"));
-        if(limit >maxResultLimit)
-
-        {
+        if(limit >maxResultLimit) {
             throw new RuntimeException("Error: Maximum result limit is " + maxResultLimit + " which is less than " + limit);
         }
         boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
@@ -136,11 +134,17 @@ public class SimilarityEngineController {
         SortOrder sortOrder = SortOrder.fromString(extractString(req, SORT_DIRECTION_FIELD, "desc"));
 
         List<Item> scope;
-        ElasticSearchResponse response = DataSearcher.searchPatentsGlobal(topLevelAttributes,preFilters,comparator,sortOrder,limit, Attributes.getNestedAttrMap(), item->item,true, useHighlighter, filterNestedObjects, aggregationBuilders);
+        ElasticSearchResponse response = DataSearcher.searchPatentsGlobal(topLevelAttributes,preFilters,comparator,sortOrder,limit, Attributes.getNestedAttrMap(),true, useHighlighter, filterNestedObjects, aggregationBuilders);
         System.out.println("Total hits: "+response.getTotalCount());
         scope = response.getItems();
         aggregations = response.getAggregations();
         totalCount = response.getTotalCount();
+        String _comparator = DataSearcher.getOrDefaultComparator(comparator);
+        boolean isOverallScore = _comparator.equals(Constants.SCORE);
+        req.session(false).attribute("searchRequest", response.getRequestBuilder());
+        req.session(false).attribute("searchQuery", response.getQuery());
+        req.session(false).attribute("filterNestedObjects", filterNestedObjects);
+        req.session(false).attribute("isOverallScore", isOverallScore);
 
         // asset dedupe
         for(AbstractFilter preFilter : preFilters) {

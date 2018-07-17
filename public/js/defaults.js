@@ -559,7 +559,7 @@ $(document).ready(function() {
                             }
                             if(!chartJson['chart']['events'].hasOwnProperty('redraw')) {
                                 // hack to allow clicking on data label instance of data point only
-                                chartJson['chart']['events']['redraw'] = function() {
+                                /*chartJson['chart']['events']['redraw'] = function() {
                                     for(var i = 0; i < this.series.length; i++) {
                                         var data = this.series[i].data;
                                         for(var p = 0; p < data.length; p++) {
@@ -574,7 +574,7 @@ $(document).ready(function() {
                                             }
                                         }
                                     }
-                                }
+                                }*/
                             }
                             var clickEvents = {
                                 contextmenu: function(e) {

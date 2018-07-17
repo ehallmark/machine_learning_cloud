@@ -7,6 +7,7 @@ import data_pipeline.helpers.Function2;
 import data_pipeline.helpers.Function3;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import detect_acquisitions.DetermineAcquisitionsServer;
+import elasticsearch.DataSearcher;
 import elasticsearch.DatasetIndex;
 import elasticsearch.MyClient;
 import elasticsearch.TestNewFastVectors;
@@ -15,6 +16,10 @@ import j2html.tags.Tag;
 import lombok.NonNull;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import models.kmeans.AssetKMeans;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -46,8 +51,12 @@ import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.tables.TableResponse;
 import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
-import user_interface.ui_models.filters.*;
+import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AbstractNestedFilter;
+import user_interface.ui_models.filters.AcclaimExpertSearchFilter;
+import user_interface.ui_models.filters.AssetDedupFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
+import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.templates.FormTemplate;
 
 import javax.imageio.ImageIO;
@@ -2052,6 +2061,60 @@ public class BigQueryServer extends SimilarPatentServer {
                 .limit(1).findFirst().orElse(null);
     }
 
+    private static Object handlePreviewAssets(Request req, Response res) {
+        String value1 = req.queryParams("value1");
+        String value2 = req.queryParams("value2");
+        String chartId = req.queryParams("chartId");
+
+        SearchRequestBuilder requestBuilder = req.session(false).attribute("searchRequest");
+        QueryBuilder query = req.session(false).attribute("searchQuery");
+        Map<String,Object> results = new HashMap<>();
+        if(requestBuilder != null) {
+            BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
+            if(query!=null) {
+                queryBuilder = queryBuilder.must(query);
+            }
+            int limit = 10;
+            Boolean filterNestedObjects = req.session(false).attribute("filterNestedObjects");
+            Boolean isOverallScore = req.session(false).attribute("isOverallScore");
+            if(isOverallScore==null) {
+                isOverallScore = false;
+            }
+            if(filterNestedObjects == null) {
+                filterNestedObjects = false;
+            }
+            List<String> tableHeaders = req.session(false).attribute("tableHeaders");
+            Boolean useHighlighter = req.session(false).attribute("useHighlighter");
+            if(useHighlighter==null) {
+                useHighlighter = true;
+            }
+            String itemSeparator = req.session(false).attribute("itemSeparator");
+            if(itemSeparator==null) {
+                itemSeparator = "; ";
+            }
+            SearchResponse response = requestBuilder.setSize(limit).setFrom(0).setQuery(queryBuilder).get();
+            List<Item> items = DataSearcher.getItemsFromSearchResponse(response, Attributes.getNestedAttrMap(), isOverallScore, filterNestedObjects, limit, true, false);
+            List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(items, tableHeaders, false, itemSeparator));
+            List<Map<String, String>> tableDataHighlighted;
+            if (useHighlighter) {
+                tableDataHighlighted = new ArrayList<>(getTableRowData(items, tableHeaders, true, itemSeparator));
+            } else {
+                tableDataHighlighted = tableData;
+            }
+
+            Map<String, Object> excelRequestMap = new HashMap<>();
+            excelRequestMap.put("headers", tableHeaders);
+            excelRequestMap.put("rows", tableData);
+            excelRequestMap.put("rows-highlighted", tableDataHighlighted);
+            excelRequestMap.put("numericAttrNames", getNumericAttributes());
+            excelRequestMap.put("lock", new ReentrantLock());
+            req.session().attribute("preview", excelRequestMap);
+            req.session().attribute("preview_assets", items.stream().map(Item::getName).collect(Collectors.toList()));
+
+        }
+        return new Gson().toJson(results);
+    }
+
     private static Object handleReport(Request req, Response res) {
         List<RecursiveTask> otherTasks = Collections.synchronizedList(new ArrayList<>());
         // start timer
@@ -2160,6 +2223,9 @@ public class BigQueryServer extends SimilarPatentServer {
                     System.out.println("Rendering table...");
                     boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
                     String itemSeparator = extractString(req, LIST_ITEM_SEPARATOR_FIELD, "; ");
+                    req.session(false).attribute("useHighlighter", useHighlighter);
+                    req.session(false).attribute("itemSeparator", itemSeparator);
+                    req.session(false).attribute("tableHeaders", tableHeaders);
                     List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, false, itemSeparator));
                     List<Map<String, String>> tableDataHighlighted;
                     if (useHighlighter) {
