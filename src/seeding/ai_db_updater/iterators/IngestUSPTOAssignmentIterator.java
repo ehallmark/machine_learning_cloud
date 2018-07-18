@@ -1,7 +1,6 @@
 package seeding.ai_db_updater.iterators;
 
 import lombok.Getter;
-import org.eclipse.collections.impl.bag.strategy.mutable.HashBagWithHashingStrategy;
 import seeding.Constants;
 
 import java.io.File;
@@ -10,10 +9,8 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -81,6 +78,7 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
                 finalUrlString = base_url + String.format("%06d", lastIngestedDate) + ".zip";
                 finalUrlString = finalUrlString.replace("---", "20" + String.format("%02d", lastIngestedDate / 10000));
                 zipDate=String.valueOf(lastIngestedDate);
+                System.out.println("Trying zipDate: "+zipDate);
             } else {
                 zipDate = backYearDates.remove(0);
                 finalUrlString = base_url + zipDate + ".zip";
