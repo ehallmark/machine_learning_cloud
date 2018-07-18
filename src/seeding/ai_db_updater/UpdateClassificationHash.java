@@ -12,11 +12,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -25,21 +23,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class UpdateClassificationHash {
     private static AtomicInteger cnt = new AtomicInteger(0);
     public static void main(String[] args) throws Exception {
+        Connection conn = Database.getConn();
+        PreparedStatement ps = conn.prepareStatement("select publication_number_full from patents_global where code is null and country_code='US'");
+        Set<String> validAssets = new HashSet<>();
+        ps.setFetchSize(10);
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()) {
+            validAssets.add(rs.getString(1));
+        }
+        rs.close();
+        ps.close();
+
+
         Map<String,Set<String>> patentCPCMap = new HashMap<>();
         Map<String,Set<String>> appCPCMap = new HashMap<>();
         {
             AppCPCDataDownloader downloader = new AppCPCDataDownloader();
             downloader.pullMostRecentData();
-            setupClassificationsHash(downloader.getDestinationFile(), new AppCPCHandler(appCPCMap));
+            setupClassificationsHash(downloader.getDestinationFile(), new AppCPCHandler(appCPCMap,validAssets));
             downloader.cleanUp();
         }
         {
             PatentCPCDataDownloader downloader = new PatentCPCDataDownloader();
             downloader.pullMostRecentData();
-            setupClassificationsHash(downloader.getDestinationFile(), new PatentCPCHandler(patentCPCMap));
+            setupClassificationsHash(downloader.getDestinationFile(), new PatentCPCHandler(patentCPCMap,validAssets));
             downloader.cleanUp();
         }
-        Connection conn = Database.getConn();
+        System.out.println("Found patents: "+patentCPCMap.size());
+        System.out.println("Found apps: "+appCPCMap.size());
         ingestResults(patentCPCMap, conn);
         ingestResults(appCPCMap, conn);
         conn.close();
