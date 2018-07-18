@@ -160,7 +160,7 @@ public class IngestAssignmentData {
             }
             return false;
         };
-        WebIterator iterator = new ZipFileIterator(downloader, "assignments_temp", true, false, orFunction, false);
+        WebIterator iterator = new ZipFileIterator(downloader, "assignments_temp", false, false, orFunction, false);
         NestedHandler handler = new AssignmentHandler(ingest);
         handler.init();
         iterator.applyHandlers(handler);

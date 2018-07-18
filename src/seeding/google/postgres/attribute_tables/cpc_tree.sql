@@ -30,7 +30,6 @@ insert into big_query_cpc_tree (publication_number_full,tree,code) (
     join big_query_cpc_definition as t on (c.code=t.code), unnest(t.tree) with ordinality as tr(tree,n)
     group by publication_number_full
 );
-create index big_query_cpc_tree_family_id_idx on big_query_cpc_tree (family_id);
 
 
 create table big_query_cpc_occurrence (
