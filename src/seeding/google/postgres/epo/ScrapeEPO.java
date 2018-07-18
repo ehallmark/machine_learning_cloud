@@ -75,18 +75,36 @@ public class ScrapeEPO {
     private AtomicInteger cnt = new AtomicInteger(0);
     private String getFamilyMembersForAssetHelper(String asset, String auth_token, ProxyHandler proxyHandler) throws Exception {
         if(auth_token!=null) {
-            HttpURLConnection connection = proxyHandler.getProxyUrlForApplication(asset, auth_token);
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Authorization","Bearer "+auth_token);
-            InputStream content = connection.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(content));
-            String line;
-            StringBuilder result = new StringBuilder();
-            while ((line = rd.readLine()) != null) {
-                result.append(line);
+            if(proxyHandler==null) {
+                if(asset == null) return null;
+                URL url = new URL("http://ops.epo.org/3.2/rest-services/family/publication/docdb/"+asset);
+                System.out.println(url);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("Authorization","Bearer "+auth_token);
+                InputStream content = connection.getInputStream();
+                BufferedReader rd = new BufferedReader(new InputStreamReader(content));
+                String line;
+                StringBuilder result = new StringBuilder();
+                while ((line = rd.readLine()) != null) {
+                    result.append(line);
+                }
+                rd.close();
+                return parseJsonDoc(result.toString());
+            } else {
+                HttpURLConnection connection = proxyHandler.getProxyUrlForApplication(asset, auth_token);
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("Authorization", "Bearer " + auth_token);
+                InputStream content = connection.getInputStream();
+                BufferedReader rd = new BufferedReader(new InputStreamReader(content));
+                String line;
+                StringBuilder result = new StringBuilder();
+                while ((line = rd.readLine()) != null) {
+                    result.append(line);
+                }
+                rd.close();
+                return parseJsonDoc(result.toString());
             }
-            rd.close();
-            return parseJsonDoc(result.toString());
         }
         return null;
     }
@@ -207,7 +225,7 @@ public class ScrapeEPO {
                     .collect(Collectors.toList());
 
             ScrapeEPO fullDocumentScraper = new ScrapeEPO();
-            ProxyHandler proxyHandler = new ProxyHandler();
+            ProxyHandler proxyHandler = null;//new ProxyHandler();
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dataDir, "epo" + "_" + LocalDateTime.now().toString())));
             fullDocumentScraper.scrapeFamilyMembersForAssets(assets, 10, writer, timeoutMillisBetweenRequests, proxyHandler);
             writer.close();
