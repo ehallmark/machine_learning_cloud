@@ -616,11 +616,11 @@ $(document).ready(function() {
                                             var group2 = null;
                                             if (value === 'view') {
                                                 if(point.hasOwnProperty('value')) {
-                                                    group1 = point.series.chart.xAxis[0].categories[point.x];
-                                                    group2 = point.series.chart.yAxis[0].categories[point.y];
+                                                    group1 = point.original_1
+                                                    group2 = point.original_2;
                                                 } else if (point.hasOwnProperty('name')) {
-                                                    group1 = point.name;
-                                                    group2 = point.series.name;
+                                                    group1 = point.original_1;
+                                                    group2 = point.original_2;
                                                 }
                                                 $.ajax({
                                                     url: "/preview",
