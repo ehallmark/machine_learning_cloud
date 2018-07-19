@@ -2155,6 +2155,9 @@ public class BigQueryServer extends SimilarPatentServer {
                 filterNestedObjects = false;
             }
             List<String> tableHeaders = req.session(false).attribute("tableHeaders");
+            if(tableHeaders!=null) {
+                System.out.println("Table headers: " + String.join("; ", tableHeaders));
+            }
             Boolean useHighlighter = req.session(false).attribute("useHighlighter");
             if(useHighlighter==null) {
                 useHighlighter = true;
@@ -2179,9 +2182,12 @@ public class BigQueryServer extends SimilarPatentServer {
             excelRequestMap.put("rows-highlighted", tableDataHighlighted);
             excelRequestMap.put("numericAttrNames", getNumericAttributes());
             excelRequestMap.put("lock", new ReentrantLock());
-            req.session().attribute("table-preview", excelRequestMap);
-            req.session().attribute("preview_assets", items.stream().map(Item::getName).collect(Collectors.toList()));
+            req.session(false).attribute("table-preview", excelRequestMap);
+            req.session(false).attribute("preview_assets", items.stream().map(Item::getName).collect(Collectors.toList()));
 
+            if(tableHeaders.contains("selection")) {
+                tableHeaders.remove("selection");
+            }
             Tag dataTable = div().withClass("row").attr("style", "margin-top: 10px;").with(
                     tableFromPatentList(tableHeaders, true)
             );

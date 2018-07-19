@@ -2,7 +2,6 @@ package user_interface.server;
 
 import ch.qos.logback.classic.Level;
 import com.google.gson.Gson;
-import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import data_pipeline.helpers.Function2;
 import data_pipeline.helpers.Function3;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
@@ -40,10 +39,7 @@ import user_interface.ui_models.attributes.computable_attributes.asset_graphs.Ba
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.attributes.script_attributes.*;
-import user_interface.ui_models.charts.highcharts.AbstractChart;
-import user_interface.ui_models.charts.tables.TableResponse;
 import user_interface.ui_models.engines.SimilarityEngineController;
-import user_interface.ui_models.excel.ExcelHandler;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.filters.AcclaimExpertSearchFilter;
@@ -53,7 +49,6 @@ import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.templates.FormTemplate;
 
 import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
@@ -1184,12 +1179,6 @@ public class SimilarPatentServer {
             return handleReport(req,res);
         });
 
-        post(DOWNLOAD_URL, (req, res) -> {
-            authorize(req,res);
-            //return handleExcel(req,res);
-            return handleCSV(req,res);
-        });
-
         post(SAVE_TEMPLATE_URL, (req, res) -> {
             authorize(req,res);
             boolean defaultFile = Boolean.valueOf(req.queryParamOrDefault("defaultFile","false"));
@@ -1236,16 +1225,6 @@ public class SimilarPatentServer {
         post(RENAME_DATASET_URL, (req, res) -> {
             authorize(req,res);
             return handleRenameForm(req,res,Constants.USER_DATASET_FOLDER,false,true);
-        });
-
-        get(SHOW_DATATABLE_URL, (req, res) -> {
-            authorize(req,res);
-            return handleDataTable(req,res);
-        });
-
-        post(SHOW_CHART_URL, (req, res) -> {
-            authorize(req,res);
-            return handleCharts(req,res);
         });
 
         // Host my own image asset!
@@ -1415,255 +1394,7 @@ public class SimilarPatentServer {
         };
     }
 
-    private static Object handleExcel(Request req, Response res) {
-        return handleSpreadsheet(req,res,true);
-    }
 
-    private static Object handleCSV(Request req, Response res) {
-        return handleSpreadsheet(req,res,false);
-    }
-
-    private static Object handleSpreadsheet(Request req, Response res, boolean excel) {
-        try {
-            System.out.println("Received excel request");
-            long t0 = System.currentTimeMillis();
-            final String paramIdx = req.queryParamOrDefault("tableId","");
-            // try to get custom data
-            List<String> headers;
-            List<Map<String,String>> data;
-            List<String> nonHumanAttrs;
-            String title;
-            if(paramIdx.length()>0) {
-                TableResponse tableResponse = req.session(false).attribute("table-"+paramIdx);
-                if(tableResponse!=null) {
-                    System.out.println("Found tableResponse...");
-                    data = tableResponse.computeAttributesTask.join();
-                    headers = tableResponse.headers;
-                    title = tableResponse.title;
-                    nonHumanAttrs = tableResponse.nonHumanAttrs;
-                    System.out.println("Data size: "+data.size());
-                } else {
-                    System.out.println("WARNING:: Could not find tableResponse...");
-                    headers = Collections.emptyList();
-                    data = Collections.emptyList();
-                    nonHumanAttrs = null;
-                    title = "Data";
-                }
-            } else {
-
-                System.out.println("Received datatable request");
-                Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
-                if(map==null) return null;
-                nonHumanAttrs = null;
-                headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
-                data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
-                title = "Data";
-            }
-
-            System.out.println("Number of excel headers: "+headers.size());
-            List<String> humanHeaders = headers.stream().map(header->{
-                if(nonHumanAttrs==null || !nonHumanAttrs.contains(header)) {
-                    return SimilarPatentServer.fullHumanAttributeFor(header);
-                } else {
-                    return header;
-                }
-            }).collect(Collectors.toList());
-            if(excel) {
-                HttpServletResponse raw = res.raw();
-                res.type("application/force-download");
-                res.header("Content-Disposition", "attachment; filename=download.xls");
-                ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", title, data, headers, humanHeaders);
-                long t1 = System.currentTimeMillis();
-                System.out.println("Time to create excel sheet: " + (t1 - t0) / 1000 + " seconds");
-                return raw;
-            } else {
-                res.type("text/csv");
-                res.header("Content-Disposition", "attachment; filename=download.csv");
-                StringJoiner csvFile = new StringJoiner("\n");
-                StringJoiner csvLine = new StringJoiner("\",\"","\"","\"");
-                for(String header : humanHeaders) {
-                    csvLine.add(header);
-                }
-                csvFile.add(csvLine.toString());
-                for(Map<String,String> row : data) {
-                    csvLine = new StringJoiner("\",\"","\"","\"");
-                    for(int i = 0; i < headers.size(); i++) {
-                        csvLine.add(row.getOrDefault(headers.get(i),""));
-                    }
-                    csvFile.add(csvLine.toString());
-                }
-                long t1 = System.currentTimeMillis();
-                System.out.println("Time to create csv sheet: " + (t1 - t0) / 1000 + " seconds");
-                return csvFile.toString();
-            }
-        } catch (Exception e) {
-            System.out.println(e.getClass().getName() + ": " + e.getMessage());
-            return new Gson().toJson(new SimpleAjaxMessage("ERROR "+e.getClass().getName()+": " + e.getMessage()));
-        }
-    }
-
-    private static Object handleDataTable(Request req, Response res) {
-        System.out.println("Received data table request.....");
-        Map<String,Object> response = new HashMap<>();
-        final String paramIdx = req.queryParamOrDefault("tableId","");
-        long timeLimit = 180 * 1000;
-        Lock lock;
-        try {
-
-            // try to get custom data
-            List<String> headers;
-            List<Map<String,String>> data;
-            Set<String> numericAttrNames;
-            if(paramIdx.length()>0) {
-                TableResponse tableResponse = req.session().attribute("table-"+paramIdx);
-                if(tableResponse!=null) {
-                    System.out.println("Found tableResponse...");
-                    lock=tableResponse.lock;
-                    try {
-                        data = tableResponse.computeAttributesTask.get(timeLimit, TimeUnit.MILLISECONDS);
-                        headers = tableResponse.headers;
-                        lock = tableResponse.lock;
-
-                    } catch(Exception e) {
-                        Map<String,String> noDataMap = new HashMap<>();
-                        noDataMap.put("Could not compute data in time", "Max time limit: "+(timeLimit/(1000*60)+" minutes."));
-                        data = Arrays.asList(noDataMap);
-                        headers = Collections.singletonList("Count not compute data in time");
-                    }
-
-                    numericAttrNames = tableResponse.numericAttrNames;
-                    System.out.println("Data size: "+data.size());
-                } else {
-                    System.out.println("WARNING:: Could not find tableResponse...");
-                    headers = Collections.emptyList();
-                    data = Collections.emptyList();
-                    lock = new ReentrantLock();
-                    numericAttrNames = Collections.emptySet();
-                }
-            } else {
-
-                System.out.println("Received datatable request");
-                Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
-                if(map==null) return null;
-
-                headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
-                data = (List<Map<String,String>>)map.getOrDefault("rows-highlighted",Collections.emptyList());
-                numericAttrNames = (Set<String>)map.getOrDefault("numericAttrNames",Collections.emptySet());
-                lock = (Lock)map.getOrDefault("lock",new ReentrantLock());
-            }
-            System.out.println("Number of headers: "+headers.size());
-
-            lock.lock();
-            try {
-                int perPage = extractInt(req, "perPage", 10);
-                int page = extractInt(req, "page", 1);
-                int offset = extractInt(req, "offset", 0);
-
-                long totalCount = data.size();
-                // check for search
-                List<Map<String, String>> queriedData;
-                String searchStr;
-                if (req.queryMap("queries") != null && req.queryMap("queries").hasKey("search")) {
-                    String previousSearch = req.session().attribute("previousSearch" + paramIdx);
-                    searchStr = req.queryMap("queries").value("search").toLowerCase();
-                    if (searchStr == null || searchStr.trim().isEmpty()) {
-                        queriedData = data;
-                    } else if (previousSearch != null && previousSearch.toLowerCase().equals(searchStr.toLowerCase())) {
-                        queriedData = req.session().attribute("queriedData" + paramIdx);
-
-                    } else {
-                        queriedData = new ArrayList<>(data.stream().filter(m -> m.values().stream().anyMatch(val -> val.toLowerCase().contains(searchStr))).collect(Collectors.toList()));
-                        req.session().attribute("previousSearch" + paramIdx, searchStr);
-                        req.session().attribute("queriedData" + paramIdx, queriedData);
-                    }
-                } else {
-                    searchStr = "";
-                    queriedData = data;
-                }
-                long queriedCount = queriedData.size();
-                // check for sorting
-                if (req.queryMap("sorts") != null) {
-                    req.queryMap("sorts").toMap().forEach((k, v) -> {
-                        System.out.println("Sorting " + k + ": " + v);
-                        if (v == null || k == null) return;
-                        boolean isNumericField = numericAttrNames.contains(k);
-                        boolean reversed = (v.length > 0 && v[0].equals("-1"));
-
-                        String directionStr = reversed ? "-1" : "1";
-
-                        String sortStr = k + directionStr + searchStr;
-                        System.out.println("New sort string: " + sortStr);
-
-                        Comparator<Map<String, String>> comp = (d1, d2) -> {
-                            if (isNumericField) {
-                                Double v1 = null;
-                                Double v2 = null;
-                                try {
-                                    v1 = Double.valueOf(d1.get(k));
-                                } catch (Exception nfe) {
-                                }
-                                try {
-                                    v2 = Double.valueOf(d2.get(k));
-                                } catch (Exception e) {
-                                }
-                                if (v1 == null && v2 == null) return 0;
-                                if (v1 == null) return 1;
-                                if (v2 == null) return -1;
-                                return v1.compareTo(v2) * (reversed ? -1 : 1);
-                            } else {
-                                return d1.get(k).compareTo(d2.get(k)) * (reversed ? -1 : 1);
-                            }
-                        };
-                        queriedData.sort(comp);
-
-                    });
-                }
-                List<Map<String, String>> dataPage;
-                if (offset < totalCount) {
-                    dataPage = queriedData.subList(offset, Math.min(queriedData.size(), offset + perPage));
-                } else {
-                    dataPage = Collections.emptyList();
-                }
-                response.put("totalRecordCount",totalCount);
-                response.put("queryRecordCount",queriedCount);
-                response.put("records", dataPage);
-
-            } catch(Exception e) {
-                e.printStackTrace();
-            } finally {
-                lock.unlock();
-            }
-
-            return new Gson().toJson(response);
-        } catch (Exception e) {
-            System.out.println(e.getClass().getName() + ": " + e.getMessage());
-            response.put("totalRecordCount",0);
-            response.put("queryRecordCount",0);
-            response.put("records",Collections.emptyList());
-        }
-        return new Gson().toJson(response);
-    }
-
-    private static Object handleCharts(Request req, Response res) {
-        try {
-            System.out.println("Received chart request");
-            Integer chartNum = extractInt(req,"chartNum", null);
-            if(chartNum != null) {
-                RecursiveTask<List<? extends AbstractChart>> task = req.session(false).attribute("chart-"+chartNum);
-                List<? extends AbstractChart> charts = task.get();
-                Map<String,Object> ret = new HashMap<>();
-                ret.put("charts", charts.stream().map(chart->chart.getOptions()).collect(Collectors.toList()));
-                ret.put("isStockCharts", charts.stream().map(chart->chart.isStockChart()).collect(Collectors.toList()));
-                ret.put("chartId", "chart-"+chartNum);
-                return new JsonRenderer().toJson(ret);
-            } else {
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to create chart"));
-            }
-        } catch (Exception e) {
-            System.out.println(e.getClass().getName() + ": " + e.getMessage());
-            return new Gson().toJson(new SimpleAjaxMessage("ERROR "+e.getClass().getName()+": " + e.getMessage()));
-        }
-    }
 
     private static Object handleRenameForm(Request req, Response res, String baseFolder, boolean useUpdatesFile, boolean isDataset) {
         String filename = req.queryParams("file");
