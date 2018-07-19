@@ -16,6 +16,7 @@ import j2html.tags.Tag;
 import lombok.NonNull;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import models.kmeans.AssetKMeans;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -48,6 +49,7 @@ import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
+import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregate_charts.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.tables.TableResponse;
@@ -2103,13 +2105,29 @@ public class BigQueryServer extends SimilarPatentServer {
             System.out.println("Found group by attribute: "+groupByAttribute.getFullName());
         }
 
-        AbstractFilter filter1 = null;
+        QueryBuilder query1 = null;
         if(attribute!=null && value1 != null) {
-            filter1 = new AbstractIncludeFilter(attribute, AbstractFilter.FilterType.Include, attribute.getFieldType(), Collections.singleton(value1));
+            AbstractFilter filter = new AbstractIncludeFilter(attribute, AbstractFilter.FilterType.Include, attribute.getFieldType(), Collections.singleton(value1));
+            if(attribute instanceof AbstractScriptAttribute) {
+                query1 = filter.getScriptFilter();
+            } else {
+                query1 = filter.getFilterQuery();
+            }
+            if(attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)) {
+                query1 = QueryBuilders.nestedQuery(attribute.getParent().getName(), query1, ScoreMode.Max);
+            }
         }
-        AbstractFilter filter2 = null;
+        QueryBuilder query2 = null;
         if(groupByAttribute!=null && value2 != null) {
-            filter2 = new AbstractIncludeFilter(groupByAttribute, AbstractFilter.FilterType.Include, groupByAttribute.getFieldType(), Collections.singleton(value2));
+            AbstractFilter filter = new AbstractIncludeFilter(groupByAttribute, AbstractFilter.FilterType.Include, groupByAttribute.getFieldType(), Collections.singleton(value2));
+            if(attribute instanceof AbstractScriptAttribute) {
+                query2 = filter.getScriptFilter();
+            } else {
+                query2 = filter.getFilterQuery();
+            }
+            if(groupByAttribute.getParent()!=null&&!(groupByAttribute.getParent() instanceof AbstractChartAttribute)) {
+                query2 = QueryBuilders.nestedQuery(groupByAttribute.getParent().getName(), query2, ScoreMode.Max);
+            }
         }
 
         SearchRequestBuilder requestBuilder = req.session(false).attribute("searchRequest");
@@ -2120,19 +2138,11 @@ public class BigQueryServer extends SimilarPatentServer {
             if(query!=null) {
                 queryBuilder = queryBuilder.must(query);
             }
-            if(filter1 != null) {
-                if(attribute instanceof AbstractScriptAttribute) {
-                    queryBuilder = queryBuilder.must(filter1.getScriptFilter());
-                } else {
-                    queryBuilder = queryBuilder.must(filter1.getFilterQuery());
-                }
+            if(query1 != null) {
+                queryBuilder = queryBuilder.must(query1);
             }
-            if(filter2 != null) {
-                if(groupByAttribute instanceof AbstractScriptAttribute) {
-                    queryBuilder = queryBuilder.must(filter2.getScriptFilter());
-                } else {
-                    queryBuilder = queryBuilder.must(filter2.getFilterQuery());
-                }
+            if(query2 != null) {
+                queryBuilder = queryBuilder.must(query2);
             }
             System.out.println("New query: "+queryBuilder.toString());
             int limit = 10;
@@ -2292,7 +2302,7 @@ public class BigQueryServer extends SimilarPatentServer {
                     String itemSeparator = extractString(req, LIST_ITEM_SEPARATOR_FIELD, "; ");
                     req.session(false).attribute("useHighlighter", useHighlighter);
                     req.session(false).attribute("itemSeparator", itemSeparator);
-                    req.session(false).attribute("tableHeaders", tableHeaders);
+                    req.session(false).attribute("tableHeaders", new ArrayList<>(tableHeaders));
                     List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, false, itemSeparator));
                     List<Map<String, String>> tableDataHighlighted;
                     if (useHighlighter) {

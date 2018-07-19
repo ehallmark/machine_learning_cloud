@@ -655,6 +655,7 @@ $(document).ready(function() {
                                                             });
                                                             var tableId = 'main-preview-data-table';
                                                             var $table = $('#'+tableId);
+                                                            $table.wrap('<div style="overflow-y: auto; width: 100%; height: 100%;"></div>');
                                                             $box.click(function(e) {
                                                                 e.stopPropagation();
                                                                 $box.remove();
@@ -666,7 +667,8 @@ $(document).ready(function() {
                                                                 padding: 25,
                                                                 marginLeft: 0,
                                                                 marginRight: 0,
-                                                                cursor: 'default'
+                                                                cursor: 'default',
+                                                                maxHeight: '75%'
                                                             });
                                                             $('#data-table-preview').click(function(e) {
                                                                 e.stopPropagation();

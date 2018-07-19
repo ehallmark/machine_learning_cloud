@@ -25,7 +25,7 @@ public class AIValue extends DoubleAttribute implements RangeAttribute {
                 new Pair<>(0.60,0.70),
                 new Pair<>(0.70,0.80),
                 new Pair<>(0.80,0.90),
-                new Pair<>(0.90,0.100)
+                new Pair<>(0.90,1.00)
         );
     }
 
