@@ -2163,6 +2163,7 @@ public class BigQueryServer extends SimilarPatentServer {
                     tableFromPatentList(tableHeaders, true)
             );
             results.put("html", dataTable.render());
+            System.out.println("Table: "+dataTable.render());
         }
         return new Gson().toJson(results);
     }
