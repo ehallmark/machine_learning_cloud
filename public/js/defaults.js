@@ -170,7 +170,7 @@ $(document).ready(function() {
            selectionCache.clear();
            var update_table_function = function() {
                var $table = $('#main-data-table');
-               var $tableSelectionCounter = $('#results #data-table #table-selection-counter');
+               var $tableSelectionCounter = $('#results #data-table .table-selection-counter');
                var $tableRows = $table.find('tbody tr');
                var num_rows = $tableRows.length;
                $tableRows = $tableRows.filter(function() {
@@ -214,7 +214,7 @@ $(document).ready(function() {
                 $('#data-table-select-all').prop('checked', all_rows_checked).trigger('change');
                 var $clone = $paginationTable.clone(false);
                 $clone.attr('id', 'dynatable-pagination-links-main-data-table-clone');
-                var $holder = $('#data-table-pagination-clone-holder');
+                var $holder = $('#main-data-table .data-table-pagination-clone-holder');
                 $holder.empty();
                 $holder.append($clone);
                 var $original_links = $paginationTable.find('a');

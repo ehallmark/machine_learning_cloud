@@ -2160,8 +2160,7 @@ public class BigQueryServer extends SimilarPatentServer {
             req.session().attribute("preview_assets", items.stream().map(Item::getName).collect(Collectors.toList()));
 
             Tag dataTable = div().withClass("row").attr("style", "margin-top: 10px;").with(
-                    // h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
-                    tableFromPatentList(tableHeaders)
+                    tableFromPatentList(tableHeaders, true)
             );
             results.put("html", dataTable.render());
         }
@@ -2396,8 +2395,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                 )
                         );
                         Tag dataTable = div().withClass("row").attr("style", "margin-top: 10px;").with(
-                               // h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
-                                tableFromPatentList(tableHeaders)
+                                tableFromPatentList(tableHeaders, false)
                         );
                         long timeEnd = System.currentTimeMillis();
                         double timeSeconds = new Double(timeEnd - timeStart) / 1000;

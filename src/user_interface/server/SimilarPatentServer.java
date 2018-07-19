@@ -8,7 +8,6 @@ import data_pipeline.helpers.Function3;
 import data_pipeline.pipeline_manager.DefaultPipelineManager;
 import detect_acquisitions.DetermineAcquisitionsServer;
 import elasticsearch.DataIngester;
-import elasticsearch.DataSearcher;
 import elasticsearch.DatasetIndex;
 import elasticsearch.TestNewFastVectors;
 import j2html.tags.ContainerTag;
@@ -23,7 +22,6 @@ import models.similarity_models.Vectorizer;
 import models.similarity_models.word_cpc_2_vec_model.WordCPC2VecPipelineManager;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -118,11 +116,11 @@ public class SimilarPatentServer {
     public static final String RENAME_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/rename_template";
     public static final String SAVE_DATASET_URL = PROTECTED_URL_PREFIX+"/save_dataset";
     public static final String GET_DATASET_URL = PROTECTED_URL_PREFIX+"/get_dataset";
-    public static final String CLUSTER_DATASET_URL = PROTECTED_URL_PREFIX+"/cluster_dataset";
     public static final String DELETE_DATASET_URL = PROTECTED_URL_PREFIX+"/delete_dataset";
     public static final String RENAME_DATASET_URL = PROTECTED_URL_PREFIX+"/rename_dataset";
     public static final String RESET_DEFAULT_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/reset_default_template";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
+    public static final String PREVIEW_DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/preview_excel_generation";
     public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable.json";
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String RANDOM_TOKEN = "<><><>";
@@ -2077,19 +2075,19 @@ public class SimilarPatentServer {
     }
 
 
-    static Tag tableFromPatentList(List<String> attributes) {
-        return span().withClass("collapse show").withId("data-table").with(
-                form().withMethod("post").withTarget("_blank").withAction(DOWNLOAD_URL).with(
+    static Tag tableFromPatentList(List<String> attributes, boolean preview) {
+        return span().withClass("collapse show").withId(preview? "data-table-preview":"data-table").with(
+                form().withMethod("post").withTarget("_blank").withAction(preview?PREVIEW_DOWNLOAD_URL:DOWNLOAD_URL).with(
                         button("Download to CSV").withType("submit").withClass("btn btn-outline-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
                 ),
                 div().withClass("row").with(
                         div().withClass("col-6").with(
                                 span().withText("Number of assets selected: ").attr("style", "float: left;").with(
-                                    span().withId("table-selection-counter")
+                                    span().withClass("table-selection-counter")
                                 )
                         ), div().withClass("col-6").with(
                                 span().attr("style", "float: right;").with(
-                                        div().withId("data-table-pagination-clone-holder")
+                                        div().withClass("data-table-pagination-clone-holder")
                                 )
                         ),hr()
                 ),
