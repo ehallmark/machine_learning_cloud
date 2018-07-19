@@ -2111,13 +2111,14 @@ public class BigQueryServer extends SimilarPatentServer {
                 query1 = filter.getScriptFilter();
             } else if(attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)) {
                 String rootName = attribute.getParent().getName();
-                filter = new AbstractNestedFilter(new NestedAttribute(Collections.emptyList(), false) {
+                AbstractNestedFilter nestedFilter = new AbstractNestedFilter(new NestedAttribute(Collections.emptyList(), false) {
                     @Override
                     public String getName() {
                         return rootName;
                     }
                 }, true, filter);
-                query1 = filter.getFilterQuery();
+                nestedFilter.setFilterSubset(Collections.singleton(filter));
+                query1 = nestedFilter.getFilterQuery();
             } else {
                 query1 = filter.getFilterQuery();
             }
@@ -2129,13 +2130,14 @@ public class BigQueryServer extends SimilarPatentServer {
                 query2 = filter.getScriptFilter();
             } else if (groupByAttribute.getParent()!=null&&!(groupByAttribute.getParent() instanceof AbstractChartAttribute)) {
                 String rootName = groupByAttribute.getParent().getName();
-                filter = new AbstractNestedFilter(new NestedAttribute(Collections.emptyList(), false) {
+                AbstractNestedFilter nestedFilter = new AbstractNestedFilter(new NestedAttribute(Collections.emptyList(), false) {
                     @Override
                     public String getName() {
                         return rootName;
                     }
                 }, true, filter);
-                query2 = filter.getFilterQuery();
+                nestedFilter.setFilterSubset(Collections.singleton(filter));
+                query2 = nestedFilter.getFilterQuery();
             } else {
                 query2 = filter.getFilterQuery();
             }
