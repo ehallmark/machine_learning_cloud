@@ -396,10 +396,12 @@ textarea, .richtext > pre {
 .lightbox {
   position:fixed; /* keeps the lightbox window in the current viewport */
   top:0;
-  left:0;
-  width:100%;
+  left:25%;
+  width:75%;
   height:100%;
   z-index: 10100;
   background-color: rgba(0,0,0,0.5);
   cursor: pointer;
+  padding: 0;
+  margin: 0;
 }

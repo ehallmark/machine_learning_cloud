@@ -1331,7 +1331,21 @@ public class BigQueryServer extends SimilarPatentServer {
             List<String> headers;
             List<Map<String,String>> data;
             Set<String> numericAttrNames;
-            if(paramIdx.length()>0) {
+            if(paramIdx.equals("preview")) {
+                System.out.println("Creating preview table!");
+                Map<String,Object> map = req.session(false).attribute("table-"+paramIdx);
+                if(map==null) return null;
+
+                headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
+                if(headers!=null) {
+                    headers.add("selection");
+                    headers = new ArrayList<>(headers);
+                }
+                data = (List<Map<String,String>>)map.getOrDefault("rows-highlighted",Collections.emptyList());
+                numericAttrNames = (Set<String>)map.getOrDefault("numericAttrNames",Collections.emptySet());
+                lock = (Lock)map.getOrDefault("lock",new ReentrantLock());
+
+            } else if(paramIdx.length()>0) {
                 TableResponse tableResponse = req.session().attribute("table-"+paramIdx);
                 if(tableResponse!=null) {
                     System.out.println("Found tableResponse...");
@@ -1358,7 +1372,6 @@ public class BigQueryServer extends SimilarPatentServer {
                     numericAttrNames = Collections.emptySet();
                 }
             } else {
-
                 System.out.println("Received datatable request");
                 Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
                 if(map==null) return null;

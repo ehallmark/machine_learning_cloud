@@ -649,7 +649,7 @@ $(document).ready(function() {
                                                             $box.append(data.html);
                                                             var $preview = $box.find('#data-table-preview');
                                                             var xButton = $('<span style="float: right; cursor: pointer;">X</span>');
-                                                            $preview.append(xButton);
+                                                            $preview.find('form').filter(':first').append(xButton);
                                                             xButton.click(function(e) {
                                                                 $box.trigger('click');
                                                             });
@@ -661,9 +661,11 @@ $(document).ready(function() {
                                                                 setupNavigationTabs();
                                                             });
                                                             $box.children().css({
-                                                                marginTop: 40,
+                                                                marginTop: 50,
                                                                 backgroundColor: 'white',
-                                                                padding: 50
+                                                                padding: 25,
+                                                                marginLeft: 0,
+                                                                marginRight: 0
                                                             });
                                                             $('#data-table-preview').click(function(e) {
                                                                 e.stopPropagation();
