@@ -634,13 +634,18 @@ $(document).ready(function() {
                                                             var $box = $('<div class="lightbox"></div>');
                                                             $(document.body).append($box);
                                                             $box.append(data.html);
-                                                            var tableId = 'table-preview';
+                                                            var tableId = 'main-preview-data-table';
                                                             var $table = $('#'+tableId);
                                                             $box.click(function(e) {
                                                                 e.stopPropagation();
                                                                 $box.remove();
                                                             });
-                                                            $table.click(function(e) {
+                                                            $box.children().css({
+                                                                marginTop: 40,
+                                                                backgroundColor: 'white',
+                                                                padding: 50
+                                                            });
+                                                            $('#data-table-preview').click(function(e) {
                                                                 e.stopPropagation();
                                                             });
                                                             if($table.find('table thead th').length > 0) {
