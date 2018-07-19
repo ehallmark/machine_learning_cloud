@@ -5,7 +5,8 @@ var setupNavigationTabs = function() {
     $navTabs.off('click');
     $navTabs.click(function(e) {
         e.preventDefault();
-        e.stopPropagation();
+        e.stopPropagation()
+        $(this).closest('ul').find('li').removeClass('active');
         $(this).tab('show');
     });
 }
