@@ -2077,7 +2077,7 @@ public class SimilarPatentServer {
 
     static Tag tableFromPatentList(List<String> attributes, boolean preview) {
         return span().withClass("collapse show").withId(preview? "data-table-preview":"data-table").with(
-                form().withMethod("post").withTarget("_blank").withAction(preview?PREVIEW_DOWNLOAD_URL:DOWNLOAD_URL).with(
+                form().withMethod("post").attr("style", "text-align: center;").withTarget("_blank").withAction(preview?PREVIEW_DOWNLOAD_URL:DOWNLOAD_URL).with(
                         button("Download to CSV").withType("submit").withClass("btn btn-outline-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
                 ),
                 div().withClass("row").with(

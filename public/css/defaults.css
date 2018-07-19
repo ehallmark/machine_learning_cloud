@@ -401,4 +401,5 @@ textarea, .richtext > pre {
   height:100%;
   z-index: 10100;
   background-color: rgba(0,0,0,0.5);
+  cursor: pointer;
 }

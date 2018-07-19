@@ -1,5 +1,15 @@
 var selectionCache = new Set([]);
 
+var setupNavigationTabs = function() {
+    var $navTabs = $('.nav-tabs li a');
+    $navTabs.off('click');
+    $navTabs.click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).tab('show');
+    });
+}
+
 var newContextMenu = function(e) {
     $('#context-menu-cntnr').remove();
     var menu = $(document.body).append('<div id="context-menu-cntnr">'+
@@ -166,6 +176,8 @@ $(document).ready(function() {
                $(this).html(data.message);
            });
        }
+       setupNavigationTabs();
+
        if($('#main-data-table thead th').length > 0) {
            selectionCache.clear();
            var update_table_function = function(table) {
@@ -615,7 +627,7 @@ $(document).ready(function() {
                                             var group1 = null;
                                             var group2 = null;
                                             if (value === 'view') {
-                                                group1 = point.original_1
+                                                group1 = point.original_1;
                                                 group2 = point.original_2;
                                                 $.ajax({
                                                     url: "/secure/preview",
@@ -634,11 +646,18 @@ $(document).ready(function() {
                                                             var $box = $('<div class="lightbox"></div>');
                                                             $(document.body).append($box);
                                                             $box.append(data.html);
+                                                            var $preview = $box.find('#data-table-preview');
+                                                            var xButton = $('<span style="float: right; cursor: pointer;">X</span>');
+                                                            $preview.append(xButton);
+                                                            xButton.click(function(e) {
+                                                                $box.trigger('click');
+                                                            });
                                                             var tableId = 'main-preview-data-table';
                                                             var $table = $('#'+tableId);
                                                             $box.click(function(e) {
                                                                 e.stopPropagation();
                                                                 $box.remove();
+                                                                setupNavigationTabs();
                                                             });
                                                             $box.children().css({
                                                                 marginTop: 40,
@@ -648,8 +667,8 @@ $(document).ready(function() {
                                                             $('#data-table-preview').click(function(e) {
                                                                 e.stopPropagation();
                                                             });
-                                                            if($table.find('table thead th').length > 0) {
-                                                               $table.find('table').dynatable({
+                                                            if($table.find('thead th').length > 0) {
+                                                               $table.dynatable({
                                                                  dataset: {
                                                                    ajax: true,
                                                                    ajaxUrl: 'dataTable.json?tableId=preview',
@@ -1395,6 +1414,8 @@ $(document).ready(function() {
         autoHideDelay: 3000
 
     });
+
+    setupNavigationTabs();
 
 });
 
