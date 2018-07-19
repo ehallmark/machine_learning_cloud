@@ -1337,7 +1337,7 @@ public class BigQueryServer extends SimilarPatentServer {
                 if(map==null) return null;
 
                 headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
-                if(headers!=null) {
+                if(headers!=null&&!headers.contains("selection")) {
                     headers.add("selection");
                     headers = new ArrayList<>(headers);
                 }
@@ -1377,7 +1377,7 @@ public class BigQueryServer extends SimilarPatentServer {
                 if(map==null) return null;
 
                 headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
-                if(headers!=null) {
+                if(headers!=null&&!headers.contains("selection")) {
                     headers.add("selection");
                     headers = new ArrayList<>(headers);
                 }
@@ -2177,6 +2177,7 @@ public class BigQueryServer extends SimilarPatentServer {
             );
             results.put("html", dataTable.render());
             System.out.println("Table: "+dataTable.render());
+            System.out.println("Num assets found: "+tableData.size());
         }
         return new Gson().toJson(results);
     }
