@@ -665,7 +665,8 @@ $(document).ready(function() {
                                                                 backgroundColor: 'white',
                                                                 padding: 25,
                                                                 marginLeft: 0,
-                                                                marginRight: 0
+                                                                marginRight: 0,
+                                                                cursor: 'default'
                                                             });
                                                             $('#data-table-preview').click(function(e) {
                                                                 e.stopPropagation();
