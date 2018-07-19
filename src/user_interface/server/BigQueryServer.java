@@ -16,7 +16,6 @@ import j2html.tags.Tag;
 import lombok.NonNull;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import models.kmeans.AssetKMeans;
-import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -2110,11 +2109,17 @@ public class BigQueryServer extends SimilarPatentServer {
             AbstractFilter filter = new AbstractIncludeFilter(attribute, AbstractFilter.FilterType.Include, attribute.getFieldType(), Collections.singleton(value1));
             if(attribute instanceof AbstractScriptAttribute) {
                 query1 = filter.getScriptFilter();
+            } else if(attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)) {
+                String rootName = attribute.getParent().getName();
+                filter = new AbstractNestedFilter(new NestedAttribute(Collections.emptyList(), false) {
+                    @Override
+                    public String getName() {
+                        return rootName;
+                    }
+                }, true, filter);
+                query1 = filter.getFilterQuery();
             } else {
                 query1 = filter.getFilterQuery();
-            }
-            if(attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)) {
-                query1 = QueryBuilders.nestedQuery(attribute.getParent().getName(), query1, ScoreMode.Max);
             }
         }
         QueryBuilder query2 = null;
@@ -2122,12 +2127,19 @@ public class BigQueryServer extends SimilarPatentServer {
             AbstractFilter filter = new AbstractIncludeFilter(groupByAttribute, AbstractFilter.FilterType.Include, groupByAttribute.getFieldType(), Collections.singleton(value2));
             if(attribute instanceof AbstractScriptAttribute) {
                 query2 = filter.getScriptFilter();
+            } else if (groupByAttribute.getParent()!=null&&!(groupByAttribute.getParent() instanceof AbstractChartAttribute)) {
+                String rootName = groupByAttribute.getParent().getName();
+                filter = new AbstractNestedFilter(new NestedAttribute(Collections.emptyList(), false) {
+                    @Override
+                    public String getName() {
+                        return rootName;
+                    }
+                }, true, filter);
+                query2 = filter.getFilterQuery();
             } else {
                 query2 = filter.getFilterQuery();
             }
-            if(groupByAttribute.getParent()!=null&&!(groupByAttribute.getParent() instanceof AbstractChartAttribute)) {
-                query2 = QueryBuilders.nestedQuery(groupByAttribute.getParent().getName(), query2, ScoreMode.Max);
-            }
+
         }
 
         SearchRequestBuilder requestBuilder = req.session(false).attribute("searchRequest");

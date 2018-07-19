@@ -655,7 +655,7 @@ $(document).ready(function() {
                                                             });
                                                             var tableId = 'main-preview-data-table';
                                                             var $table = $('#'+tableId);
-                                                            $table.wrap('<div style="overflow-y: auto; width: 100%; height: 100%;"></div>');
+                                                            $table.wrap('<div style="overflow-y: auto; width: 100%; height: 50%;"></div>');
                                                             $box.click(function(e) {
                                                                 e.stopPropagation();
                                                                 $box.remove();

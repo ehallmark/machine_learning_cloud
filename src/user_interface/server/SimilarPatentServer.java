@@ -101,7 +101,6 @@ public class SimilarPatentServer {
     public static final String COLLECT_TYPE_FIELD = "collectType";
     public static final String SWAP_AXES_FIELD = "swapAxes";
     public static final String DRILLDOWN_BOOL_FIELD = "useDrilldown";
-    public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
     public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
     public static final String UPDATE_DEFAULT_ATTRIBUTES_URL = PROTECTED_URL_PREFIX+"/update_defaults";
@@ -116,8 +115,6 @@ public class SimilarPatentServer {
     public static final String RESET_DEFAULT_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/reset_default_template";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String PREVIEW_DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/preview_excel_generation";
-    public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable.json";
-    public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String RANDOM_TOKEN = "<><><>";
     public static final String SUPER_USER = "form_creator";
     public static final String USE_HIGHLIGHTER_FIELD = "useHighlighter";
