@@ -615,15 +615,10 @@ $(document).ready(function() {
                                             var group1 = null;
                                             var group2 = null;
                                             if (value === 'view') {
-                                                if(point.hasOwnProperty('value')) {
-                                                    group1 = point.original_1
-                                                    group2 = point.original_2;
-                                                } else if (point.hasOwnProperty('name')) {
-                                                    group1 = point.original_1;
-                                                    group2 = point.original_2;
-                                                }
+                                                group1 = point.original_1
+                                                group2 = point.original_2;
                                                 $.ajax({
-                                                    url: "/preview",
+                                                    url: "/secure/preview",
                                                     method: "POST",
                                                     data: {
                                                         chart_id: chartId,

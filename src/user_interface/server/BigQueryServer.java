@@ -117,6 +117,7 @@ public class BigQueryServer extends SimilarPatentServer {
     public static final String RENAME_DATASET_URL = PROTECTED_URL_PREFIX+"/rename_dataset";
     public static final String RESET_DEFAULT_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/reset_default_template";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
+    public static final String PREVIEW_URL = PROTECTED_URL_PREFIX+"/preview";
     public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable.json";
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String PRESET_USER_GROUP = "presets";
@@ -936,6 +937,11 @@ public class BigQueryServer extends SimilarPatentServer {
         post(REPORT_URL, (req, res) -> {
             authorize(req,res);
             return handleReport(req,res);
+        });
+
+        post(PREVIEW_URL, (req,res) -> {
+            authorize(req, res);
+            return handlePreviewAssets(req, res);
         });
 
         post(DOWNLOAD_URL, (req, res) -> {
