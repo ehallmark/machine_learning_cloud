@@ -557,6 +557,27 @@ $(document).ready(function() {
                             if(!chartJson['chart'].hasOwnProperty('events')) {
                                 chartJson['chart']['events'] = {};
                             }
+                            if(!chartJson['chart']['events'].hasOwnProperty('load')) {
+                                chartJson['chart']['events']['load'] = function() {
+                                    for(var i = 0; i < this.series.length; i++) {
+                                        var data = this.series[i].data;
+                                        for(var p = 0; p < data.length; p++) {
+                                            var point = data[p];
+                                            if(point.hasOwnProperty('value')) {
+                                                point.update({
+                                                    original_1: point.series.chart.xAxis[0].categories[point.x],
+                                                    original_2: point.series.chart.yAxis[0].categories[point.y]
+                                                }, false);
+                                            } else {
+                                                point.update({
+                                                    original_1: point.name,
+                                                    original_2: point.series.name
+                                                }, false);
+                                            }
+                                        }
+                                    }
+                                };
+                            }
                             if(!chartJson['chart']['events'].hasOwnProperty('redraw')) {
                                 // hack to allow clicking on data label instance of data point only
                                 /*chartJson['chart']['events']['redraw'] = function() {
@@ -601,7 +622,19 @@ $(document).ready(function() {
                                                     group1 = point.name;
                                                     group2 = point.series.name;
                                                 }
-                                                alert("View group1 ("+group1+") group2 ("+group2+")");
+                                                $.ajax({
+                                                    url: "/preview",
+                                                    method: "POST",
+                                                    data: {
+                                                        chart_id: chartId,
+                                                        group1: group1,
+                                                        group2: group2
+                                                    },
+                                                    success: function(data) {
+
+                                                    }
+                                                });
+                                                //alert("View group1 ("+group1+") group2 ("+group2+")");
 
                                             } else if (value==='delete') {
                                                 point.remove();

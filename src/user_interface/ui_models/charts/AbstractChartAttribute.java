@@ -42,6 +42,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected Map<String,Boolean> attrToSwapAxesMap;
     @Getter
     protected List<String> attrNames;
+    @Getter
     protected Collection<AbstractAttribute> groupByAttributes;
     @Getter
     protected Map<String,String> attrNameToGroupByAttrNameMap;

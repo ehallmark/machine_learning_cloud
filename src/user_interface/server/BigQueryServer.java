@@ -38,6 +38,7 @@ import spark.Request;
 import spark.Response;
 import spark.Session;
 import user_interface.server.tools.AjaxChartMessage;
+import user_interface.server.tools.ChartTask;
 import user_interface.server.tools.PasswordHandler;
 import user_interface.server.tools.SimpleAjaxMessage;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -46,15 +47,13 @@ import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
+import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.charts.aggregate_charts.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.tables.TableResponse;
 import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
-import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AbstractNestedFilter;
-import user_interface.ui_models.filters.AcclaimExpertSearchFilter;
-import user_interface.ui_models.filters.AssetDedupFilter;
+import user_interface.ui_models.filters.*;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.templates.FormTemplate;
@@ -2061,10 +2060,38 @@ public class BigQueryServer extends SimilarPatentServer {
                 .limit(1).findFirst().orElse(null);
     }
 
-    private static Object handlePreviewAssets(Request req, Response res) {
-        String value1 = req.queryParams("value1");
-        String value2 = req.queryParams("value2");
-        String chartId = req.queryParams("chartId");
+    private static Object handlePreviewAssets(Request req, Response res) throws Exception {
+        String value1 = req.queryParams("group1");
+        String value2 = req.queryParams("group2");
+        String chartId = req.queryParams("chart_id");
+
+        chartId = chartId.substring(0, chartId.length()-2);
+
+        ChartTask task = req.session(false).attribute(chartId);
+        AggregationChart<?> chart = task.getChart();
+        String attrName = task.getAttrName();
+        String groupByAttrName = chart.getAttrNameToGroupByAttrNameMap().get(attrName);
+        AbstractAttribute attribute = task.getAttribute();
+        AbstractAttribute groupByAttribute = null;
+        if(groupByAttrName!=null) {
+            groupByAttribute = AggregationChart.findAttribute(chart.getGroupByAttributes(), groupByAttrName);
+        }
+
+        if(attribute!=null) {
+            System.out.println("Found attribute: "+attribute.getFullName());
+        }
+        if(groupByAttribute!=null) {
+            System.out.println("Found group by attribute: "+groupByAttribute.getFullName());
+        }
+
+        AbstractFilter filter1 = null;
+        if(attribute!=null && value1 != null) {
+            filter1 = new AbstractIncludeFilter(attribute, AbstractFilter.FilterType.Include, attribute.getFieldType(), Collections.singleton(value1));
+        }
+        AbstractFilter filter2 = null;
+        if(groupByAttribute!=null && value2 != null) {
+            filter2 = new AbstractIncludeFilter(groupByAttribute, AbstractFilter.FilterType.Include, groupByAttribute.getFieldType(), Collections.singleton(value2));
+        }
 
         SearchRequestBuilder requestBuilder = req.session(false).attribute("searchRequest");
         QueryBuilder query = req.session(false).attribute("searchQuery");
@@ -2074,6 +2101,21 @@ public class BigQueryServer extends SimilarPatentServer {
             if(query!=null) {
                 queryBuilder = queryBuilder.must(query);
             }
+            if(filter1 != null) {
+                if(attribute instanceof AbstractScriptAttribute) {
+                    queryBuilder = queryBuilder.must(filter1.getScriptFilter());
+                } else {
+                    queryBuilder = queryBuilder.must(filter1.getFilterQuery());
+                }
+            }
+            if(filter2 != null) {
+                if(groupByAttribute instanceof AbstractScriptAttribute) {
+                    queryBuilder = queryBuilder.must(filter2.getScriptFilter());
+                } else {
+                    queryBuilder = queryBuilder.must(filter2.getFilterQuery());
+                }
+            }
+            System.out.println("New query: "+queryBuilder.toString());
             int limit = 10;
             Boolean filterNestedObjects = req.session(false).attribute("filterNestedObjects");
             Boolean isOverallScore = req.session(false).attribute("isOverallScore");
@@ -2320,12 +2362,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                         sessionIds.add(id);
                                     }
                                 } else {
-                                    task = new RecursiveTask<List<? extends AbstractChart>>() {
-                                        @Override
-                                        protected List<? extends AbstractChart> compute() {
-                                            return (List<AbstractChart>) chart.create(attribute,attrName,aggregations);
-                                        }
-                                    };
+                                    task = new ChartTask(chart, attribute, attrName, aggregations);
                                     chartTypes.add(chart.getType());
                                     pool.execute(task);
                                     id = "chart-" + totalChartCnt.getAndIncrement();

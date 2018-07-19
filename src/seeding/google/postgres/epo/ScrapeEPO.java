@@ -213,11 +213,11 @@ public class ScrapeEPO {
         process.waitFor();
     }
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         // START PROXIES
         try {
-            startProxies(10);
-            long timeoutMillisBetweenRequests = 50;
+        //    startProxies(10);
+            long timeoutMillisBetweenRequests = 1500;
             Connection conn = Database.getConn();
 
             List<String> assets = getAssetsWithoutFamilyIds(conn).stream()
@@ -236,7 +236,7 @@ public class ScrapeEPO {
         } finally {
             // CLOSE PROXIES
             try {
-                stopProxies();
+       //         stopProxies();
             } catch(Exception e) {
                 e.printStackTrace();
                 System.out.println("Error stopping proxies!!!!!!!");
