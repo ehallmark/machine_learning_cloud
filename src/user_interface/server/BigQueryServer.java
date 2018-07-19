@@ -2066,7 +2066,7 @@ public class BigQueryServer extends SimilarPatentServer {
                 .limit(1).findFirst().orElse(null);
     }
 
-    private static Object handlePreviewAssets(Request req, Response res) throws Exception {
+    private static Object handlePreviewAssets(Request req, Response res) {
         String value1 = req.queryParams("group1");
         String value2 = req.queryParams("group2");
         String chartId = req.queryParams("chart_id");
@@ -2156,9 +2156,14 @@ public class BigQueryServer extends SimilarPatentServer {
             excelRequestMap.put("rows-highlighted", tableDataHighlighted);
             excelRequestMap.put("numericAttrNames", getNumericAttributes());
             excelRequestMap.put("lock", new ReentrantLock());
-            req.session().attribute("preview", excelRequestMap);
+            req.session().attribute("table-preview", excelRequestMap);
             req.session().attribute("preview_assets", items.stream().map(Item::getName).collect(Collectors.toList()));
 
+            Tag dataTable = div().withClass("row").attr("style", "margin-top: 10px;").with(
+                    // h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
+                    tableFromPatentList(tableHeaders)
+            );
+            results.put("html", dataTable.render());
         }
         return new Gson().toJson(results);
     }

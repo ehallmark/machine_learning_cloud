@@ -392,3 +392,13 @@ textarea, .richtext > pre {
   background:#F9F9F9;
   border-radius:2px;
 }
+
+.lightbox {
+  position:fixed; /* keeps the lightbox window in the current viewport */
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  z-index: 10100;
+  background-color: rgba(0,0,0,0.5);
+}

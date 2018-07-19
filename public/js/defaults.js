@@ -626,7 +626,33 @@ $(document).ready(function() {
                                                         group2: group2
                                                     },
                                                     success: function(data) {
-
+                                                        if(data.hasOwnProperty('html')) {
+                                                            var $box = $('<div class="lightbox"></div>');
+                                                            $(document.body).append($box);
+                                                            $box.append(data.html);
+                                                            var tableId = 'table-preview';
+                                                            var $table = $('#'+tableId);
+                                                            $box.click(function(e) {
+                                                                e.stopPropagation();
+                                                                $box.remove();
+                                                            });
+                                                            $table.click(function(e) {
+                                                                e.stopPropagation();
+                                                            });
+                                                            if($table.find('table thead th').length > 0) {
+                                                               $table.find('table').dynatable({
+                                                                 dataset: {
+                                                                   ajax: true,
+                                                                   ajaxUrl: 'dataTable.json?tableId=preview',
+                                                                   ajaxOnLoad: true,
+                                                                   records: []
+                                                                 },
+                                                                 features: {
+                                                                    pushState: false
+                                                                 }
+                                                               });
+                                                            }
+                                                        }
                                                     }
                                                 });
                                                 //alert("View group1 ("+group1+") group2 ("+group2+")");
