@@ -168,9 +168,9 @@ $(document).ready(function() {
        }
        if($('#main-data-table thead th').length > 0) {
            selectionCache.clear();
-           var update_table_function = function() {
-               var $table = $('#main-data-table');
-               var $tableSelectionCounter = $('#results #data-table .table-selection-counter');
+           var update_table_function = function(table) {
+               var $table = $(table);
+               var $tableSelectionCounter = $table.parent().find('.table-selection-counter');
                var $tableRows = $table.find('tbody tr');
                var num_rows = $tableRows.length;
                $tableRows = $tableRows.filter(function() {
@@ -210,11 +210,11 @@ $(document).ready(function() {
                         }, 200);
                     }, 100);
                 });
-                var all_rows_checked = update_table_function();
+                var all_rows_checked = update_table_function('#main-data-table');
                 $('#data-table-select-all').prop('checked', all_rows_checked).trigger('change');
                 var $clone = $paginationTable.clone(false);
                 $clone.attr('id', 'dynatable-pagination-links-main-data-table-clone');
-                var $holder = $('#main-data-table .data-table-pagination-clone-holder');
+                var $holder = $('#data-table-pagination-clone-holder');
                 $holder.empty();
                 $holder.append($clone);
                 var $original_links = $paginationTable.find('a');
@@ -620,12 +620,16 @@ $(document).ready(function() {
                                                 $.ajax({
                                                     url: "/secure/preview",
                                                     method: "POST",
+                                                    dataType: 'json',
                                                     data: {
                                                         chart_id: chartId,
                                                         group1: group1,
                                                         group2: group2
                                                     },
                                                     success: function(data) {
+                                                        if($.type(data)==='string') {
+                                                            data = $.parseJSON(data);
+                                                        }
                                                         if(data.hasOwnProperty('html')) {
                                                             var $box = $('<div class="lightbox"></div>');
                                                             $(document.body).append($box);

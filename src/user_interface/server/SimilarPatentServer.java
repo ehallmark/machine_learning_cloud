@@ -2086,22 +2086,22 @@ public class SimilarPatentServer {
                                     span().withClass("table-selection-counter")
                                 )
                         ), div().withClass("col-6").with(
-                                span().attr("style", "float: right;").with(
-                                        div().withClass("data-table-pagination-clone-holder")
+                                preview ? span() : span().attr("style", "float: right;").with(
+                                        div().withId("data-table-pagination-clone-holder")
                                 )
                         ),hr()
                 ),
-                dataTableFromHeadersAndData(attributes)
+                dataTableFromHeadersAndData(attributes, preview)
         );
     }
 
-    static Tag dataTableFromHeadersAndData(List<String> attributes) {
-        return table().withClass("table table-striped").withId("main-data-table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
+    static Tag dataTableFromHeadersAndData(List<String> attributes, boolean preview) {
+        return table().withClass("table table-striped").withId(preview?"main-preview-data-table":"main-data-table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                 thead().with(
                         tr().with(
                                 th().attr("data-dynatable-no-sort", "true").attr("data-dynatable-column", "selection").with(
                                         label("Select All").with( br(),
-                                                input().withType("checkbox").withId("data-table-select-all").attr("onclick", "$('#data-table table tbody tr input.tableSelection').prop('checked', $(this).prop('checked')).trigger('change');")
+                                                input().withType("checkbox").withId("data-table-select-all").attr("onclick", "$('#"+(preview?"preview-data-table":"data-table")+" table tbody tr input.tableSelection').prop('checked', $(this).prop('checked')).trigger('change');")
                                         )
                                 )
                         ).with(
