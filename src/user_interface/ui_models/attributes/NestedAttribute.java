@@ -132,7 +132,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
 
     @Override
     public String getType() {
-        return isObject ? "object" : "nested";
+        return isObject() ? "object" : "nested";
     }
 
     @Override

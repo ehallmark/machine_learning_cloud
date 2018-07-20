@@ -2141,12 +2141,16 @@ public class BigQueryServer extends SimilarPatentServer {
             // construct possible nested filter
             if(attribute instanceof AbstractScriptAttribute) {
                 query = filter.getScriptFilter();
-            } else if(attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute) && !attribute.getParent().isObject()) {
+            } else if(attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)) {
                 String rootName = attribute.getParent().getName();
                 AbstractNestedFilter nestedFilter = new AbstractNestedFilter(new NestedAttribute(Collections.emptyList(), false) {
                     @Override
                     public String getName() {
                         return rootName;
+                    }
+                    @Override
+                    public boolean isObject() {
+                        return attribute.getParent().isObject();
                     }
                 }, true, filter);
                 nestedFilter.setFilterSubset(Collections.singleton(filter));
