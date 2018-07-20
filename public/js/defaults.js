@@ -10,7 +10,77 @@ var setupNavigationTabs = function() {
         $(this).closest('ul').find('li').removeClass('active');
         $(this).tab('show');
     });
-}
+};
+
+var handlePreviewAssetsAjax = function(chartId, group1, group2) {
+    $.ajax({
+        url: "/secure/preview",
+        method: "POST",
+        dataType: 'json',
+        data: {
+            chart_id: chartId,
+            group1: group1,
+            group2: group2
+        },
+        success: function(data) {
+            if($.type(data)==='string') {
+                data = $.parseJSON(data);
+            }
+            if(data.hasOwnProperty('html')) {
+                var $box = $('<div class="lightbox"></div>');
+                $(document.body).append($box);
+                $box.append(data.html);
+                var $preview = $box.find('#data-table-preview');
+                var xButton = $('<span style="float: right; cursor: pointer;">X</span>');
+                $preview.find('form').filter(':first').append(xButton);
+                xButton.click(function(e) {
+                    $box.trigger('click');
+                });
+                var tableId = 'main-preview-data-table';
+                var $table = $('#'+tableId);
+                $table.wrap('<div style="overflow-y: auto; width: 100%; height: 50%;"></div>');
+                $box.click(function(e) {
+                    e.stopPropagation();
+                    $box.remove();
+                    previewSelectionCache.clear();
+                    setupNavigationTabs();
+                });
+                $box.children().css({
+                    marginTop: 50,
+                    backgroundColor: 'white',
+                    padding: 25,
+                    marginLeft: 0,
+                    marginRight: 0,
+                    cursor: 'default',
+                    maxHeight: '75%'
+                });
+                $('#data-table-preview').click(function(e) {
+                    e.stopPropagation();
+                });
+                if($table.find('thead th').length > 0) {
+                   $table
+                   .bind('dynatable:afterUpdate', function() {
+                        var all_rows_checked = update_table_function('#main-preview-data-table', previewSelectionCache);
+                        $('#preview-data-table-select-all').prop('checked', all_rows_checked).trigger('change');
+                        return true;
+                   })
+                   .dynatable({
+                     dataset: {
+                       ajax: true,
+                       ajaxUrl: 'dataTable.json?tableId=preview',
+                       ajaxOnLoad: true,
+                       records: []
+                     },
+                     features: {
+                        pushState: false
+                     }
+                   });
+                }
+            }
+        }
+    });
+
+};
 
 var update_table_function = function(table,cache) {
    var $table = $(table);
@@ -57,10 +127,10 @@ var newContextMenu = function(e) {
     $container.css("left",e.pageX);
     $container.css("top",e.pageY);
     function startFocusOut(){
-    $(document).on("click",function(){
-    $container.hide();
-    $(document).off("click");
-    });
+        $(document).on("click",function(){
+        $container.hide();
+        $(document).off("click");
+        });
     }
     $container.fadeIn(200, startFocusOut());
     return $container;
@@ -270,7 +340,30 @@ $(document).ready(function() {
                 var tableId = 'table-'.concat(String(i));
                 var $table = $('#'+tableId);
                 if($table.find('table thead th').length > 0) {
-                   $table.find('table').dynatable({
+                   var $table = $table.find('table');
+                   $table
+                   .bind('dynatable:afterUpdate', function($table) {
+                        return function() {
+                            $table.find('tbody tr td:not(:eq(0))').css('cursor', 'pointer')
+                            .contextmenu(function(e) {
+                                var $td = $(this);
+                                var menu = newContextMenu(e);
+                                menu.find('ul').html('<li value="view">View Assets</li>');
+                                var headers = $table.find('thead th:not(:eq(0))');
+                                menu.find('li').click(function(e) {
+                                    var index2 = $td.index() - 1;
+                                    var group2 = null;
+                                    var group1 = null;
+                                    if(index2 >= 0) {
+                                        group2 = headers.eq(index2).text();
+                                    }
+                                    group1 = $td.parent().children().eq(0).text();
+                                    handlePreviewAssetsAjax($table.attr('id'), group1, group2);
+                                });
+                            });
+                        };
+                   }($table))
+                   .dynatable({
                      dataset: {
                        ajax: true,
                        ajaxUrl: 'dataTable.json?tableId='.concat(String(i)),
@@ -281,6 +374,7 @@ $(document).ready(function() {
                         pushState: false
                      }
                    });
+
                 }
             }
        }
@@ -666,73 +760,7 @@ $(document).ready(function() {
                                             if (value === 'view') {
                                                 group1 = point.original_1;
                                                 group2 = point.original_2;
-                                                $.ajax({
-                                                    url: "/secure/preview",
-                                                    method: "POST",
-                                                    dataType: 'json',
-                                                    data: {
-                                                        chart_id: chartId,
-                                                        group1: group1,
-                                                        group2: group2
-                                                    },
-                                                    success: function(data) {
-                                                        if($.type(data)==='string') {
-                                                            data = $.parseJSON(data);
-                                                        }
-                                                        if(data.hasOwnProperty('html')) {
-                                                            var $box = $('<div class="lightbox"></div>');
-                                                            $(document.body).append($box);
-                                                            $box.append(data.html);
-                                                            var $preview = $box.find('#data-table-preview');
-                                                            var xButton = $('<span style="float: right; cursor: pointer;">X</span>');
-                                                            $preview.find('form').filter(':first').append(xButton);
-                                                            xButton.click(function(e) {
-                                                                $box.trigger('click');
-                                                            });
-                                                            var tableId = 'main-preview-data-table';
-                                                            var $table = $('#'+tableId);
-                                                            $table.wrap('<div style="overflow-y: auto; width: 100%; height: 50%;"></div>');
-                                                            $box.click(function(e) {
-                                                                e.stopPropagation();
-                                                                $box.remove();
-                                                                previewSelectionCache.clear();
-                                                                setupNavigationTabs();
-                                                            });
-                                                            $box.children().css({
-                                                                marginTop: 50,
-                                                                backgroundColor: 'white',
-                                                                padding: 25,
-                                                                marginLeft: 0,
-                                                                marginRight: 0,
-                                                                cursor: 'default',
-                                                                maxHeight: '75%'
-                                                            });
-                                                            $('#data-table-preview').click(function(e) {
-                                                                e.stopPropagation();
-                                                            });
-                                                            if($table.find('thead th').length > 0) {
-                                                               $table
-                                                               .bind('dynatable:afterUpdate', function() {
-                                                                    var all_rows_checked = update_table_function('#main-preview-data-table', previewSelectionCache);
-                                                                    $('#preview-data-table-select-all').prop('checked', all_rows_checked).trigger('change');
-                                                                    return true;
-                                                               })
-                                                               .dynatable({
-                                                                 dataset: {
-                                                                   ajax: true,
-                                                                   ajaxUrl: 'dataTable.json?tableId=preview',
-                                                                   ajaxOnLoad: true,
-                                                                   records: []
-                                                                 },
-                                                                 features: {
-                                                                    pushState: false
-                                                                 }
-                                                               });
-                                                            }
-                                                        }
-                                                    }
-                                                });
-                                                //alert("View group1 ("+group1+") group2 ("+group2+")");
+                                                handlePreviewAssetsAjax(chartId, group1, group2);
 
                                             } else if (value==='delete') {
                                                 point.remove();

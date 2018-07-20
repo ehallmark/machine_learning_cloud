@@ -74,6 +74,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         numericAttrNames.add(collectorType.toString());
 
         TableResponse response = new TableResponse();
+        response.attribute=attribute;
         List<String> nonHumanAttrs = new ArrayList<>(0);
         List<String> groupByDatasets;
         Function<Aggregations, Number> subAggregationHandler = getSubAggregationHandler(attrName);
@@ -86,6 +87,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             if (groupByAttribute == null) {
                 throw new RuntimeException("Unable to find group by attribute in pivot chart: " + groupedByAttrName);
             }
+            response.groupByAttribute=groupByAttribute;
             final List<String> dataSets = getCategoriesForAttribute(attribute);
             Aggregation groupAgg = handlePotentiallyNestedAgg(aggregations,groupAggName,nestedGroupAggName);
             if(groupAgg==null) {

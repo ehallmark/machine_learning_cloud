@@ -2170,16 +2170,31 @@ public class BigQueryServer extends SimilarPatentServer {
         String value2 = extractString(req, "group2", null);
         String chartId = req.queryParams("chart_id");
 
-        chartId = chartId.substring(0, chartId.length()-2);
+        AggregationChart<?> chart;
 
-        ChartTask task = req.session(false).attribute(chartId);
-        AggregationChart<?> chart = task.getChart();
-        String attrName = task.getAttrName();
-        String groupByAttrName = chart.getAttrNameToGroupByAttrNameMap().get(attrName);
-        AbstractAttribute attribute = task.getAttribute();
+        AbstractAttribute attribute;
         AbstractAttribute groupByAttribute = null;
-        if(groupByAttrName!=null) {
-            groupByAttribute = AggregationChart.findAttribute(chart.getGroupByAttributes(), groupByAttrName);
+        if(chartId.contains("table")) {
+            if(chartId.endsWith("table")) {
+                chartId = chartId.substring(0, chartId.length()-5);
+            }
+            System.out.println("Looking for tableresponse with id: "+chartId);
+            TableResponse task = req.session(false).attribute(chartId);
+            attribute = task.attribute;
+            groupByAttribute = task.groupByAttribute;
+
+        } else {
+            String attrName;
+            String groupByAttrName;
+            chartId = chartId.substring(0, chartId.length() - 2);
+            ChartTask task = req.session(false).attribute(chartId);
+            chart = task.getChart();
+            attrName = task.getAttrName();
+            groupByAttrName = chart.getAttrNameToGroupByAttrNameMap().get(attrName);
+            attribute = task.getAttribute();
+            if(groupByAttrName!=null) {
+                groupByAttribute = AggregationChart.findAttribute(chart.getGroupByAttributes(), groupByAttrName);
+            }
         }
 
         if(attribute!=null) {

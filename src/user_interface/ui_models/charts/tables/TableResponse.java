@@ -1,5 +1,7 @@
 package user_interface.ui_models.charts.tables;
 
+import user_interface.ui_models.attributes.AbstractAttribute;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +19,8 @@ public class TableResponse {
     public String title;
     public Set<String> numericAttrNames;
     public final ReentrantLock lock;
-
+    public AbstractAttribute groupByAttribute;
+    public AbstractAttribute attribute;
     public TableResponse() {
         this.lock = new ReentrantLock();
     }
