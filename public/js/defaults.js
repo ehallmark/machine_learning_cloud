@@ -608,7 +608,6 @@ $(document).ready(function() {
 
                                 } else {
                                     chartJson['chart']['events']['load'] = function() {
-                                        var chart_type = this.
                                         for(var i = 0; i < this.series.length; i++) {
                                             var data = this.series[i].data;
                                             for(var p = 0; p < data.length; p++) {
