@@ -574,25 +574,60 @@ $(document).ready(function() {
                                 chartJson['chart']['events'] = {};
                             }
                             if(!chartJson['chart']['events'].hasOwnProperty('load')) {
-                                chartJson['chart']['events']['load'] = function() {
-                                    for(var i = 0; i < this.series.length; i++) {
-                                        var data = this.series[i].data;
-                                        for(var p = 0; p < data.length; p++) {
-                                            var point = data[p];
-                                            if(point.hasOwnProperty('value')) {
-                                                point.update({
-                                                    original_1: point.series.chart.xAxis[0].categories[point.x],
-                                                    original_2: point.series.chart.yAxis[0].categories[point.y]
-                                                }, false);
-                                            } else {
-                                                point.update({
-                                                    original_1: point.name,
-                                                    original_2: point.series.name
-                                                }, false);
+                                if(chartJson['chart']['type']==='pie' && chartJson['series'].length>1) {
+                                    chartJson['chart']['events']['load'] = function() {
+                                        var chart_type = this.
+                                        var series1 = this.series[0];
+                                        var series2 = this.series[1];
+                                        var data1 = series1.data;
+                                        var data2 = series2.data;
+                                        for(var p = 0; p < data1.length; p++) {
+                                            var point = data1[p];
+                                            point.update({
+                                                original_1: point.name,
+                                                original_2: null
+                                            }, false);
+                                        }
+                                        var currentAmount = 0;
+                                        var currentIdx = 0;
+                                        var totalSoFar = data1[0].y;
+                                        for(var p = 0; p < data2.length; p++) {
+                                            var point = data2[p];
+                                            currentAmount += point.y;
+                                            if(currentAmount > totalSoFar && data1.length > currentIdx + 1) {
+                                                currentIdx = currentIdx + 1;
+                                                totalSoFar += data1[currentIdx].y;
+                                            }
+                                            point.update({
+                                                original_1: point.name,
+                                                original_2: data1[currentIdx].name
+                                            }, false);
+                                        }
+
+                                    };
+
+                                } else {
+                                    chartJson['chart']['events']['load'] = function() {
+                                        var chart_type = this.
+                                        for(var i = 0; i < this.series.length; i++) {
+                                            var data = this.series[i].data;
+                                            for(var p = 0; p < data.length; p++) {
+                                                var point = data[p];
+                                                if(point.hasOwnProperty('value')) {
+                                                    point.update({
+                                                        original_1: point.series.chart.xAxis[0].categories[point.x],
+                                                        original_2: point.series.chart.yAxis[0].categories[point.y]
+                                                    }, false);
+                                                } else {
+                                                    point.update({
+                                                        original_1: point.name,
+                                                        original_2: point.series.name
+                                                    }, false);
+                                                }
                                             }
                                         }
-                                    }
-                                };
+                                    };
+                                }
                             }
                             if(!chartJson['chart']['events'].hasOwnProperty('redraw')) {
                                 // hack to allow clicking on data label instance of data point only
