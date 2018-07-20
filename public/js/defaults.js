@@ -583,8 +583,8 @@ $(document).ready(function() {
                                         for(var p = 0; p < data1.length; p++) {
                                             var point = data1[p];
                                             point.update({
-                                                original_1: point.name,
-                                                original_2: null
+                                                original_1: null,
+                                                original_2: point.name
                                             }, false);
                                         }
                                         var currentAmount = 0;

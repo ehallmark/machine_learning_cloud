@@ -2166,8 +2166,8 @@ public class BigQueryServer extends SimilarPatentServer {
 
 
     private static Object handlePreviewAssets(Request req, Response res) {
-        String value1 = req.queryParams("group1");
-        String value2 = req.queryParams("group2");
+        String value1 = extractString(req, "group1", null);
+        String value2 = extractString(req, "group2", null);
         String chartId = req.queryParams("chart_id");
 
         chartId = chartId.substring(0, chartId.length()-2);
