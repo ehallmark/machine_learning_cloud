@@ -13,7 +13,7 @@ var setupNavigationTabs = function() {
 
 var update_table_function = function(table) {
    var $table = $(table);
-   var $tableSelectionCounter = $table.parent().find('.table-selection-counter');
+   var $tableSelectionCounter = $table.parent().parent().find('.table-selection-counter');
    var $tableRows = $table.find('tbody tr');
    var num_rows = $tableRows.length;
    $tableRows = $tableRows.filter(function() {

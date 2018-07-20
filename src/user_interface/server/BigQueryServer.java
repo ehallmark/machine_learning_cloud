@@ -2101,7 +2101,7 @@ public class BigQueryServer extends SimilarPatentServer {
             AbstractFilter filter;
             if(attribute instanceof DateRangeAttribute) {
                 String[] dateRange = new String[2];
-                String[] years = value.split(" - ");
+                String[] years = value.split("-");
                 if(years.length==1) {
                     years[0] = years[0].replace("+", "");
                 }
@@ -2141,7 +2141,7 @@ public class BigQueryServer extends SimilarPatentServer {
             // construct possible nested filter
             if(attribute instanceof AbstractScriptAttribute) {
                 query = filter.getScriptFilter();
-            } else if(attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)) {
+            } else if(attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute) && !attribute.getParent().isObject()) {
                 String rootName = attribute.getParent().getName();
                 AbstractNestedFilter nestedFilter = new AbstractNestedFilter(new NestedAttribute(Collections.emptyList(), false) {
                     @Override
