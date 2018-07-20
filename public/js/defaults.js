@@ -341,28 +341,34 @@ $(document).ready(function() {
                 var $table = $('#'+tableId);
                 if($table.find('table thead th').length > 0) {
                    var $table = $table.find('table');
+                   var headers = $table.find('thead th:not(:eq(0))');
                    $table
-                   .bind('dynatable:afterUpdate', function($table) {
+                   .bind('dynatable:afterUpdate', function($table, headers) {
                         return function() {
-                            $table.find('tbody tr td:not(:eq(0))').css('cursor', 'pointer')
-                            .contextmenu(function(e) {
-                                var $td = $(this);
-                                var menu = newContextMenu(e);
-                                menu.find('ul').html('<li value="view">View Assets</li>');
-                                var headers = $table.find('thead th:not(:eq(0))');
-                                menu.find('li').click(function(e) {
-                                    var index2 = $td.index() - 1;
-                                    var group2 = null;
-                                    var group1 = null;
-                                    if(index2 >= 0) {
-                                        group2 = headers.eq(index2).text();
-                                    }
-                                    group1 = $td.parent().children().eq(0).text();
-                                    handlePreviewAssetsAjax($table.attr('id'), group1, group2);
+                            $table.find('tbody tr').each(function() {
+                                var $tr = $(this);
+                                $tr.find('td:not(:eq(0))')
+                                .css('cursor', 'pointer')
+                                .contextmenu(function(e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    var $td = $(this);
+                                    var menu = newContextMenu(e);
+                                    menu.find('ul').html('<li value="view">View Assets</li>');
+                                    menu.find('li').click(function(e) {
+                                        var index2 = $td.index() - 1;
+                                        var group2 = null;
+                                        var group1 = null;
+                                        if(index2 >= 0) {
+                                            group2 = headers.eq(index2).text();
+                                        }
+                                        group1 = $td.parent().children().eq(0).text();
+                                        handlePreviewAssetsAjax($table.parent().attr('id'), group1, group2);
+                                    });
                                 });
                             });
                         };
-                   }($table))
+                   }($table, headers))
                    .dynatable({
                      dataset: {
                        ajax: true,

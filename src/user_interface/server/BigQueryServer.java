@@ -2175,9 +2175,6 @@ public class BigQueryServer extends SimilarPatentServer {
         AbstractAttribute attribute;
         AbstractAttribute groupByAttribute = null;
         if(chartId.contains("table")) {
-            if(chartId.endsWith("table")) {
-                chartId = chartId.substring(0, chartId.length()-5);
-            }
             System.out.println("Looking for tableresponse with id: "+chartId);
             TableResponse task = req.session(false).attribute(chartId);
             attribute = task.attribute;
