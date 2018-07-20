@@ -1829,7 +1829,7 @@ public class SimilarPatentServer {
                         tr().with(
                                 th().attr("data-dynatable-no-sort", "true").attr("data-dynatable-column", "selection").with(
                                         label("Select All").with( br(),
-                                                input().withType("checkbox").withId(preview?"preview-data-table-select-all":"data-table-select-all").attr("onclick", "$('#"+(preview?"preview-data-table":"data-table")+" table tbody tr input.tableSelection').prop('checked', $(this).prop('checked')).trigger('change');")
+                                                input().withType("checkbox").withId(preview?"preview-data-table-select-all":"data-table-select-all").attr("onclick", "$('#"+(preview?"data-table-preview":"data-table")+" table tbody tr input.tableSelection').prop('checked', $(this).prop('checked')).trigger('change');")
                                         )
                                 )
                         ).with(

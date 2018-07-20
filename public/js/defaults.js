@@ -1,4 +1,5 @@
 var selectionCache = new Set([]);
+var previewSelectionCache = new Set([]);
 
 var setupNavigationTabs = function() {
     var $navTabs = $('.nav-tabs li a');
@@ -11,7 +12,7 @@ var setupNavigationTabs = function() {
     });
 }
 
-var update_table_function = function(table) {
+var update_table_function = function(table,cache) {
    var $table = $(table);
    var $tableSelectionCounter = $table.parent().parent().find('.table-selection-counter');
    var $tableRows = $table.find('tbody tr');
@@ -19,7 +20,7 @@ var update_table_function = function(table) {
    $tableRows = $tableRows.filter(function() {
        var $check = $(this).find('input.tableSelection');
        var checked = false;
-       if(selectionCache.has($check.val())) {
+       if(cache.has($check.val())) {
            $check.prop('checked', true);
            $check.trigger('change');
            checked = true;
@@ -31,16 +32,16 @@ var update_table_function = function(table) {
        $check.change(function() {
            // add to selection cache
            if($(this).prop('checked')) {
-               selectionCache.add($(this).val());
+               cache.add($(this).val());
            } else {
-               selectionCache.delete($(this).val());
+               cache.delete($(this).val());
            }
-           $tableSelectionCounter.text(selectionCache.size.toString());
+           $tableSelectionCounter.text(cache.size.toString());
        });
        return checked;
    });
    var num_checked_rows = $tableRows.length;
-   $tableSelectionCounter.text(selectionCache.size.toString());
+   $tableSelectionCounter.text(cache.size.toString());
    return num_checked_rows>0 && num_checked_rows===num_rows;
 };
 
@@ -225,7 +226,7 @@ $(document).ready(function() {
                         }, 200);
                     }, 100);
                 });
-                var all_rows_checked = update_table_function('#main-data-table');
+                var all_rows_checked = update_table_function('#main-data-table', selectionCache);
                 $('#data-table-select-all').prop('checked', all_rows_checked).trigger('change');
                 var $clone = $paginationTable.clone(false);
                 $clone.attr('id', 'dynatable-pagination-links-main-data-table-clone');
@@ -661,6 +662,7 @@ $(document).ready(function() {
                                                             $box.click(function(e) {
                                                                 e.stopPropagation();
                                                                 $box.remove();
+                                                                previewSelectionCache.clear();
                                                                 setupNavigationTabs();
                                                             });
                                                             $box.children().css({
@@ -678,7 +680,7 @@ $(document).ready(function() {
                                                             if($table.find('thead th').length > 0) {
                                                                $table
                                                                .bind('dynatable:afterUpdate', function() {
-                                                                    var all_rows_checked = update_table_function('#main-preview-data-table');
+                                                                    var all_rows_checked = update_table_function('#main-preview-data-table', previewSelectionCache);
                                                                     $('#preview-data-table-select-all').prop('checked', all_rows_checked).trigger('change');
                                                                     return true;
                                                                })
@@ -1786,7 +1788,12 @@ var getKFromClusterInputFunction = function(callbackWithValue, obj) {
 
 var selectionDatasetDataFunction = function(tree,node,name,deletable,callback,obj) {
     // get user input
-    var assets = Array.from(selectionCache);
+    var assets = null;
+    if($(document.body).children('.lightbox').length>0) {
+        assets = Array.from(previewSelectionCache);
+    } else {
+        assets = Array.from(selectionCache);
+    }
     var preData = {};
     if(assets.length==0) {
         preData['emptyDataset'] = true;
@@ -2040,7 +2047,12 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                             var jsNodeDataFunction = jsNodeDataFunctions[i];
                             var newItemSubLabel = newItemSubLabels[i];
                             if (newItemSubLabel==='From Selection') {
-                                var val = selectionCache.size.toString();
+                                var val = null;
+                                if($(document.body).children('.lightbox').length>0) {
+                                    val = previewSelectionCache.size.toString();
+                                } else {
+                                    val = selectionCache.size.toString();
+                                }
                                 if (!val) { val = "0"; }
                                 newItemSubLabel += ' ('+val+")";
                             }
@@ -2124,7 +2136,12 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                             var jsNodeDataFunction = jsNodeDataFunctions[i];
                             var newItemSubLabel = newItemSubLabels[i];
                             if (newItemSubLabel==='From Selection') {
-                                var val = selectionCache.size.toString();
+                                var val = null;
+                                if($(document.body).children('.lightbox').length>0) {
+                                    val = previewSelectionCache.size.toString();
+                                } else {
+                                    val = selectionCache.size.toString();
+                                }
                                 if (!val) { val = "0"; }
                                 newItemSubLabel += ' ('+val+")";
                             }
@@ -2192,7 +2209,12 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
                         var jsNodeDataFunction = jsNodeDataFunctions[i];
                         var newItemSubLabel = newItemSubLabels[i];
                         if (newItemSubLabel==='From Selection') {
-                            var val = selectionCache.size.toString();
+                            var val = null;
+                            if($(document.body).children('.lightbox').length>0) {
+                                val = previewSelectionCache.size.toString();
+                            } else {
+                                val = selectionCache.size.toString();
+                            }
                             if (!val) { val = "0"; }
                             newItemSubLabel += ' ('+val+")";
                         }

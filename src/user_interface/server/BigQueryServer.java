@@ -2207,7 +2207,7 @@ public class BigQueryServer extends SimilarPatentServer {
                 queryBuilder = queryBuilder.must(query2);
             }
             System.out.println("New query: "+queryBuilder.toString());
-            int limit = 10;
+            int limit = 100;
             Boolean filterNestedObjects = req.session(false).attribute("filterNestedObjects");
             Boolean isOverallScore = req.session(false).attribute("isOverallScore");
             if(isOverallScore==null) {
