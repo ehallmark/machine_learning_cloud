@@ -337,7 +337,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             for (Pair<Number, Number> range : ranges) {
                 String str = range.getFirst().toString();
                 if (range.getSecond() != null) {
-                    str += "-" + range.getSecond().toString();
+                    str += " - " + range.getSecond().toString();
                 } else {
                     str += "+";
                 }

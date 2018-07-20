@@ -95,6 +95,15 @@ public class DatasetAttribute extends TermsLookupAttribute implements AjaxMultis
         return dup();
     }
 
+    public String getDatasetIDFromName(String name) {
+        if(currentDatasets==null||currentIds==null) return null;
+        for(int i = 0; i < currentIds.size(); i++) {
+            if(currentDatasets.get(i).getFirst().equalsIgnoreCase(name)) {
+                return currentIds.get(i);
+            }
+        }
+        return null;
+    }
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {

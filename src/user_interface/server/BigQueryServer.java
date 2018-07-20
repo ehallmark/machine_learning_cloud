@@ -32,6 +32,7 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import seeding.Database;
 import seeding.google.elasticsearch.Attributes;
+import seeding.google.elasticsearch.attributes.DateRangeAttribute;
 import seeding.google.mongo.ingest.IngestPatents;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -948,7 +949,12 @@ public class BigQueryServer extends SimilarPatentServer {
         post(DOWNLOAD_URL, (req, res) -> {
             authorize(req,res);
             //return handleExcel(req,res);
-            return handleCSV(req,res);
+            return handleCSV(req,res, false);
+        });
+
+        post(PREVIEW_DOWNLOAD_URL, (req, res) -> {
+            authorize(req, res);
+            return handleCSV(req,res, true);
         });
 
         post(SAVE_TEMPLATE_URL, (req, res) -> {
@@ -1229,25 +1235,34 @@ public class BigQueryServer extends SimilarPatentServer {
         };
     }
 
-    private static Object handleExcel(Request req, Response res) {
-        return handleSpreadsheet(req,res,true);
+    private static Object handleCSV(Request req, Response res, boolean preview) {
+        return handleSpreadsheet(req,res,false, preview);
     }
 
-    private static Object handleCSV(Request req, Response res) {
-        return handleSpreadsheet(req,res,false);
-    }
-
-    private static Object handleSpreadsheet(Request req, Response res, boolean excel) {
+    private static Object handleSpreadsheet(Request req, Response res, boolean excel, boolean preview) {
         try {
             System.out.println("Received excel request");
             long t0 = System.currentTimeMillis();
-            final String paramIdx = req.queryParamOrDefault("tableId","");
+            final String paramIdx = preview ? "preview" : req.queryParamOrDefault("tableId","");
             // try to get custom data
             List<String> headers;
             List<Map<String,String>> data;
             List<String> nonHumanAttrs;
             String title;
-            if(paramIdx.length()>0) {
+            if(paramIdx.equals("preview")) {
+                title = "Preview";
+                System.out.println("Creating preview table!");
+                Map<String, Object> map = req.session(false).attribute("table-" + paramIdx);
+                if (map == null) return null;
+
+                headers = (List<String>) map.getOrDefault("headers", Collections.emptyList());
+                if(headers!=null && headers.contains("selection")) {
+                    headers = new ArrayList<>(headers);
+                    headers.remove("selection");
+                }
+                nonHumanAttrs = null;
+                data = (List<Map<String, String>>) map.getOrDefault("rows-highlighted", Collections.emptyList());
+            } else if(paramIdx.length()>0) {
                 TableResponse tableResponse = req.session(false).attribute("table-"+paramIdx);
                 if(tableResponse!=null) {
                     System.out.println("Found tableResponse...");
@@ -2080,6 +2095,72 @@ public class BigQueryServer extends SimilarPatentServer {
                 .limit(1).findFirst().orElse(null);
     }
 
+    private static QueryBuilder createPreviewQuery(AbstractAttribute attribute, String value) {
+        QueryBuilder query;
+        if(attribute!=null && value != null) {
+            AbstractFilter filter;
+            if(attribute instanceof DateRangeAttribute) {
+                String[] dateRange = new String[2];
+                String[] years = value.split(" - ");
+                if(years.length==1) {
+                    years[0] = years[0].replace("+", "");
+                }
+                for(int i = 0; i < years.length; i++) {
+                    years[i] = years[i].trim();
+                    dateRange[i] = years[i]+"-01-01";
+                }
+                filter = new AbstractBetweenFilter(attribute, AbstractFilter.FilterType.Between);
+                ((AbstractBetweenFilter)filter).setMin(dateRange[0]);
+                ((AbstractBetweenFilter)filter).setMax(dateRange[1]);
+            } else if(attribute instanceof RangeAttribute) {
+                Number[] range = new Number[2];
+                String[] values = value.split(" - ");
+                if(values.length==1) {
+                    values[0] = values[0].replace("+","");
+                }
+                for(int i = 0; i < values.length; i++) {
+                    values[i] = values[i] == null ? null : values[i].trim();
+                    values[i] = values[i] == null ? null : (values[i].substring(0, values[i].length()-((RangeAttribute) attribute).valueSuffix().length()));
+                    range[i] = values[i] == null ? null : (attribute.getType().startsWith("int") ? Integer.valueOf(values[i]) : Double.valueOf(values[i]));
+                }
+                filter = new AbstractBetweenFilter(attribute, AbstractFilter.FilterType.Between);
+                ((AbstractBetweenFilter)filter).setMin(range[0]);
+                ((AbstractBetweenFilter)filter).setMax(range[1]);
+
+            } else {
+                if(attribute instanceof DatasetAttribute) {
+                    String prev = value;
+                    value = ((DatasetAttribute) attribute).getDatasetIDFromName(value);
+                    if(value==null) {
+                        System.out.println("Unable to find dataset attribute: "+prev);
+                        return null;
+                    }
+                }
+                filter = new AbstractIncludeFilter(attribute, AbstractFilter.FilterType.Include, attribute.getFieldType(), Collections.singleton(value));
+            }
+            // construct possible nested filter
+            if(attribute instanceof AbstractScriptAttribute) {
+                query = filter.getScriptFilter();
+            } else if(attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)) {
+                String rootName = attribute.getParent().getName();
+                AbstractNestedFilter nestedFilter = new AbstractNestedFilter(new NestedAttribute(Collections.emptyList(), false) {
+                    @Override
+                    public String getName() {
+                        return rootName;
+                    }
+                }, true, filter);
+                nestedFilter.setFilterSubset(Collections.singleton(filter));
+                query = nestedFilter.getFilterQuery();
+            } else {
+                query = filter.getFilterQuery();
+            }
+        } else {
+            query = null;
+        }
+        return query;
+    }
+
+
     private static Object handlePreviewAssets(Request req, Response res) {
         String value1 = req.queryParams("group1");
         String value2 = req.queryParams("group2");
@@ -2104,45 +2185,8 @@ public class BigQueryServer extends SimilarPatentServer {
             System.out.println("Found group by attribute: "+groupByAttribute.getFullName());
         }
 
-        QueryBuilder query1 = null;
-        if(attribute!=null && value1 != null) {
-            AbstractFilter filter = new AbstractIncludeFilter(attribute, AbstractFilter.FilterType.Include, attribute.getFieldType(), Collections.singleton(value1));
-            if(attribute instanceof AbstractScriptAttribute) {
-                query1 = filter.getScriptFilter();
-            } else if(attribute.getParent()!=null&&!(attribute.getParent() instanceof AbstractChartAttribute)) {
-                String rootName = attribute.getParent().getName();
-                AbstractNestedFilter nestedFilter = new AbstractNestedFilter(new NestedAttribute(Collections.emptyList(), false) {
-                    @Override
-                    public String getName() {
-                        return rootName;
-                    }
-                }, true, filter);
-                nestedFilter.setFilterSubset(Collections.singleton(filter));
-                query1 = nestedFilter.getFilterQuery();
-            } else {
-                query1 = filter.getFilterQuery();
-            }
-        }
-        QueryBuilder query2 = null;
-        if(groupByAttribute!=null && value2 != null) {
-            AbstractFilter filter = new AbstractIncludeFilter(groupByAttribute, AbstractFilter.FilterType.Include, groupByAttribute.getFieldType(), Collections.singleton(value2));
-            if(attribute instanceof AbstractScriptAttribute) {
-                query2 = filter.getScriptFilter();
-            } else if (groupByAttribute.getParent()!=null&&!(groupByAttribute.getParent() instanceof AbstractChartAttribute)) {
-                String rootName = groupByAttribute.getParent().getName();
-                AbstractNestedFilter nestedFilter = new AbstractNestedFilter(new NestedAttribute(Collections.emptyList(), false) {
-                    @Override
-                    public String getName() {
-                        return rootName;
-                    }
-                }, true, filter);
-                nestedFilter.setFilterSubset(Collections.singleton(filter));
-                query2 = nestedFilter.getFilterQuery();
-            } else {
-                query2 = filter.getFilterQuery();
-            }
-
-        }
+        QueryBuilder query1 = createPreviewQuery(attribute, value1);
+        QueryBuilder query2 = createPreviewQuery(groupByAttribute, value2);
 
         SearchRequestBuilder requestBuilder = req.session(false).attribute("searchRequest");
         QueryBuilder query = req.session(false).attribute("searchQuery");
