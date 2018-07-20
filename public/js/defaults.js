@@ -576,7 +576,6 @@ $(document).ready(function() {
                             if(!chartJson['chart']['events'].hasOwnProperty('load')) {
                                 if(chartJson['chart']['type']==='pie' && chartJson['series'].length>1) {
                                     chartJson['chart']['events']['load'] = function() {
-                                        var chart_type = this.
                                         var series1 = this.series[0];
                                         var series2 = this.series[1];
                                         var data1 = series1.data;
