@@ -11,6 +11,39 @@ var setupNavigationTabs = function() {
     });
 }
 
+var update_table_function = function(table) {
+   var $table = $(table);
+   var $tableSelectionCounter = $table.parent().find('.table-selection-counter');
+   var $tableRows = $table.find('tbody tr');
+   var num_rows = $tableRows.length;
+   $tableRows = $tableRows.filter(function() {
+       var $check = $(this).find('input.tableSelection');
+       var checked = false;
+       if(selectionCache.has($check.val())) {
+           $check.prop('checked', true);
+           $check.trigger('change');
+           checked = true;
+       }
+       $(this).dblclick(function() {
+           $check.prop('checked', !$check.prop('checked'));
+           $check.trigger('change');
+       });
+       $check.change(function() {
+           // add to selection cache
+           if($(this).prop('checked')) {
+               selectionCache.add($(this).val());
+           } else {
+               selectionCache.delete($(this).val());
+           }
+           $tableSelectionCounter.text(selectionCache.size.toString());
+       });
+       return checked;
+   });
+   var num_checked_rows = $tableRows.length;
+   $tableSelectionCounter.text(selectionCache.size.toString());
+   return num_checked_rows>0 && num_checked_rows===num_rows;
+};
+
 var newContextMenu = function(e) {
     $('#context-menu-cntnr').remove();
     var menu = $(document.body).append('<div id="context-menu-cntnr">'+
@@ -181,38 +214,7 @@ $(document).ready(function() {
 
        if($('#main-data-table thead th').length > 0) {
            selectionCache.clear();
-           var update_table_function = function(table) {
-               var $table = $(table);
-               var $tableSelectionCounter = $table.parent().find('.table-selection-counter');
-               var $tableRows = $table.find('tbody tr');
-               var num_rows = $tableRows.length;
-               $tableRows = $tableRows.filter(function() {
-                   var $check = $(this).find('input.tableSelection');
-                   var checked = false;
-                   if(selectionCache.has($check.val())) {
-                       $check.prop('checked', true);
-                       $check.trigger('change');
-                       checked = true;
-                   }
-                   $(this).dblclick(function() {
-                       $check.prop('checked', !$check.prop('checked'));
-                       $check.trigger('change');
-                   });
-                   $check.change(function() {
-                       // add to selection cache
-                       if($(this).prop('checked')) {
-                           selectionCache.add($(this).val());
-                       } else {
-                           selectionCache.delete($(this).val());
-                       }
-                       $tableSelectionCounter.text(selectionCache.size.toString());
-                   });
-                   return checked;
-               });
-               var num_checked_rows = $tableRows.length;
-               $tableSelectionCounter.text(selectionCache.size.toString());
-               return num_checked_rows>0 && num_checked_rows===num_rows;
-           };
+
            $('#main-data-table')
            .bind('dynatable:afterUpdate', function() {
                 var $paginationTable = $('#dynatable-pagination-links-main-data-table');
@@ -674,7 +676,13 @@ $(document).ready(function() {
                                                                 e.stopPropagation();
                                                             });
                                                             if($table.find('thead th').length > 0) {
-                                                               $table.dynatable({
+                                                               $table
+                                                               .bind('dynatable:afterUpdate', function() {
+                                                                    var all_rows_checked = update_table_function('#main-preview-data-table');
+                                                                    $('#preview-data-table-select-all').prop('checked', all_rows_checked).trigger('change');
+                                                                    return true;
+                                                               })
+                                                               .dynatable({
                                                                  dataset: {
                                                                    ajax: true,
                                                                    ajaxUrl: 'dataTable.json?tableId=preview',
