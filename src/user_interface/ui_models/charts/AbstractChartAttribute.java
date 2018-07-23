@@ -29,6 +29,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     public static final String PLOT_GROUPS_ON_SAME_CHART_FIELD = "plotGroupsSameChart";
     public static final String MAX_GROUP_FIELD = "maxGroupSizeField";
     public static final String INCLUDE_BLANK_FIELD = "includeBlanks";
+    public static final int DEFAULT_MAX_SLICES = 30;
     protected static final Function2<ContainerTag,ContainerTag,ContainerTag> DEFAULT_COMBINE_BY_FUNCTION = (tag1,tag2) -> {
         return div().with(tag1,tag2);
     };
@@ -54,6 +55,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected String name;
     protected Map<String,Boolean> attrNameToIncludeBlanksMap;
     protected Collection<AbstractAttribute> collectByAttributes;
+    protected Map<String,Integer> attrToLimitMap;
+    protected Map<String,Boolean> attrToIncludeRemainingMap;
     public AbstractChartAttribute(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttributes, Collection<AbstractAttribute> collectByAttributes, String name) {
         super(attributes);
         this.groupByAttributes=groupByAttributes;
@@ -68,6 +71,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         this.attrToCollectTypeMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToDrilldownMap = Collections.synchronizedMap(new HashMap<>());
         this.attrToSwapAxesMap = Collections.synchronizedMap(new HashMap<>());
+        this.attrToLimitMap=Collections.synchronizedMap(new HashMap<>());
+        this.attrToIncludeRemainingMap = Collections.synchronizedMap(new HashMap<>());
     }
 
     protected static String combineTypesToString(Collection<String> types) {
@@ -286,6 +291,10 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 if(collectByType==null) collectByType = Type.Count.toString();
                 System.out.println("Found type: "+collectByType);
                 attrToCollectTypeMap.put(attr,Type.valueOf(collectByType));
+                Integer limit = SimilarPatentServer.extractInt(params, getMaxSlicesField(attr), DEFAULT_MAX_SLICES);
+                if(limit!=null) attrToLimitMap.put(attr,limit);
+                boolean includeRemaining = SimilarPatentServer.extractBool(params, getIncludeRemainingField(attr));
+                attrToIncludeRemainingMap.put(attr, includeRemaining);
             });
         }
     }

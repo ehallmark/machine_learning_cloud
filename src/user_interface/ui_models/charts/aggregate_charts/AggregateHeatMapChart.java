@@ -1,20 +1,26 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
 import com.googlecode.wickedcharts.highcharts.options.Options;
+import data_pipeline.helpers.Function2;
+import j2html.tags.ContainerTag;
+import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
 import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.highcharts.ArraySeries;
 import user_interface.ui_models.charts.highcharts.HeatMapChart;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static j2html.TagCreator.*;
 
 public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
     private static final String AGG_SUFFIX = "_heatmap";
@@ -27,48 +33,57 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         return new AggregateHeatMapChart(attributes,groupByAttributes,collectByAttributes);
     }
 
+
+    @Override
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+        Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getIncludeRemainingField(attrName),getMaxSlicesField(attrName));
+        Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
+                div().withClass("col-9").with(
+                        tag1
+                ),div().withClass("col-3").with(
+                        tag2
+                )
+        );
+        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true);
+    }
+
+
+
+    private ContainerTag getAdditionalTagPerAttr(String attrName) {
+        return div().withClass("row").with(
+                div().withClass("col-6").with(
+                        label("Max Rows").attr("title", "The maximum number of rows for this heat map chart.").attr("style","width: 100%;").with(
+                                br(),
+                                input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).withType("number").withClass("form-control").withValue("20")
+                        )
+                ), div().withClass("col-6").with(
+                        label("Include Remaining").attr("title", "Including remaining counts in the heat map chart.").with(
+                                br(),
+                                input().withId(getIncludeRemainingField(attrName)).withName(getIncludeRemainingField(attrName)).withType("checkbox").withValue("off")
+                        )
+                )
+        );
+    }
+
+
     @Override
     public List<? extends HeatMapChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
         String humanAttr = SimilarPatentServer.humanAttributeFor(attrName);
-        String collectAttr = attrToCollectByAttrMap.get(attrName);
-        if(collectAttr==null) {
-            collectAttr = "Assets";
-        } else {
-            collectAttr = BigQueryServer.fullHumanAttributeFor(collectAttr);
-        }
-        AbstractAttribute collectByAttr = findAttribute(collectByAttributes, collectAttr);
-        int valueDecimals = 0;
-        String valueSuffix = "";
-        if(collectByAttr != null && collectByAttr instanceof RangeAttribute) {
-            valueSuffix = ((RangeAttribute) collectByAttr).valueSuffix();
-        }
-        if(collectByAttr != null && collectByAttr.getType().equals("double")) {
-            valueDecimals = 1;
-        }
         String title = humanAttr + " "+chartTitle;
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         String yLabel = BigQueryServer.fullHumanAttributeFor(groupedByAttrName);
         String subtitle;
-        AbstractAttribute groupByAttr = findAttribute(groupByAttributes, groupedByAttrName);
         subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
-        String xAxisSuffix;
-        String yAxisSuffix;
-
-        if(attribute instanceof RangeAttribute) {
-            xAxisSuffix = ((RangeAttribute) attribute).valueSuffix();
-        } else {
-            xAxisSuffix = "";
-        }
-        if(groupByAttr instanceof RangeAttribute) {
-            yAxisSuffix = ((RangeAttribute) groupByAttr).valueSuffix();
-        } else {
-            yAxisSuffix = "";
-        }
-
         Type collectorType = attrToCollectTypeMap.getOrDefault(attrName, Type.Count);
         Options parentOptions = new Options();
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
-        parentOptions = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,false,includeBlank);
+        Integer limit = attrToLimitMap.getOrDefault(attrName, DEFAULT_MAX_SLICES);
+        boolean includedRemaining = attrToIncludeRemainingMap.getOrDefault(attrName, false);
+        if(!includedRemaining) {
+            limit = null; // turns off accumulating remaining pie piece
+        }
+        parentOptions = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,limit,false,includeBlank);
         List<String> xCategories = parentOptions.getSeries().isEmpty()? Collections.emptyList() :
                 parentOptions.getSeries().stream().flatMap(series->((ArraySeries)series).getData().stream().map(data->(String)data.get(0))).distinct().sorted().collect(Collectors.toList());
         List<String> yCategories = parentOptions.getSeries().stream().map(series->series.getName()).collect(Collectors.toList());

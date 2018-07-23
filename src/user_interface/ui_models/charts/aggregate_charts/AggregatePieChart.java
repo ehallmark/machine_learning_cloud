@@ -13,7 +13,6 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
 import seeding.google.elasticsearch.attributes.DateRangeAttribute;
 import seeding.google.elasticsearch.attributes.SignificantTermsAttribute;
-import spark.Request;
 import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -28,39 +27,25 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
 import java.time.temporal.TemporalAmount;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 import static j2html.TagCreator.*;
 
 public class AggregatePieChart extends AggregationChart<PieChart> {
     private static final String AGG_SUFFIX = "_pie";
-    public static final int DEFAULT_MAX_SLICES = 30;
 
-    protected Map<String,Integer> attrToLimitMap;
-    protected Map<String,Boolean> attrToIncludeRemainingMap;
+
     public AggregatePieChart(Collection<AbstractAttribute> attributes, Collection<AbstractAttribute> groupByAttrs, Collection<AbstractAttribute> collectAttrs) {
         super(false,"Distribution",AGG_SUFFIX, attributes, groupByAttrs, collectAttrs,Constants.PIE_CHART);
-        this.attrToLimitMap=Collections.synchronizedMap(new HashMap<>());
-        this.attrToIncludeRemainingMap = Collections.synchronizedMap(new HashMap<>());
     }
 
     @Override
     public AggregatePieChart dup() {
         return new AggregatePieChart(attributes,groupByAttributes,collectByAttributes);
-    }
-
-    @Override
-    public void extractRelevantInformationFromParams(Request params) {
-        super.extractRelevantInformationFromParams(params);
-        if(this.attrNames!=null) {
-            this.attrNames.forEach(attr -> {
-                Integer limit = SimilarPatentServer.extractInt(params, getMaxSlicesField(attr), DEFAULT_MAX_SLICES);
-                if(limit!=null) attrToLimitMap.put(attr,limit);
-                boolean includeRemaining = SimilarPatentServer.extractBool(params, getIncludeRemainingField(attr));
-                attrToIncludeRemainingMap.put(attr, includeRemaining);
-            });
-        }
     }
 
     @Override
