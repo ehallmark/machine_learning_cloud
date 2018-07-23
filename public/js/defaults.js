@@ -839,7 +839,13 @@ $(document).ready(function() {
                                     }
                                 }
                             };
-                            chartJson['plotOptions']['series']['point']['events'] = clickEvents;
+                            if(chartJson['chart']['type']=='wordcloud') {
+                                chartJson['series']['point'] = {
+                                    events: clickEvents
+                                };
+                            } else {
+                                chartJson['plotOptions']['series']['point']['events'] = clickEvents;
+                            }
                             //chartJson['plotOptions']['series']['dataLabels']['events'] = {
                             //    contextmenu: function(e) {
                             //        e.preventDefault();
