@@ -840,11 +840,13 @@ $(document).ready(function() {
                                 }
                             };
                             if(chartJson['chart']['type']=='wordcloud') {
-                                chartJson['series']['point'] = {
-                                    events: {
-                                        click: clickEvents['contextmenu']
-                                    }
-                                };
+                                if(chartJson['series'].length>0) {
+                                    chartJson['series'][0]['point'] = {
+                                        events: {
+                                            click: clickEvents['contextmenu']
+                                        }
+                                    };
+                                }
                             } else {
                                 chartJson['plotOptions']['series']['point']['events'] = clickEvents;
                             }
