@@ -841,7 +841,9 @@ $(document).ready(function() {
                             };
                             if(chartJson['chart']['type']=='wordcloud') {
                                 chartJson['series']['point'] = {
-                                    events: clickEvents
+                                    events: {
+                                        click: clickEvents['contextmenu']
+                                    }
                                 };
                             } else {
                                 chartJson['plotOptions']['series']['point']['events'] = clickEvents;
