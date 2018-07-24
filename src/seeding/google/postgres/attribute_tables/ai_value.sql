@@ -25,7 +25,7 @@ insert into big_query_ai_value_claims (
     coalesce(mode() within group(order by num_claims), count(*)),
     coalesce(mode() within group(order by length_smallest_ind_claim), min(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else array_length(array_remove(regexp_split_to_array(claim,'\s+'),''),1) end))
     from big_query_patent_english_claims as p, unnest(regexp_split_to_array(claims, '((Iaddend..Iadd.)|(\n\s*\n\s*\n\s*))')) with ordinality as c(claim,n)
-    where claim is not null and char_length(trim(claim))>20
+    where num_claims is not null or (claim is not null and char_length(trim(claim))>20)
     group by publication_number_full
 );
 
