@@ -242,6 +242,14 @@ public class UpdateAll {
         }
 
         try {
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignee_table.sql"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute assignee_table...");
+            System.exit(1);
+        }
+
+        try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/latest_assignees.sql"));
         } catch(Exception e) {
             e.printStackTrace();
@@ -262,6 +270,15 @@ public class UpdateAll {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute ai_value...");
+            System.exit(1);
+        }
+
+
+        try {
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/tech_tags_aggs.sql"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute tech_tags_aggs...");
             System.exit(1);
         }
 
@@ -287,6 +304,15 @@ public class UpdateAll {
 
 
         Database.close();
+
+        // MERGE RESULTS
+        try {
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/merge_patents_for_es.sql"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute tech_tags_aggs...");
+            System.exit(1);
+        }
     }
 
     private static BufferedReader getOutput(Process p) {

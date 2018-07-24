@@ -13,9 +13,3 @@ create table big_query_technologies2 (
     technology text not null,
     technology2 text not null
 );
-
-
-
--- tweak model
-update big_query_technologies2 set technology2 = 'DATA MANAGEMENT' where technology2 = 'DATA GOVERNANCE';
-update big_query_technologies2 set technology2 = 'TARGETED MEDIA' where technology2 = 'TACTICAL MEDIA';

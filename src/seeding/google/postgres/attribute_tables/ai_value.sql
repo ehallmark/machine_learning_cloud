@@ -140,7 +140,7 @@ create table big_query_ai_value (
 );
 
 -- need to deal with missing values
-insert into big_query_ai_value (family_id,value) (
+insert into big_query_ai_value (publication_number_full,value) (
     with average as (
         select
             sum(means_present)::double precision/count(means_present) as avg_means_present,

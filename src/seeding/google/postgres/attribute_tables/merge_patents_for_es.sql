@@ -323,7 +323,7 @@ insert into patents_global_merged (
         p.invention_title[array_position(p.invention_title_lang,'en')],
         p.abstract[array_position(p.abstract_lang,'en')],
         p.claims[array_position(p.claims_lang,'en')],
-        value_claims.num_claims,
+        coalesce(p.num_claims, value_claims.num_claims),
         null, -- much faster for now... p.description[array_position(p.description_lang,'en')],
         p.inventor,
         p.assignee,
@@ -361,8 +361,8 @@ insert into patents_global_merged (
         -- ai value
         ai_value.value,
         -- other value attrs
-        value_claims.length_smallest_ind_claim,
-        value_claims.means_present,
+        coalesce(p.length_of_smallest_ind_claim, value_claims.length_smallest_ind_claim),
+        coalesce(p.means_present, value_claims.means_present),
         value_family_size.family_size,
         -- sep
         sep.sso,
@@ -463,9 +463,9 @@ insert into patents_global_merged (
     left outer join big_query_keywords_tfidf as ke on (p.family_id=ke.family_id)
     left outer join big_query_sep_by_family as sep on (sep.family_id=p.family_id)
     left outer join big_query_wipo_by_family as wipo on (wipo.family_id=p.family_id)
-    left outer join big_query_ai_value_claims as value_claims on (value_claims.family_id=p.family_id)
+    left outer join big_query_ai_value_claims as value_claims on (value_claims.publication_number_full=p.publication_number_full)
     left outer join big_query_ai_value_family_size as value_family_size on (value_family_size.family_id=p.family_id)
-    left outer join big_query_ai_value as ai_value on (ai_value.family_id=p.family_id)
+    left outer join big_query_ai_value as ai_value on (ai_value.publication_number_full=p.publication_number_full)
     left outer join big_query_embedding_by_fam as enc on (enc.family_id=p.family_id)
     left outer join big_query_cpc_tree as cpc_tree on (cpc_tree.publication_number_full=p.publication_number_full)
     left outer join big_query_cpc_tree_by_fam as cpc_tree_by_fam on (cpc_tree_by_fam.family_id=p.family_id)
