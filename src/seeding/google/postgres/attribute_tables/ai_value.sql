@@ -1,17 +1,5 @@
 \connect patentdb
 
--- update patent claim text
-insert into big_query_patent_english_claims (family_id,publication_number_full,abstract,claims) (
-    select distinct on (p.family_id)
-        p.family_id,p.publication_number_full,
-        p.abstract[array_position(p.abstract_lang,'en')],
-        p.claims[array_position(p.claims_lang,'en')]
-    from patents_global as p
-    full outer join big_query_patent_english_claims as c
-    on (p.family_id=c.family_id)
-    where p.claims[array_position(p.claims_lang,'en')] is not null and p.family_id != '-1' and c.family_id is null
-    order by p.family_id,case when p.country_code='US' then 1 else 0 end desc,p.publication_date desc nulls last,p.filing_date desc nulls last
-);
 
 drop table big_query_ai_value_family_size;
 create table big_query_ai_value_family_size (
@@ -23,23 +11,22 @@ insert into big_query_ai_value_family_size (family_id,family_size) (
     select family_id,count(*) from patents_global where family_id!='-1' group by family_id
 );
 
-
 drop table big_query_ai_value_claims;
 create table big_query_ai_value_claims (
-    family_id varchar(32) primary key,
+    publication_number_full varchar(32) primary key,
     means_present integer,
     num_claims integer,
     length_smallest_ind_claim integer
 ); -- insert script is located in patent_text.sql
 
-insert into big_query_ai_value_claims (family_id,means_present,num_claims,length_smallest_ind_claim) (
-    select family_id,
-    case when bool_and(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else (claim like '% means %')::boolean end) then 1 else 0 end,
-    count(*) as num_claims,
-    min(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else array_length(array_remove(regexp_split_to_array(claim,'\s+'),''),1) end)
+insert into big_query_ai_value_claims (
+    select publication_number_full,
+    coalesce(mode() within group(order by means_present), case when bool_and(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else (claim like '% means %')::boolean end) then 1 else 0 end),
+    coalesce(mode() within group(order by num_claims), count(*)),
+    coalesce(mode() within group(order by length_smallest_ind_claim), min(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else array_length(array_remove(regexp_split_to_array(claim,'\s+'),''),1) end))
     from big_query_patent_english_claims as p, unnest(regexp_split_to_array(claims, '((Iaddend..Iadd.)|(\n\s*\n\s*\n\s*))')) with ordinality as c(claim,n)
     where claim is not null and char_length(trim(claim))>20
-    group by family_id
+    group by publication_number_full
 );
 
 
@@ -71,7 +58,7 @@ insert into big_query_ai_value_citations (
         publication_number_full,t2.rcited_family_id from big_query_reverse_citations_by_pub as t,unnest(t.rcite_family_id) with ordinality as t2(rcited_family_id,n)
     ) temp left outer join patents_global on
         (patents_global.publication_number_full=temp.publication_number_full)
-    where family_id !='-1' -- and not family_id in (select family_id from big_query_ai_value_citations)
+    where family_id !='-1'
     group by family_id
 );
 
@@ -92,7 +79,7 @@ create or replace function predict(double precision[], double precision[], doubl
 
 drop table big_query_ai_value_all;
 create table big_query_ai_value_all (
-    family_id varchar(32) primary key,
+    publication_number_full varchar(32) primary key,
     means_present integer,
     num_claims integer,
     length_smallest_ind_claim integer,
@@ -101,19 +88,20 @@ create table big_query_ai_value_all (
     family_size integer
 );
 
-insert into big_query_ai_value_all (family_id,means_present,num_claims,length_smallest_ind_claim,num_rcites,num_assignments,family_size) (
+insert into big_query_ai_value_all (publication_number_full,means_present,num_claims,length_smallest_ind_claim,num_rcites,num_assignments,family_size) (
     select
-    family_id,
+    p.publication_number_full,
     means_present,
     num_claims,
     length_smallest_ind_claim,
     num_rcites,
     num_assignments,
     family_size
-    from big_query_ai_value_family_size
-    left outer join big_query_ai_value_citations using (family_id)
-    left outer join big_query_ai_value_claims using (family_id)
-    left outer join big_query_ai_value_assignments using(family_id)
+    from big_query_family_id as p
+    join big_query_ai_value_family_size as f on (f.family_id=p.family_id)
+    left outer join big_query_ai_value_citations as ci on (ci.family_id=p.family_id)
+    left outer join big_query_ai_value_claims as cl on (p.publication_number_full=cl.publication_number_full)
+    left outer join big_query_ai_value_assignments as a on (a.family_id=p.family_id)
 );
 
 drop table big_query_ai_value_weights;
@@ -130,24 +118,24 @@ insert into big_query_ai_value_weights (date,weights,intercept) values (
     -1.0491014::double precision
 );
 
-drop table big_query_gather_wipo_stats_by_family_id;
-create table big_query_gather_wipo_stats_by_family_id (
-    family_id varchar(32) primary key,
+drop table big_query_gather_wipo_stats_by_pub;
+create table big_query_gather_wipo_stats_by_pub (
+    publication_number_full varchar(32) primary key,
     score double precision not null
 );
 
-insert into big_query_gather_wipo_stats_by_family_id (family_id,score) (
-    select family_id,(frequency)*(select max(frequency) as max from big_query_gather_wipo_stats) as score
-    from big_query_wipo_by_family as g
-    join big_query_gather_wipo_stats as t on (g.wipo_technology=t.technology)
-    where family_id != '-1'
-    --group by family_id
+insert into big_query_gather_wipo_stats_by_pub (publication_number_full,score) (
+    select f.publication_number_full,(frequency)*(select max(frequency) as max from big_query_gather_wipo_stats) as score
+    from big_query_family_id as f
+    join big_query_wipo_by_family as g on (f.family_id=g.family_id)
+    join big_query_gather_wipo_stats as t on (g.wipo_technology[1]=t.technology)
+    where f.family_id != '-1'
 );
 
 
 drop table big_query_ai_value;
 create table big_query_ai_value (
-    family_id varchar(32) primary key, -- eg. US9923222B1
+    publication_number_full varchar(32) primary key, -- eg. US9923222B1
     value double precision not null
 );
 
@@ -168,7 +156,7 @@ insert into big_query_ai_value (family_id,value) (
     ), intercept as (
         select intercept from big_query_ai_value_weights order by date desc nulls last limit 1
     )
-    select ai.family_id,(predict((
+    select ai.publication_number_full,(predict((
         Array[
             coalesce(means_present,average.avg_means_present),
             coalesce(num_claims,average.avg_num_claims),
@@ -179,7 +167,7 @@ insert into big_query_ai_value (family_id,value) (
          ]
     )::double precision[],weights,intercept)*(0.85))+(0.15*coalesce(cpc_stats.score,0.0)) as value
     from big_query_ai_value_all as ai
-    left outer join big_query_gather_wipo_stats_by_family_id as cpc_stats
-       on (cpc_stats.family_id=ai.family_id),
+    left outer join big_query_gather_wipo_stats_by_pub as cpc_stats
+       on (cpc_stats.publication_number_full=ai.publication_number_full),
     average,weights,intercept
 );

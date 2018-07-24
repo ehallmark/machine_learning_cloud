@@ -150,14 +150,8 @@ public class UpdateAll {
             System.exit(1);
         }
 
-        // cpc trees
-        try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/cpc_tree.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute cpc_tree...");
-            System.exit(1);
-        }
+
+        // AGGREGATIONS (do family id idx first)
 
         // run helper sql commands to build dependent tables
         try {
@@ -167,6 +161,26 @@ public class UpdateAll {
             System.out.println("Failed to execute family_id_idx...");
             System.exit(1);
         }
+
+
+        // cpc trees
+        try {
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/cpc_tree.sql"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute cpc_tree...");
+            System.exit(1);
+        }
+
+        // citations_and_pclaims
+        try {
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/citations_and_pclaims.sql"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute citations_and_pclaims...");
+            System.exit(1);
+        }
+
 
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/maintenance_codes_aggs.sql"));
@@ -243,6 +257,13 @@ public class UpdateAll {
             System.exit(1);
         }
 
+        try {
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/ai_value.sql"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute ai_value...");
+            System.exit(1);
+        }
 
 
 

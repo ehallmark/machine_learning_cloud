@@ -63,10 +63,10 @@ create table big_query_gather_wipo (
 );
 
 insert into big_query_gather_wipo (publication_number_full,technology) (
-    select p.publication_number_full,mode() within group (order by wipo.wipo_technology)
+    select p.publication_number_full,mode() within group (order by wipo_tech)
     from big_query_gather as g
     join patents_global as p on (p.country_code='US' and p.publication_number=g.publication_number)
-    join big_query_wipo_by_family as wipo on (wipo.family_id=p.family_id)
+    join big_query_wipo_by_family as wipo on (wipo.family_id=p.family_id), unnest(wipo.wipo_technology) as wipo_tech
     where p.country_code='US'
     group by p.publication_number_full
 );

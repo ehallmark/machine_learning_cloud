@@ -2,20 +2,12 @@
 
 drop table big_query_patent_english_claims;
 create table big_query_patent_english_claims (
-    family_id varchar(32) primary key,
-    publication_number_full varchar(32) not null,
+    publication_number_full varchar(32) primary key,
     abstract text,
-    claims text not null
-);
-
-insert into big_query_patent_english_claims (family_id,publication_number_full,abstract,claims) (
-    select distinct on (family_id)
-        family_id,publication_number_full,
-        abstract[array_position(abstract_lang,'en')],
-        claims[array_position(claims_lang,'en')]
-    from patents_global
-    where claims[array_position(claims_lang,'en')] is not null and family_id != '-1'
-    order by family_id,case when country_code='US' then 1 else 0 end desc,publication_date desc nulls last,filing_date desc nulls last
+    claims text not null,
+    means_present boolean,
+    num_claims integer,
+    length_smallest_ind_claim integer
 );
 
 drop table big_query_patent_english_abstract;
