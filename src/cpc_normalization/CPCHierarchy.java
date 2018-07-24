@@ -1,16 +1,17 @@
 package cpc_normalization;
 
-import elasticsearch.IngestMongoIntoElasticSearch;
+import data_pipeline.helpers.Function2;
 import lombok.Getter;
-import org.bson.Document;
 import seeding.Constants;
 import seeding.Database;
-import seeding.google.mongo.ingest.IngestCPCDefinitions;
 
 import java.io.File;
+import java.sql.Array;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -53,21 +54,19 @@ public class CPCHierarchy {
         return list;
     }
 
-    public void run() {
+    public void run() throws SQLException {
         topLevel = Collections.synchronizedCollection(new HashSet<>());
         labelToCPCMap = Collections.synchronizedMap(new HashMap<>());
 
         AtomicInteger i = new AtomicInteger(0);
         AtomicInteger connectionCounter = new AtomicInteger(0);
-        Consumer<Document> consumer = doc -> {
-            String id = doc.getString("_id");
+        Function2<String,List<String>,Void> consumer = (id, parents) -> {
             CPC cpc = labelToCPCMap.getOrDefault(id,new CPC(id));
             labelToCPCMap.putIfAbsent(id,cpc);
             if(i.getAndIncrement() % 10000==9999) {
                 System.out.println("Completed "+i.get()+" cpcs.");
                 System.out.println("Num connections: "+connectionCounter.get());
             }
-            List<String> parents = (List<String>)doc.get("parents");
             if(parents!=null) {
                 parents.stream().sorted((p1,p2)->Integer.compare(p2.length(),p1.length())).limit(1).forEach(parent->{
                     connectionCounter.getAndIncrement();
@@ -77,10 +76,24 @@ public class CPCHierarchy {
                     parentCpc.addChild(cpc);
                 });
             }
+            return null;
         };
 
-        IngestMongoIntoElasticSearch.iterateOverCollection(consumer,new Document(), IngestCPCDefinitions.INDEX_NAME, IngestCPCDefinitions.TYPE_NAME,new String[]{});
-
+        PreparedStatement ps = Database.getConn().prepareStatement("select code,parents from big_query_cpc_definition");
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()) {
+            String id = rs.getString(1);
+            Array parentArray = rs.getArray(2);
+            List<String> parents;
+            if(parentArray == null) {
+                parents = null;
+            } else {
+                parents = Arrays.asList((String[])parentArray.getArray());
+            }
+            consumer.apply(id, parents);
+        }
+        rs.close();
+        ps.close();
         List<CPC> allNodes = new ArrayList<>(labelToCPCMap.values());
 
         AtomicInteger noParents = new AtomicInteger(0);
@@ -121,8 +134,12 @@ public class CPCHierarchy {
 
     public static CPCHierarchy updateAndGetLatest() {
         CPCHierarchy hierarchy = new CPCHierarchy();
-        hierarchy.run();
-        hierarchy.save();
+        try {
+            hierarchy.run();
+            hierarchy.save();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
         return hierarchy;
     }
 }
