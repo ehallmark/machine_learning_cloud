@@ -54,6 +54,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     @Getter
     protected String name;
     protected Map<String,Boolean> attrNameToIncludeBlanksMap;
+    @Getter
     protected Collection<AbstractAttribute> collectByAttributes;
     protected Map<String,Integer> attrToLimitMap;
     protected Map<String,Boolean> attrToIncludeRemainingMap;

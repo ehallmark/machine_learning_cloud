@@ -2173,7 +2173,7 @@ public class BigQueryServer extends SimilarPatentServer {
         AggregationChart<?> chart;
 
         AbstractAttribute attribute;
-        AbstractAttribute groupByAttribute = null;
+        AbstractAttribute groupByAttribute;
         if(chartId.contains("table")) {
             System.out.println("Looking for tableresponse with id: "+chartId);
             TableResponse task = req.session(false).attribute(chartId);
@@ -2181,17 +2181,10 @@ public class BigQueryServer extends SimilarPatentServer {
             groupByAttribute = task.groupByAttribute;
 
         } else {
-            String attrName;
-            String groupByAttrName;
             chartId = chartId.substring(0, chartId.length() - 2);
             ChartTask task = req.session(false).attribute(chartId);
-            chart = task.getChart();
-            attrName = task.getAttrName();
-            groupByAttrName = chart.getAttrNameToGroupByAttrNameMap().get(attrName);
             attribute = task.getAttribute();
-            if(groupByAttrName!=null) {
-                groupByAttribute = AggregationChart.findAttribute(chart.getGroupByAttributes(), groupByAttrName);
-            }
+            groupByAttribute = task.getGroupByAttribute();
         }
 
         if(attribute!=null) {
@@ -2464,10 +2457,20 @@ public class BigQueryServer extends SimilarPatentServer {
                                 if (attribute == null || attribute instanceof NestedAttribute) {
                                     continue;
                                 }
+                                AbstractAttribute groupByAttr = null;
+                                String groupByAttrName = chart.getAttrNameToGroupByAttrNameMap().get(attrName);
+                                if(groupByAttrName!=null) {
+                                    groupByAttr = AggregationChart.findAttribute(chart.getGroupByAttributes(), groupByAttrName);
+                                }
+                                AbstractAttribute collectByAttr = null;
+                                String collectByAttrName = chart.getAttrToCollectByAttrMap().get(attrName);
+                                if(collectByAttrName!=null) {
+                                    collectByAttr = AggregationChart.findAttribute(chart.getCollectByAttributes(), collectByAttrName);
+                                }
                                 String id;
                                 RecursiveTask task;
                                 if(isTable) {
-                                    Collection<TableResponse> tableResponse = (Collection<TableResponse>)chart.create(attribute,attrName,aggregations);
+                                    Collection<TableResponse> tableResponse = (Collection<TableResponse>)chart.create(req, attrName, attribute, groupByAttr, collectByAttr, aggregations);
                                     for(TableResponse tr : tableResponse) {
                                         id = "table-" + totalTableCnt.getAndIncrement();
                                         task = tr.computeAttributesTask;
@@ -2477,7 +2480,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                         sessionIds.add(id);
                                     }
                                 } else {
-                                    task = new ChartTask(chart, attribute, attrName, aggregations);
+                                    task = new ChartTask(req, chart, attrName, attribute, groupByAttr, collectByAttr, aggregations);
                                     chartTypes.add(chart.getType());
                                     pool.execute(task);
                                     id = "chart-" + totalChartCnt.getAndIncrement();

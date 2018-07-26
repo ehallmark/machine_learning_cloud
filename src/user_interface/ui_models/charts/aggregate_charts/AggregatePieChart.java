@@ -13,6 +13,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
 import seeding.google.elasticsearch.attributes.DateRangeAttribute;
 import seeding.google.elasticsearch.attributes.SignificantTermsAttribute;
+import spark.Request;
 import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -49,7 +50,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     }
 
     @Override
-    public List<? extends PieChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
+    public List<? extends PieChart> create(Request req,  String attrName, AbstractAttribute attribute, AbstractAttribute groupByAttribute, AbstractAttribute collectByAttribute, Aggregations aggregations) {
         String title = SimilarPatentServer.humanAttributeFor(attrName) + " "+chartTitle;
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         Integer limit = attrToLimitMap.getOrDefault(attrName, DEFAULT_MAX_SLICES);
@@ -72,7 +73,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
         if(!includedRemaining) {
             limit = null; // turns off accumulating remaining pie piece
         }
-        parentOptions = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,limit,drilldown,includeBlank);
+        parentOptions = createDataForAggregationChart(parentOptions, aggregations, attrName, attribute, groupByAttribute, collectByAttribute, title,limit,drilldown,includeBlank);
         boolean applyPieChartCenterFill = !isGrouped || drilldown;
         boolean setColors = !drilldown;
         return Collections.singletonList(new PieChart(parentOptions, title,  subtitle, collectAttr, collectorType, applyPieChartCenterFill, setColors));

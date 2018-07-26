@@ -6,6 +6,7 @@ import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
+import spark.Request;
 import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -68,7 +69,7 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
 
 
     @Override
-    public List<? extends HeatMapChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
+    public List<? extends HeatMapChart> create(Request req,  String attrName, AbstractAttribute attribute, AbstractAttribute groupByAttribute, AbstractAttribute collectByAttribute, Aggregations aggregations) {
         String humanAttr = SimilarPatentServer.humanAttributeFor(attrName);
         String title = humanAttr + " "+chartTitle;
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
@@ -83,7 +84,7 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         if(!includedRemaining) {
             limit = null; // turns off accumulating remaining pie piece
         }
-        parentOptions = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,limit,false,includeBlank);
+        parentOptions = createDataForAggregationChart(parentOptions,aggregations,attrName,attribute,groupByAttribute,collectByAttribute,title,limit,false,includeBlank);
         List<String> xCategories = parentOptions.getSeries().isEmpty()? Collections.emptyList() :
                 parentOptions.getSeries().stream().flatMap(series->((ArraySeries)series).getData().stream().map(data->(String)data.get(0))).distinct().sorted().collect(Collectors.toList());
         List<String> yCategories = parentOptions.getSeries().stream().map(series->series.getName()).collect(Collectors.toList());

@@ -6,6 +6,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
+import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.charts.aggregations.Type;
@@ -58,7 +59,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     }
 
     @Override
-    public List<? extends TableResponse> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
+    public List<? extends TableResponse> create(Request req,  String attrName, AbstractAttribute attribute, AbstractAttribute groupByAttribute, AbstractAttribute collectByAttribute, Aggregations aggregations) {
         Type collectorType = attrToCollectTypeMap.get(attrName);
         String collectByAttrName = attrToCollectByAttrMap.get(attrName);
 
@@ -80,7 +81,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         Function<Aggregations, Number> subAggregationHandler = getSubAggregationHandler(attrName);
 
         if(isGrouped) { // handle two dimensional case (pivot)
-            AbstractAttribute groupByAttribute = findAttribute(groupByAttributes,groupedByAttrName);
             final String groupBySuffix = getGroupSuffix();
             final String groupAggName = getGroupByAttrName(attrName,groupedByAttrName,groupBySuffix);
             final String nestedGroupAggName = getGroupByAttrName(attrName,groupedByAttrName,NESTED_SUFFIX+groupBySuffix);

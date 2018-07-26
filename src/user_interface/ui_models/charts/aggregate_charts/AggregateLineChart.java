@@ -68,7 +68,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
     }
 
     @Override
-    public List<? extends LineChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
+    public List<? extends LineChart> create(Request req,  String attrName, AbstractAttribute attribute, AbstractAttribute groupByAttribute, AbstractAttribute collectByAttribute, Aggregations aggregations) {
         String humanAttr = SimilarPatentServer.fullHumanAttributeFor(attrName);
         String collectAttr = attrToCollectByAttrMap.get(attrName);
         if(collectAttr==null) {
@@ -89,7 +89,7 @@ public class AggregateLineChart extends AggregationChart<LineChart> {
         }
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         Options parentOptions = new Options();
-        parentOptions = createDataForAggregationChart(parentOptions, aggregations,attribute,attrName,title,null, false, includeBlank);
+        parentOptions = createDataForAggregationChart(parentOptions, aggregations,attrName, attribute, groupByAttribute, collectByAttribute, title,null, false, includeBlank);
         Type collectorType = attrToCollectTypeMap.getOrDefault(attrName, Type.Count);
 
         List<? extends Series> data = parentOptions.getSeries();

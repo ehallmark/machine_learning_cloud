@@ -7,20 +7,14 @@ import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
 import spark.Request;
-import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.RangeAttribute;
-import user_interface.ui_models.charts.aggregations.Type;
-import user_interface.ui_models.charts.highcharts.HeatMapChart;
 import user_interface.ui_models.charts.highcharts.WordCloudChart;
 
 import java.util.*;
 import java.util.function.Function;
 
 import static j2html.TagCreator.*;
-import static j2html.TagCreator.br;
-import static j2html.TagCreator.input;
 
 public class AggregateWordCloudChart extends AggregationChart<WordCloudChart> {
     private static final String AGG_SUFFIX = "_wordcloud";
@@ -49,7 +43,7 @@ public class AggregateWordCloudChart extends AggregationChart<WordCloudChart> {
 
 
     @Override
-    public List<? extends WordCloudChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
+    public List<? extends WordCloudChart> create(Request req,  String attrName, AbstractAttribute attribute, AbstractAttribute groupByAttribute, AbstractAttribute collectByAttribute, Aggregations aggregations) {
         String humanAttr = SimilarPatentServer.humanAttributeFor(attrName);
         String collectAttr = attrToCollectByAttrMap.get(attrName);
         Integer limit = null; // turns off accumulating remaining pie piece
@@ -70,7 +64,7 @@ public class AggregateWordCloudChart extends AggregationChart<WordCloudChart> {
         Options parentOptions = new Options();
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
 
-        parentOptions = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,limit,false,includeBlank);
+        parentOptions = createDataForAggregationChart(parentOptions,aggregations,attrName,attribute,groupByAttribute,collectByAttribute,title,limit,false,includeBlank);
 
         return Collections.singletonList(new WordCloudChart(parentOptions, title, subtitle, humanSearchType));
     }

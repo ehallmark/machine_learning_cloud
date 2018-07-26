@@ -310,7 +310,7 @@ public class UpdateAll {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/merge_patents_for_es.sql"));
         } catch(Exception e) {
             e.printStackTrace();
-            System.out.println("Failed to execute tech_tags_aggs...");
+            System.out.println("Failed to execute merge_patents_for_es...");
             System.exit(1);
         }
     }

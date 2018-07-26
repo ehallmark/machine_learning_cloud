@@ -75,13 +75,12 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
     }
 
     // Set series in options param
-    protected Options createDataForAggregationChart(Options options, Aggregations aggregations, AbstractAttribute attribute, String attrName, String title, Integer limit, boolean drilldown, boolean includeBlanks) {
+    protected Options createDataForAggregationChart(Options options, Aggregations aggregations, String attrName, AbstractAttribute attribute, AbstractAttribute groupByAttribute, AbstractAttribute collectByAttribute, String title, Integer limit, boolean drilldown, boolean includeBlanks) {
         List<ArraySeries> data = new ArrayList<>();
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
         final boolean isGrouped = groupedByAttrName != null;
         if (isGrouped) {
             List<Pair<Number, ArraySeries>> drilldownData = new ArrayList<>();
-            AbstractAttribute groupByAttribute = findAttribute(groupByAttributes, groupedByAttrName);
             final String groupBySuffix = getGroupSuffix();
             final String groupAggName = getGroupByAttrName(attrName, groupedByAttrName, groupBySuffix);
             final String nestedGroupAggName = getGroupByAttrName(attrName, groupedByAttrName, NESTED_SUFFIX + groupBySuffix);
@@ -264,7 +263,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
         return series;
     }
 
-    public abstract List<? extends T> create(AbstractAttribute attribute, String attrName, Aggregations aggregations);
+    public abstract List<? extends T> create(Request req,  String attrName, AbstractAttribute attribute, AbstractAttribute groupByAttribute, AbstractAttribute collectByAttribute, Aggregations aggregations);
 
     public abstract AggregationChart<T> dup();
 

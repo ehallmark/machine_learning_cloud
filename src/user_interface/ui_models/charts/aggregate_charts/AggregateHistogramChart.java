@@ -7,6 +7,7 @@ import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregations;
 import seeding.Constants;
+import spark.Request;
 import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -34,7 +35,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     }
 
     @Override
-    public List<? extends ColumnChart> create(AbstractAttribute attribute, String attrName, Aggregations aggregations) {
+    public List<? extends ColumnChart> create(Request req,  String attrName, AbstractAttribute attribute, AbstractAttribute groupByAttribute, AbstractAttribute collectByAttribute, Aggregations aggregations) {
         RangeAttribute rangeAttribute = (RangeAttribute)attribute;
         String humanAttr = SimilarPatentServer.humanAttributeFor(attrName);
         String collectAttr = attrToCollectByAttrMap.get(attrName);
@@ -61,7 +62,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         Options parentOptions = new Options();
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName, false);
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
-        parentOptions = createDataForAggregationChart(parentOptions,aggregations,attribute,attrName,title,null,drilldown,includeBlank);
+        parentOptions = createDataForAggregationChart(parentOptions,aggregations,attrName,attribute,groupByAttribute,collectByAttribute,title,null,drilldown,includeBlank);
         List<? extends Series> data = parentOptions.getSeries();
         if(!drilldown) {
             data.forEach(series -> {
