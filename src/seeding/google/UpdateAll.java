@@ -63,7 +63,7 @@ public class UpdateAll {
             }
 
         }
-
+        
         /*
             START OF WEEKLY UPDATES
          */
@@ -171,6 +171,7 @@ public class UpdateAll {
             System.out.println("Failed to execute cpc_tree...");
             System.exit(1);
         }
+
 
         // citations_and_pclaims
         try {
