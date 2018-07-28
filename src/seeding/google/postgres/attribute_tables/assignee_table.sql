@@ -14,9 +14,12 @@ insert into big_query_assignee (name,country_code,portfolio_size,entity_type,las
 (
     select name,mode() within group (order by name_cc),count(distinct family_id),mode() within group (order by original_entity_type), max(filing_date),min(filing_date)
     from (
-        select temp.assignee_harmonized as name, temp.assignee_harmonized_cc as name_cc,family_id,original_entity_type,filing_date
-        from patents_global as t,
+        select temp.assignee_harmonized as name, temp.assignee_harmonized_cc as name_cc,family_id,coalesce(m.original_entity_status,pair.original_entity_type) as original_entity_type,filing_date
+        from patents_global as t
+        left join big_query_pair_by_pub as pair on (t.publication_number_full=pair.publication_number_full)
+        left join big_query_maintenance_by_pub as m on (t.publication_number_full=m.publication_number_full),
         unnest(t.assignee_harmonized,t.assignee_harmonized_cc) with ordinality as temp(assignee_harmonized,assignee_harmonized_cc,n)
+
     ) as temp
     group by name
 );
