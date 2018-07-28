@@ -218,6 +218,16 @@ public class UpdateAll {
         }
 
 
+
+        try {
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/reissue.sql"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute reissue...");
+            System.exit(1);
+        }
+
+
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/patent_text_aggs.sql"));
             PredictTechTags.main(args);
