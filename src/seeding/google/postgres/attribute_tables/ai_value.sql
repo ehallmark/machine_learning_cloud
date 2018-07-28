@@ -21,7 +21,7 @@ create table big_query_ai_value_claims (
 
 insert into big_query_ai_value_claims (
     select publication_number_full,
-    coalesce(mode() within group(order by means_present), case when bool_and(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else (claim like '% means %')::boolean end) then 1 else 0 end),
+    coalesce(case when bool_or(means_present) is null then null when bool_or(means_present) then 1 else 0 end, case when bool_and(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else (claim like '% means %')::boolean end) then 1 else 0 end),
     coalesce(mode() within group(order by num_claims), count(*)),
     coalesce(mode() within group(order by length_smallest_ind_claim), min(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else array_length(array_remove(regexp_split_to_array(claim,'\s+'),''),1) end))
     from big_query_patent_english_claims as p, unnest(regexp_split_to_array(claims, '((Iaddend..Iadd.)|(\n\s*\n\s*\n\s*))')) with ordinality as c(claim,n)
@@ -41,9 +41,9 @@ insert into big_query_ai_value_assignments (family_id,num_assignments) (
         big_query_assignments left join big_query_assignment_documentid using (reel_frame)
     left outer join patents_global on
         (
-           patents_global.application_number_formatted=doc_number
+           patents_global.application_number_formatted=big_query_assignment_documentid.application_number_formatted_with_country
         )
-    where is_filing and patents_global.country_code='US' and family_id!='-1' and patents_global.country_code='US' -- update -> and not family_id in (select family_id from big_query_ai_value_assignments)
+    where patents_global.country_code='US' and family_id!='-1' and patents_global.country_code='US' -- update -> and not family_id in (select family_id from big_query_ai_value_assignments)
     group by family_id
 );
 
