@@ -288,7 +288,7 @@ public class USPTOHandler extends NestedHandler {
 
         try {
             if(!doc.containsKey(Attributes.FILING_DATE)) return;
-            
+
             PreparedStatement ps = Database.getConn().prepareStatement(sql);
             ps.setString(1, name);
             ps.setObject(2, doc.get(Attributes.PUBLICATION_NUMBER));

@@ -12,7 +12,7 @@ do
     # start python encoding server for text vectorizer
     cd /home/ehallmark/repos/gtt_models/
     python3 src/server/EncodingServer.py &
-    ENCODER_PID = $!
+    ENCODER_PID=$!
     echo "$ENCODER_PID" > /home/ehallmark/repos/machine_learning_cloud/python_server.pid
 
     # start server and save PID to /home/ehallmark/repos/machine_learning_cloud/app.pid

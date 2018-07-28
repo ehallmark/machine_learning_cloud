@@ -25,7 +25,7 @@ public class PredictKeywords {
         Connection seedConn = Database.getConn();
         Connection ingestConn = Database.newSeedConn();
 
-        PreparedStatement seedPs = seedConn.prepareStatement("select family_id,abstract from big_query_patent_english_abstract as p full outer join big_query_keywords_all as k on (p.family_id=k.family_id) where k.family_id is null");
+        PreparedStatement seedPs = seedConn.prepareStatement("select p.family_id,p.abstract from big_query_patent_english_abstract as p full outer join big_query_keywords_all as k on (p.family_id=k.family_id) where k.family_id is null");
         seedPs.setFetchSize(25);
         ResultSet rs = seedPs.executeQuery();
         PreparedStatement ingestPs = ingestConn.prepareStatement("insert into big_query_keywords_all (family_id,keywords) values (?,?) on conflict (family_id) do update set keywords=excluded.keywords");

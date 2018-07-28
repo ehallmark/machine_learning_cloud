@@ -9,6 +9,7 @@ import seeding.google.postgres.epo.IngestScrapedXMLIntoPostgres;
 import seeding.google.postgres.epo.ScrapeEPO;
 import seeding.google.tech_tag.FilterKeywordsByTFIDF;
 import seeding.google.tech_tag.PredictKeywords;
+import seeding.google.tech_tag.PredictTechTags;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -219,6 +220,7 @@ public class UpdateAll {
 
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/patent_text_aggs.sql"));
+            PredictTechTags.main(args);
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute patent_text_aggs...");
@@ -226,7 +228,9 @@ public class UpdateAll {
         }
 
         try {
+            PredictKeywords.main(args);
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/patent_keyword_aggs.sql"));
+            FilterKeywordsByTFIDF.main(args);
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute patent_keyword_aggs...");
@@ -284,24 +288,6 @@ public class UpdateAll {
         }
 
 
-
-        // more advanced models (tech tag, similarity, etc...)
-        // TODO
-        try {
-            PredictKeywords.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute PredictKeywords...");
-            System.exit(1);
-        }
-
-        try {
-            FilterKeywordsByTFIDF.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute FilterKeywordsByTFIDF...");
-            System.exit(1);
-        }
 
 
         Database.close();
