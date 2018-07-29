@@ -306,8 +306,8 @@ public class UpdateAll {
             // . ~/environments/tfenv/bin/activate
             // python3 BuildPatentEncodings.py
             // cd ~/repos/machine_learning_cloud/
-            IngestAssigneeEmbeddingsToPostgres.main(args);
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/embedding_aggs.sql"));
+            IngestAssigneeEmbeddingsToPostgres.main(args);
 
         } catch(Exception e) {
             e.printStackTrace();
