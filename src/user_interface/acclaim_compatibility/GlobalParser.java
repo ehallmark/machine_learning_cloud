@@ -182,7 +182,7 @@ public class GlobalParser {
                             QueryBuilders.termQuery(name, val)
                     ), ScoreMode.Max);
         });
-        
+
         transformationsForAttr.put("DT", (name, val, user) -> {
             if(val.toLowerCase().equals("g")) {
                 // granted
