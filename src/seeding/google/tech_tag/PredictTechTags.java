@@ -102,6 +102,7 @@ public class PredictTechTags {
     };
 
     public static void main(String[] args) throws Exception {
+        final String technologyTable = "big_query_technologies2";
         final Random random = new Random(235211);
         final double weightAbstract = 1d;
         final double weightDescription = 2d;
@@ -113,8 +114,6 @@ public class PredictTechTags {
         final int rnnSamples = 8;
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         DefaultPipelineManager.setCudaEnvironment();
-        final Set<String> previouslyFound = new HashSet<>(Database.loadKeysFromDatabaseTable(Database.getConn(),"big_query_technologies2", "family_id"));
-        System.out.println("Previous number of embeddings found: "+previouslyFound.size());
         final Word2Vec word2Vec = Word2VecManager.getOrLoadManager();
         final RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(true);
         pipelineManager.runPipeline(false,false,false,false,-1,false);
@@ -268,7 +267,8 @@ public class PredictTechTags {
         INDArray childMatrixView = createMatrixView(matrix,allChildrenList,titleToIndexMap,false);
 
         Connection seedConn = Database.newSeedConn();
-        PreparedStatement ps = seedConn.prepareStatement("select coalesce(coalesce(e.family_id,a.family_id),d.family_id),a.publication_number_full,abstract,description,enc from big_query_embedding_by_fam as e left outer join big_query_patent_english_abstract as a on (e.family_id=a.family_id) left outer join big_query_patent_english_description as d on (a.family_id=d.family_id)");
+        PreparedStatement ps = seedConn.prepareStatement("select coalesce(coalesce(e.family_id,a.family_id),d.family_id),a.publication_number_full,abstract,description,enc from big_query_embedding_by_fam as e left outer join big_query_patent_english_abstract as a on (e.family_id=a.family_id) left outer join big_query_patent_english_description as d on (a.family_id=d.family_id)" +
+                " full outer join "+technologyTable+" as o on (o.family_id=coalesce(coalesce(e.family_id,a.family_id),d.family_id)) where o.family_id is null");
         System.out.println("PS: "+ps.toString());
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
@@ -276,8 +276,8 @@ public class PredictTechTags {
         Connection conn = Database.getConn();
 
         AtomicLong totalCnt = new AtomicLong(0);
-        PreparedStatement insertDesign = conn.prepareStatement("insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values (?,?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,technology2)=('DESIGN','DESIGN')");
-        PreparedStatement insertPlant = conn.prepareStatement("insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values (?,?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,technology2)=('BOTANY','PLANTS')");
+        PreparedStatement insertDesign = conn.prepareStatement("insert into "+technologyTable+" (family_id,publication_number_full,technology,technology2) values (?,?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,technology2)=('DESIGN','DESIGN')");
+        PreparedStatement insertPlant = conn.prepareStatement("insert into "+technologyTable+" (family_id,publication_number_full,technology,technology2) values (?,?,'BOTANY','PLANTS') on conflict (family_id) do update set (technology,technology2)=('BOTANY','PLANTS')");
 
         System.out.println("Starting to iterate...");
         while(true) {
@@ -297,10 +297,6 @@ public class PredictTechTags {
                     System.out.println("Seen total: "+totalCnt.get());
                 }
                 String familyId = rs.getString(1);
-                if(previouslyFound.contains(familyId)) {
-                    i--;
-                    continue;
-                }
                 String publicationNumberFull = rs.getString(2);
                 String publicationNumber = publicationNumberFull.substring(2);
                 if(publicationNumber.startsWith("D")) {
@@ -406,7 +402,7 @@ public class PredictTechTags {
             INDArray secondaryScores = childMatrixView.mmul(abstractVectors).muli(weightAbstract).addi(childMatrixView.mmul(descriptionVectors).muli(weightDescription))
                     .addi(wordMatrix.mmul(wordVectors).muli(weightEmbedding)).addi(rnnMatrix.mmul(rnnVectors).muli(weightEmbedding));
 
-            String insert = "insert into big_query_technologies2 (family_id,publication_number_full,technology,technology2) values ? on conflict(family_id) do update set (publication_number_full,technology,technology2)=(excluded.publication_number_full,excluded.technology,excluded.technology2)";
+            String insert = "insert into "+technologyTable+" (family_id,publication_number_full,technology,technology2) values ? on conflict(family_id) do update set (publication_number_full,technology,technology2)=(excluded.publication_number_full,excluded.technology,excluded.technology2)";
             StringJoiner valueJoiner = new StringJoiner(",");
             for(int j = 0; j < i; j++) {
                 StringJoiner innerJoiner = new StringJoiner(",","(",")");
