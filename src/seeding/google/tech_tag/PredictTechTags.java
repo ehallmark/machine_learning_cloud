@@ -416,7 +416,7 @@ public class PredictTechTags {
                 float[] secondary = secondaryScores.getColumn(j).data().asFloat();
                 //System.out.println("Primary: "+primary.length);
                 //System.out.println("Secondary: "+secondary.length);
-                Pair<Integer,Integer> top = parentChildCombinations.parallelStream().map(p->{
+                Pair<Integer,Integer> top = parentChildCombinations.stream().map(p->{
                     return new Pair<>(p,primary[p.getFirst()]+secondary[p.getSecond()]);
                 }).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(1).map(p->p.getFirst()).findFirst().orElse(null);
                 if(top!=null) {
