@@ -267,8 +267,9 @@ public class PredictTechTags {
         INDArray childMatrixView = createMatrixView(matrix,allChildrenList,titleToIndexMap,false);
 
         Connection seedConn = Database.newSeedConn();
-        PreparedStatement ps = seedConn.prepareStatement("select coalesce(coalesce(e.family_id,a.family_id),d.family_id),a.publication_number_full,abstract,description,enc from big_query_embedding_by_fam as e left outer join big_query_patent_english_abstract as a on (e.family_id=a.family_id) left outer join big_query_patent_english_description as d on (a.family_id=d.family_id)" +
-                " full outer join "+technologyTable+" as o on (o.family_id=coalesce(coalesce(e.family_id,a.family_id),d.family_id)) where o.family_id is null");
+        PreparedStatement ps = seedConn.prepareStatement("select coalesce(coalesce(e.family_id,a.family_id),d.family_id),j.publication_number_full,abstract,description,enc from big_query_embedding_by_fam as e left outer join big_query_patent_english_abstract as a on (e.family_id=a.family_id) left outer join big_query_patent_english_description as d on (a.family_id=d.family_id) " +
+                " join big_query_family_id as j on (coalesce(coalesce(e.family_id,a.family_id),d.family_id)=j.family_id)" +
+                " full outer join "+technologyTable+" as o on (o.family_id=coalesce(coalesce(e.family_id,a.family_id),d.family_id)) where j.family_id!='-1' and o.family_id is null and j.publication_number_full is not null");
         System.out.println("PS: "+ps.toString());
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();

@@ -332,6 +332,7 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Pivot Table", Constants.PIVOT_FUNCTION_TABLE_CHART);
             // ACCLAIM RELATED
             humanAttrToJavaAttrMap.put("Dataset Path Name", "RFID");
+            humanAttrToJavaAttrMap.put("Forward Examiner Citations", "FEXCITE");
             humanAttrToJavaAttrMap.put("2nd Dataset Path Name", "RFID2");
             humanAttrToJavaAttrMap.put("Document Status", "DOC_STATUS");
             humanAttrToJavaAttrMap.put("Document Type", "DT");

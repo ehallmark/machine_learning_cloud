@@ -164,6 +164,25 @@ public class GlobalParser {
             }
             return null;
         });
+        transformationsForAttr.put("FEXCITE", (name,val,user)->{
+            if(val == null || val.isEmpty()) return null;
+            name = Attributes.CITATIONS+"."+Attributes.CITED_PUBLICATION_NUMBER;
+            if(name.endsWith(Attributes.PUBLICATION_NUMBER)) {
+                Map<String, List<String>> map = AbstractIncludeAssetFilter.buildAssetFieldToAssetsMap(false, Collections.singleton(val));
+                String field = map.keySet().stream().findAny().orElse(null);
+                if (field != null && map.get(field).size() > 0) {
+                    val = map.get(field).get(0);
+                    name = name.substring(0, name.length() - Attributes.PUBLICATION_NUMBER.length()) + field;
+                }
+            }
+            return QueryBuilders.nestedQuery(Attributes.CITATIONS,
+                    QueryBuilders.boolQuery().filter(
+                            QueryBuilders.termsQuery(Attributes.CITATIONS+"."+Attributes.CITED_CATEGORY, Arrays.asList("SEA", "EXA","PRS","SUP","ISR"))
+                    ).must(
+                            QueryBuilders.termQuery(name, val)
+                    ), ScoreMode.Max);
+        });
+        
         transformationsForAttr.put("DT", (name, val, user) -> {
             if(val.toLowerCase().equals("g")) {
                 // granted
