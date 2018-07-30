@@ -230,7 +230,6 @@ public class UpdateAll {
 
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/patent_text_aggs.sql"));
-            PredictTechTags.main(args);
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute patent_text_aggs...");
@@ -288,16 +287,6 @@ public class UpdateAll {
             System.exit(1);
         }
 
-
-        try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/tech_tags_aggs.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute tech_tags_aggs...");
-            System.exit(1);
-        }
-
-
         // SIMILARITY
         try {
             // run python code under gtt_models/src/java_compatibility/BuildPatentEncodings.py
@@ -314,6 +303,17 @@ public class UpdateAll {
             System.out.println("Failed to execute BuildPatentEncodings...");
             System.exit(1);
         }
+
+        // must run tech tagger after similarity model
+        try {
+            PredictTechTags.main(args);
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/tech_tags_aggs.sql"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute tech_tags_aggs...");
+            System.exit(1);
+        }
+
 
 
         Database.close();
