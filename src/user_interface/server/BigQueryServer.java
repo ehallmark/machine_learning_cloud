@@ -2900,9 +2900,9 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref(EDIT_USER_GROUP_URL) : span()),
                                                         div().withClass("col-12").with(authorized ? a("Change Password").withHref(EDIT_USER_URL) : span()),
                                                         div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref(DELETE_USER_URL) : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Update Default Template").withId("update-default-attributes-form").withHref("#")
+                                                        div().withClass("col-12").with(authorized ? a("Update Default Template").attr("title", "The current form will become the new default template.").withId("update-default-attributes-form").withHref("#")
                                                                 .with(
-                                                                        br(),a("Reset Default Template").withHref(RESET_DEFAULT_TEMPLATE_URL)
+                                                                        br(),a("Reset Default Template").attr("title", "Resets the default template.").withHref(RESET_DEFAULT_TEMPLATE_URL)
                                                                 ).with(
                                                                         canUpdateUserGroup ? span().with(br(),
                                                                                 label("For User Group?").attr("title", "Warning: Selecting this option will affect the default template for all users in this user group.").with(
