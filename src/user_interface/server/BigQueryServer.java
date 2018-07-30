@@ -919,11 +919,6 @@ public class BigQueryServer extends SimilarPatentServer {
             }
         });
 
-        get(UPDATE_DEFAULT_ATTRIBUTES_URL, (req,res) -> {
-            authorize(req,res);
-            return templateWrapper(passwordHandler,true,req,res, defaultAttributesModelForm(req.session().attribute("username"),req.session().attribute("role")),true);
-        });
-
         get(RESET_DEFAULT_TEMPLATE_URL, (req,res)->{
             authorize(req,res);
             String actualUser = req.session().attribute("username");
@@ -2811,6 +2806,7 @@ public class BigQueryServer extends SimilarPatentServer {
         String userGroup = authorized ? getUserGroupFor(req.session()) : null;
         boolean showDynamicUserGroups = authorized&&((role.equals(INTERNAL_USER)||role.equals(SUPER_USER)));
         String dynamicUserGroup = showDynamicUserGroups ? req.session().attribute("dynamicUserGroup") : null;
+        final boolean canUpdateUserGroup = role.equals(SUPER_USER)||role.equals(INTERNAL_USER);
         return html().with(
                 head().with(
                         title("AI Search Platform"),
@@ -2904,7 +2900,16 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref(EDIT_USER_GROUP_URL) : span()),
                                                         div().withClass("col-12").with(authorized ? a("Change Password").withHref(EDIT_USER_URL) : span()),
                                                         div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref(DELETE_USER_URL) : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Update Defaults").withHref(UPDATE_DEFAULT_ATTRIBUTES_URL) : span()),
+                                                        div().withClass("col-12").with(authorized ? a("Update Default Template").withId("update-default-attributes-form").withHref("#")
+                                                                .with(
+                                                                        a("Reset Default Template").withHref(RESET_DEFAULT_TEMPLATE_URL)
+                                                                ).with(
+                                                                        canUpdateUserGroup ? span().with(
+                                                                                label("For User Group?").attr("title", "Warning: Selecting this option will affect the default template for all users in this user group.").with(
+                                                                                        input().withType("checkbox").withValue("on").withId("extract_to_usergroup")
+                                                                                )
+                                                                        ) : span()
+                                                        ) : span()),
                                                         div().withClass("col-12").with(authorized ? a("Help").withTarget("_blank").withHref("/help") : span())
 
                                                 ), hr(),
@@ -3049,35 +3054,6 @@ public class BigQueryServer extends SimilarPatentServer {
     private static Tag loaderTag() {
         return div().withClass("loader col-12").attr("style","display: none;").with(
                 img().attr("height","48").attr("width","48").withSrc("/images/loader48.gif")
-        );
-    }
-
-    private static Tag defaultAttributesModelForm(String user, String role) {
-        if(user==null || role==null) return null;
-        System.out.println("Loading default attributes page for user "+user+" with role "+role+".");
-        Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
-        final boolean canUpdateUserGroup = role.equals(SUPER_USER)||role.equals(INTERNAL_USER);
-        Tag buttons = div().withClass("col-10 offset-1").with(
-                div().withClass("btn-group row").with(
-                        a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-outline-secondary div-button go-back-default-attributes-button"),
-                        div().withText("Update Defaults").withClass("btn btn-outline-secondary div-button update-default-attributes-button")
-                )
-        );
-        return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px; margin-top: 20px;").with(
-                span().withId("main-content-id").withClass("collapse").with(
-                        div().withClass("col-12").withId("attributesForm").with(
-                                h4("Update defaults for "+user+"."),
-                                a("Reset defaults").withHref(RESET_DEFAULT_TEMPLATE_URL)
-                        ), br(),
-                        canUpdateUserGroup?label("Save to Current User Group? ").with(input().withType("checkbox").withId("extract_to_usergroup")) : span(),
-                        form().withAction(UPDATE_DEFAULT_ATTRIBUTES_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId("update-default-attributes-form").with(
-                                input().withType("hidden").withName("name").withValue("default"),
-                                innerFiltersAndSettings(userRoleFunction,buttons),
-                                div().withClass("col-12").attr("style","margin-top: 20px;").with(
-                                        innerAttributesAndCharts(userRoleFunction,buttons)
-                                )
-                        )
-                )
         );
     }
 

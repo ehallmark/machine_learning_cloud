@@ -937,7 +937,7 @@ $(document).ready(function() {
         }
     });
 
-    $('#update-default-attributes-form').submit(function(e) {
+    $('#update-default-attributes-form').click(function(e) {
         e.preventDefault();
         var name = 'default';
         var urlPrefix = $('#url-prefix').attr('prefix');
