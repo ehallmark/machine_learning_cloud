@@ -955,7 +955,7 @@ $(document).ready(function() {
         var callback = function(data) {
             saveJSNodeFunction(null,null,name,true,data,'template',true,true,postSaveCallback,false);
         };
-        return templateDataFunction(null,null,name,true,callback,extract_to_usergroup);
+        return templateDataFunction(null,null,name,true,callback,null,extract_to_usergroup);
     });
 
     $('.update-default-attributes-button').click(function(e) {
@@ -1308,7 +1308,7 @@ $(document).ready(function() {
         dataMap[dataKey] = json;
     };
 
-    var templateDataFunction = function(tree,node,name,deletable,callback,extract_to_usergroup) {
+    var templateDataFunction = function(tree,node,name,deletable,callback,obj,extract_to_usergroup) {
         update_expert_query_text_area();
 
         var preData = {};
