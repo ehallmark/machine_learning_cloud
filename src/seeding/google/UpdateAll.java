@@ -220,6 +220,7 @@ public class UpdateAll {
 
 
         try {
+            // NOTE: Must be run after priority claim aggregations...
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/reissue.sql"));
         } catch(Exception e) {
             e.printStackTrace();
