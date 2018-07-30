@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+CURR_DIR=`pwd`
+
 cd /home/ehallmark/repos/machine_learning_cloud
 
 # backup elasticsearch datasets
@@ -14,3 +17,4 @@ rsync -arv /home/ehallmark/repos/gtt_models/ /usb/gtt_models_backup/
 # dump all
 pg_dump -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/patentdb > /usb/big_query_database.dump
 
+cd $CURR_DIR

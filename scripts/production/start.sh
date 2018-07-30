@@ -26,9 +26,20 @@ do
 
 
     sleep $SLEEP_TIME
-    echo "Killing java and python servers..."
-    kill $APP_PID
-    kill $ENCODER_PID
+    while ps -p $APP_PID
+    do
+        echo "Trying to kill java server..."
+        kill $APP_PID
+        sleep 5s
+    done
+
+    while ps -p $ENCODER_PID
+    do
+        echo "Trying to kill python server..."
+        kill $ENCODER_PID
+        sleep 5s
+    done
+
     echo "Starting updates..."
     source scripts/production/update_postgres_weekly.sh
 
