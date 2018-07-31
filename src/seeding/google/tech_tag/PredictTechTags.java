@@ -16,6 +16,7 @@ import org.nd4j.linalg.primitives.Pair;
 import seeding.Database;
 import seeding.google.postgres.Util;
 import seeding.google.word2vec.Word2VecManager;
+import user_interface.ui_models.engines.TextSimilarityEngine;
 
 import java.io.File;
 import java.sql.Array;
@@ -112,12 +113,9 @@ public class PredictTechTags {
         final double minScore = 0.2;
         final int rnnLimit = 128;
         final int rnnSamples = 8;
+        final int embeddingSize = 128;
         Nd4j.setDataType(DataBuffer.Type.FLOAT);
         DefaultPipelineManager.setCudaEnvironment();
-        final Word2Vec word2Vec = Word2VecManager.getOrLoadManager();
-        final RNNTextEncodingPipelineManager pipelineManager = RNNTextEncodingPipelineManager.getOrLoadManager(true);
-        pipelineManager.runPipeline(false,false,false,false,-1,false);
-        final RNNTextEncodingModel model = (RNNTextEncodingModel)pipelineManager.getModel();
 
         INDArray matrixOld = (INDArray) Database.tryLoadObject(matrixFile);
         List<String> allTitlesList = (List<String>) Database.tryLoadObject(titleListFile);
@@ -181,47 +179,20 @@ public class PredictTechTags {
 
         // create rnn vectors for wiki articles or add to invalidTechnologies if unable
         Map<String,String[]> titleToWordsMap = (Map<String,String[]>)Database.tryLoadObject(titleToTextMapFile);
-        INDArray rnnMatrix = Nd4j.create(allChildrenList.size(),pipelineManager.getEncodingSize());
-        INDArray wordMatrix = Nd4j.create(allChildrenList.size(),word2Vec.getLayerSize());
+        INDArray rnnMatrix = Nd4j.create(allChildrenList.size(),embeddingSize);
         for(int i = 0; i < allChildrenList.size(); i++) {
             String title = allChildrenList.get(i);
             INDArray encoding = null;
-            INDArray wordVec = null;
             if(titleToWordsMap.containsKey(title)) {
-                String[] text = Stream.of(titleToWordsMap.get(title))
-                        .filter(word -> word2Vec.hasWord(word))
-                        .toArray(s -> new String[s]);
-
-                if (text.length > 5) {
-                    List<String> labels = IntStream.range(0,rnnLimit).mapToObj(j->text[random.nextInt(text.length)])
-                            .collect(Collectors.toList());
-                    wordVec = Transforms.unitVec(word2Vec.getWordVectors(labels).mean(0));
-                    if (text.length > rnnLimit) {
-                        INDArray features = Nd4j.create(rnnSamples, word2Vec.getLayerSize(), rnnLimit);
-                        for (int j = 0; j < rnnSamples; j++) {
-                            int r = random.nextInt(text.length - rnnLimit);
-                            String[] textSample = Arrays.copyOfRange(text, r, r + rnnLimit);
-                            INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(textSample));
-                            features.get(NDArrayIndex.point(j), NDArrayIndex.all(), NDArrayIndex.all()).assign(wordVectors.transpose());
-                        }
-                        encoding = Transforms.unitVec(model.encode(features).mean(0));
-                    } else {
-                        INDArray wordVectors = word2Vec.getWordVectors(Arrays.asList(text));
-                        wordVectors = wordVectors.transpose();
-                        wordVectors = wordVectors.reshape(1, word2Vec.getLayerSize(), wordVectors.columns());
-                        encoding = Transforms.unitVec(model.encode(wordVectors));
-                    }
+                String[] text = titleToWordsMap.get(title);
+                if (text != null) {
+                    encoding = TextSimilarityEngine.inputToVectorFunction.apply(Arrays.asList(String.join(" ", text)));
                 }
             }
             if(encoding==null) {
                 rnnMatrix.get(NDArrayIndex.point(i),NDArrayIndex.all()).assign(0);
             } else {
                 rnnMatrix.putRow(i, encoding);
-            }
-            if(wordVec==null) {
-                wordMatrix.get(NDArrayIndex.point(i),NDArrayIndex.all()).assign(0);
-            } else {
-                wordMatrix.putRow(i, wordVec);
             }
             if(i%100==99) System.out.println("Finished "+(1+i)+" out of "+allChildrenList.size());
         }
@@ -284,8 +255,7 @@ public class PredictTechTags {
         while(true) {
             int i = 0;
             INDArray abstractVectors = Nd4j.create(matrix.columns(),batch);
-            INDArray rnnVectors = Nd4j.create(pipelineManager.getEncodingSize(),batch);
-            INDArray wordVectors = Nd4j.create(word2Vec.getLayerSize(),batch);
+            INDArray rnnVectors = Nd4j.create(embeddingSize,batch);
             INDArray descriptionVectors = Nd4j.create(matrix.columns(),batch);
             List<String> familyIds = new ArrayList<>(batch);
             List<String> pubNums = new ArrayList<>(batch);
@@ -317,7 +287,7 @@ public class PredictTechTags {
                     String[] descriptionText = Util.textToWordFunction.apply(rs.getString(4));
                     Array sqlEncoding = rs.getArray(5);
                     boolean valid = false;
-                    float[] rnnVec = new float[pipelineManager.getEncodingSize()];
+                    float[] rnnVec = new float[embeddingSize];
                     if(sqlEncoding!=null) {
                         final Number[] encoding = (Number[]) sqlEncoding.getArray();
                         for(int j = 0; j < encoding.length; j++) {
@@ -327,6 +297,7 @@ public class PredictTechTags {
                     }
                     float[] abstractData = new float[matrix.columns()];
                     float[] descriptionData = new float[matrix.columns()];
+
                     if(abstractText!=null) {
                         int found = 0;
                         for (String word : abstractText) {
@@ -336,15 +307,11 @@ public class PredictTechTags {
                                 abstractData[index]++;
                             }
                         }
-                        INDArray _wv = found==0 ? null : word2Vec.getWordVectors(Arrays.asList(abstractText));
-                        if(_wv!=null&&_wv.rows()>5) {
-                            valid = true;
-                            wordVectors.putColumn(i, _wv.mean(0));
+                        if(found < 10) {
+                            Arrays.fill(abstractData, 0f);
                         } else {
-                            wordVectors.get(NDArrayIndex.all(),NDArrayIndex.point(i)).assign(0);
+                            valid = true;
                         }
-                    } else {
-                        wordVectors.get(NDArrayIndex.all(),NDArrayIndex.point(i)).assign(0);
                     }
                     if(descriptionText!=null) {
                         int found = 0;
@@ -355,7 +322,11 @@ public class PredictTechTags {
                                 found++;
                             }
                         }
-                        valid = found > 5;
+                        if (found < 15) {
+                            Arrays.fill(descriptionData, 0f);
+                        } else {
+                            valid = true;
+                        }
                     }
                     if (valid) {
                         familyIds.add(familyId);
@@ -367,7 +338,6 @@ public class PredictTechTags {
                         //System.out.println("Best tag for " + publicationNumber + ": " + tag);
                     } else {
                         i--;
-                        continue;
                     }
 
                 }
@@ -382,26 +352,22 @@ public class PredictTechTags {
                 abstractVectors = abstractVectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
                 descriptionVectors = descriptionVectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
                 rnnVectors = rnnVectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
-                wordVectors = wordVectors.get(NDArrayIndex.all(),NDArrayIndex.interval(0,i));
             }
             INDArray aNorm = abstractVectors.norm2(0);
             INDArray dNorm = descriptionVectors.norm2(0);
             INDArray rNorm = rnnVectors.norm2(0);
-            INDArray wNorm = wordVectors.norm2(0);
             // clear NaNs
             BooleanIndexing.applyWhere(aNorm, Conditions.equals(0), new Value(1));
             BooleanIndexing.applyWhere(dNorm, Conditions.equals(0), new Value(1));
             BooleanIndexing.applyWhere(rNorm, Conditions.equals(0), new Value(1));
-            BooleanIndexing.applyWhere(wNorm, Conditions.equals(0), new Value(1));
 
             abstractVectors.diviRowVector(aNorm);
             descriptionVectors.diviRowVector(dNorm);
             rnnVectors.diviRowVector(rNorm);
-            wordVectors.diviRowVector(wNorm);
 
             INDArray primaryScores = parentMatrixView.mmul(abstractVectors).muli(weightAbstract).addi(parentMatrixView.mmul(descriptionVectors).muli(weightDescription));
             INDArray secondaryScores = childMatrixView.mmul(abstractVectors).muli(weightAbstract).addi(childMatrixView.mmul(descriptionVectors).muli(weightDescription))
-                    .addi(wordMatrix.mmul(wordVectors).muli(weightEmbedding)).addi(rnnMatrix.mmul(rnnVectors).muli(weightEmbedding));
+                    .addi(rnnMatrix.mmul(rnnVectors).muli(weightEmbedding));
 
             String insert = "insert into "+technologyTable+" (family_id,publication_number_full,technology,technology2) values ? on conflict(family_id) do update set (publication_number_full,technology,technology2)=(excluded.publication_number_full,excluded.technology,excluded.technology2)";
             StringJoiner valueJoiner = new StringJoiner(",");
@@ -414,7 +380,7 @@ public class PredictTechTags {
                 //System.out.println("Primary: "+primary.length);
                 //System.out.println("Secondary: "+secondary.length);
                 Pair<Integer,Integer> top = parentChildCombinations.stream().map(p->{
-                    return new Pair<>(p,primary[p.getFirst()]+secondary[p.getSecond()]);
+                    return new Pair<>(p,primary[p.getFirst()]+2.0*secondary[p.getSecond()]);
                 }).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(1).map(p->p.getFirst()).findFirst().orElse(null);
                 if(top!=null) {
                     String tag = allParentsList.get(top.getFirst());

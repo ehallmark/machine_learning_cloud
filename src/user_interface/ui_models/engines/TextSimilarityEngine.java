@@ -26,7 +26,7 @@ import static user_interface.server.SimilarPatentServer.*;
  * Created by ehallmark on 2/28/17.
  */
 public class TextSimilarityEngine extends AbstractSimilarityEngine {
-    private static final Function<Collection<String>,INDArray> inputToVectorFunction = inputs -> {
+    public static final Function<Collection<String>,INDArray> inputToVectorFunction = inputs -> {
         // send request to http://127.0.0.1:5000/encode?text={text}
         try {
             Map<String, Object> params = new LinkedHashMap<>();
