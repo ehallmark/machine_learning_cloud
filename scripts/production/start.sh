@@ -33,13 +33,6 @@ do
         sleep 5s
     done
 
-    while ps -p $ENCODER_PID
-    do
-        echo "Trying to kill python server..."
-        kill $ENCODER_PID
-        sleep 5s
-    done
-
     echo "Starting updates..."
     source scripts/production/update_postgres_weekly.sh
 
@@ -47,5 +40,12 @@ do
     echo "Backing up..."
     source scripts/production/backup.sh
 
+    # turn off python server for no real reason
+    while ps -p $ENCODER_PID
+    do
+        echo "Trying to kill python server..."
+        kill $ENCODER_PID
+        sleep 5s
+    done
 
 done
