@@ -362,7 +362,7 @@ insert into patents_global_merged (
         ai_value.value,
         -- other value attrs
         coalesce(p.length_of_smallest_ind_claim, value_claims.length_smallest_ind_claim),
-        coalesce(p.means_present, value_claims.means_present),
+        coalesce(case when p.means_present is null then null else case when p.means_present then 1 else 0 end end, value_claims.means_present),
         value_family_size.family_size,
         -- sep
         sep.sso,
