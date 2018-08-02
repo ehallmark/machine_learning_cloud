@@ -2897,7 +2897,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                 )
                                                         ) : span()),
                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref(GLOBAL_PREFIX+"/logout") : a("Log In").withHref(GLOBAL_PREFIX+"/")),
-                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref(CREATE_USER_URL) : a("Contact Us").withHref("http://www.gttgrp.com")),
+                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref(CREATE_USER_URL) : a("Contact Us").withTarget("_blank").withHref("http://www.gttgrp.com")),
                                                         div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref(EDIT_USER_GROUP_URL) : span()),
                                                         div().withClass("col-12").with(authorized ? a("Change Password").withHref(EDIT_USER_URL) : span()),
                                                         div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref(DELETE_USER_URL) : span()),
@@ -3084,7 +3084,7 @@ public class BigQueryServer extends SimilarPatentServer {
     private static Tag customFormHeader() {
         return div().withClass("row header-main header-top").with(
                 div().withClass("col-3").attr("style","padding-top: 30px; border-right: 1px lightgray solid;").with(
-                        a().attr("href", HOME_URL).withTarget("_blank").with(
+                        a().attr("href", HOME_URL).with(
                                 img().attr("style","display: block; margin-left: auto; margin-right: auto; margin-top: -20px")
                                         .attr("src", "/images/brand.png")
                         )
