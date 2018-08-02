@@ -137,7 +137,7 @@ insert into big_query_patent_to_latest_assignee_join_by_pub (
        latest_assignee_join.first_filing_date,
        latest_assignee_join.last_filing_date
     from big_query_patent_to_latest_assignee_by_pub as latest_assignee
-    join big_query_assignee as latest_assignee_join on (latest_assignee_join.name=latest_assignee.first_assignee)
+    left outer join big_query_assignee as latest_assignee_join on (latest_assignee_join.name=latest_assignee.first_assignee)
 );
 
 -- by fam
@@ -164,6 +164,6 @@ insert into big_query_patent_to_latest_assignee_join_by_family (
        latest_assignee_fam_join.first_filing_date,
        latest_assignee_fam_join.last_filing_date
     from big_query_patent_to_latest_assignee_by_family as latest_fam_assignee
-    join big_query_assignee as latest_assignee_fam_join on (latest_assignee_fam_join.name=latest_fam_assignee.first_assignee)
+    left outer join big_query_assignee as latest_assignee_fam_join on (latest_assignee_fam_join.name=latest_fam_assignee.first_assignee)
 );
 

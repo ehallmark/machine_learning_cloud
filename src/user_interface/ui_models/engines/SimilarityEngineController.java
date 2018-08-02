@@ -90,6 +90,7 @@ public class SimilarityEngineController {
         attributesRequired.addAll(attributesFromUser);
         attributesFromUser.forEach(attr -> attributesRequired.addAll(extractArray(req, attr + "[]")));
         attributesRequired.add(Attributes.FAMILY_ID); // IMPORTANT
+        attributesRequired.add(Attributes.KIND_CODE); // IMPORTANT
 
         // add chart prerequisites
         if(chartPrerequisites !=null) {
@@ -188,7 +189,13 @@ public class SimilarityEngineController {
             }
         }).collect(Collectors.groupingBy(e->(String)e.getData(Attributes.FAMILY_ID),Collectors.toList()))
                 .entrySet().forEach(e->{
-                    ret.add(e.getValue().get(0));
+                    ret.add(e.getValue().stream().min((e1,e2)->{
+                        int c = ((String)e2.getData(Attributes.KIND_CODE)).compareTo((String)e2.getData(Attributes.KIND_CODE));
+                        if(c==0) {
+                            c = e2.getName().compareTo(e1.getName());
+                        }
+                        return c;
+                    }).get());
                 });
         return ret;
     }
