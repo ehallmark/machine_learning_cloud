@@ -250,7 +250,7 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
         }
     });
 
-    setCollapsibleHeaders($topLevelElem.find(".collapsible-header");
+    setCollapsibleHeaders($topLevelElem.find(".collapsible-header"));
 
     var $nestedLists = $topLevelElem.find('.nested-form-list');
     $nestedLists.sortable();
@@ -604,7 +604,7 @@ $(document).ready(function() {
            //alert("Please include some attributes in the Attributes section.");
        //}
 
-       setCollapsibleHeaders($('#results').find('.tab-pane .content .collapsible-header'));
+       setCollapsibleHeaders($('#results .tab-pane .content .collapsible-header'));
 
        if(data.hasOwnProperty('tableCnt')) {
             var tableCnt = data.tableCnt;
