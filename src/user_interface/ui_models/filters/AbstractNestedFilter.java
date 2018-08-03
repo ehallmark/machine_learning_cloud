@@ -43,7 +43,12 @@ public class AbstractNestedFilter extends AbstractFilter {
             this.filters.addAll(Arrays.asList(additionalFilters));
         }
         this.setParent=setParent;
-        if(setParent)this.filters.forEach(filter->filter.setParent(this));
+        for (AbstractFilter filter : this.filters) {
+            if(setParent) {
+                filter.setParent(this);
+            }
+            filter.formParent=this;
+        }
     }
 
     public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute) {

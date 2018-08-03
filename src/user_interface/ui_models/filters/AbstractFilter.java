@@ -100,8 +100,8 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
                 }
             }
         }
-        String id = getParent().getId();
 
+        String id = ((AbstractNestedFilter)formParent).getId();
         if(inputIds.isEmpty()) inputIds = null;
         return div().attr("style", styleString).with(
                 SimilarPatentServer.createAttributeElement(SimilarPatentServer.humanAttributeFor(getName()),getName(),getOptionGroup(),collapseId,childTag,id, getAttributeId(), inputIds, isNotYetImplemented(), getDescription().render())
