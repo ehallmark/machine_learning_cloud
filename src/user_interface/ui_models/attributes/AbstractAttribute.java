@@ -94,7 +94,12 @@ public abstract class AbstractAttribute {
         if(this instanceof NestedAttribute && ! (this instanceof AbstractChartAttribute) && perAttr) {
             childTag = ((NestedAttribute) this).getNestedOptions(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineTagFunction, perAttr, loadChildren);
         } else {
-            childTag = getOptionsTag(userRoleFunction, loadChildren);
+            System.out.println("Class: "+this.getClass().getName());
+            if(this instanceof NestedAttribute) {
+                childTag = ((NestedAttribute)this).getNestedOptions(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, combineTagFunction, perAttr, loadChildren);
+            } else {
+                childTag = getOptionsTag(userRoleFunction, loadChildren);
+            }
             ContainerTag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(getFullName()) : null;
             if(additionalTag!=null) {
                 childTag = combineTagFunction.apply(additionalTag,(ContainerTag)childTag);
