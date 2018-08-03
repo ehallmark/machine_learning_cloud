@@ -43,6 +43,9 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
      $options.each(function(i,option){
          var id = $(option).val();
          var newElemId = $(option).attr('data-id');
+         if(!newElemId) {
+            newElemId = id;
+         }
          if($('#'+newElemId).length==0) {
             // get option from server
             $.ajax({
