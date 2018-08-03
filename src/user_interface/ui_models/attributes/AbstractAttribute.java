@@ -111,7 +111,7 @@ public abstract class AbstractAttribute {
                 }
             }
         }
-        String id = ((NestedAttribute)formParent.getParent()).getId();
+        String id = ((NestedAttribute)formParent).getId();
         String attrName = getFullName();
         String humanName = SimilarPatentServer.humanAttributeFor(attrName);
         if(inputIds.isEmpty()) inputIds = null;
