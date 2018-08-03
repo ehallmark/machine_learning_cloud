@@ -92,7 +92,11 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
-        return this.getOptionsTag(userRoleFunction,null,null,DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
+        if (loadChildren) {
+            return this.getNestedOptions(userRoleFunction, null, null, DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
+        } else {
+            return this.getOptionsTag(userRoleFunction, null, null, DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
+        }
     }
 
     private ContainerTag getPlotGroupsTogetherTag(String attrName) {
@@ -106,9 +110,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         );
     }
 
-
     @Override
-    public ContainerTag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren) {
+    public ContainerTag getNestedOptions(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren) {
         Function<String,ContainerTag> newTagFunction;
         Function<String,List<String>> newAdditionalIdsFunction;
         if(groupByAttributes!=null) {
