@@ -4,6 +4,7 @@ import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.google.elasticsearch.attributes.NonStoredTextAttribute;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.charts.aggregate_charts.AggregatePivotChart;
@@ -95,13 +96,22 @@ public abstract class NestedAttribute extends AbstractAttribute {
         String id = getId();
         Tag groupbyTag = additionalTagFunction!=null&&!perAttr ? additionalTagFunction.apply(null) : null;
         List<AbstractAttribute> applicableAttributes = attributes.stream().filter(attr->attr.isDisplayable()&&!(attr instanceof NonStoredTextAttribute)&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
+        List<Pair<String,String>> attrPairs = applicableAttributes.stream().map(attr->{
+            String elemId;
+            if(attr instanceof NestedAttribute) {
+                elemId = ((NestedAttribute) attr).getId();
+            } else {
+                elemId = attr.getAttributeId();
+            }
+            return new Pair<>(attr.getFullName(), elemId);
+        }).collect(Collectors.toList());
         return div().with(
                 div().with(
                         groupbyTag==null?span():div().with(
                                 groupbyTag,br(),
                                 p(this instanceof AggregatePivotChart ? "Row Attributes" : "Column Attributes")
                         ),
-                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
+                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, attrPairs)
                 ), div().withClass("nested-form-list").with(
                         loadChildren ?
                         applicableAttributes.stream().map(attr->{

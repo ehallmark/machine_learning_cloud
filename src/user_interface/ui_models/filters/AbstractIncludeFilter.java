@@ -9,6 +9,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.TermsLookup;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -21,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
 import static user_interface.server.SimilarPatentServer.extractInt;
@@ -149,7 +151,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
                 );
             } else {
                 tag = div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(getName(), getId(), clazz, getAllValues())
+                        SimilarPatentServer.technologySelectWithCustomClass(getName(), getId(), clazz, getAllValues().stream().map(v->new Pair<>(v,v)).collect(Collectors.toList()))
                 );
             }
         }

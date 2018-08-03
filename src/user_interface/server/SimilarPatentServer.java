@@ -2163,11 +2163,11 @@ public class SimilarPatentServer {
 
 
 
-    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Collection<String> orderedClassifications) {
+    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, List<Pair<String,String>> orderedClassifications) {
         return select().attr("style","width:100%;").withName(name).withId(id).withClass(clazz).attr("multiple","multiple").with(
-                orderedClassifications.stream().map(technology->{
-                    String humanName = humanAttributeFor(technology);
-                    return div().with(option(humanName).withValue(technology));
+                orderedClassifications.stream().map(pair->{
+                    String humanName = humanAttributeFor(pair.getFirst());
+                    return div().with(option(humanName).withValue(pair.getFirst()).attr("data-id", pair.getSecond()));
                 }).collect(Collectors.toList())
         );
     }

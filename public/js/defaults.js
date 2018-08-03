@@ -42,13 +42,14 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
      var $formList = $select.parent().next();
      $options.each(function(i,option){
          var id = $(option).val();
-         if($('#'+id).length==0) {
+         var newElemId = $(option).attr('data-id');
+         if($('#'+newElemId).length==0) {
             // get option from server
             $.ajax({
                 type: "POST",
                 url: '/form_elem_by_id',
                 data: {
-                    id: id
+                    id: newElemId
                 },
                 success: function(data) {
                     if(data && data.hasOwnProperty('results')) {
