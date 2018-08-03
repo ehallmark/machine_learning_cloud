@@ -10,6 +10,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.nd4j.linalg.primitives.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -134,8 +135,8 @@ public class AbstractNestedFilter extends AbstractFilter {
 
     public Tag getNestedOptions(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, boolean loadChildren) {
         List<AbstractFilter> availableFilters = filters.stream().filter(filter->filter.getAttribute()==null||(filter.getAttribute().isDisplayable()&&userRoleFunction.apply(filter.getAttribute().getRootName()))).collect(Collectors.toList());
-        Map<String,List<String>> filterGroups = new TreeMap<>(availableFilters.stream().collect(Collectors.groupingBy(filter->filter.getFullPrerequisite())).entrySet()
-                .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
+        Map<String,List<Pair<String,String>>> filterGroups = new TreeMap<>(availableFilters.stream().collect(Collectors.groupingBy(filter->filter.getFullPrerequisite())).entrySet()
+                .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->new Pair<>(attr.getFullName(),attr.getId())).collect(Collectors.toList()))));
 
         String clazz = NestedAttribute.CLAZZ;
         String id = getId();

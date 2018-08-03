@@ -40,17 +40,12 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
      });
 
      var $formList = $select.parent().next();
-     var needsRefresh = false;
      // get any missing elements first
      for(var i = 0; i < $options.length; i++) {
          var option = $options.get(i);
          var id = $(option).val();
          var newElemId = $(option).attr('data-id');
-         if(!newElemId) {
-            newElemId = id;
-         }
          if($('#'+newElemId).length==0) {
-            needsRefresh = true;
             // get option from server
             $.ajax({
                 type: "POST",
@@ -1408,13 +1403,11 @@ $(document).ready(function() {
         // pull any attrs necessary from server
        /* if(mainSelectID) {
             var $formList = $(mainSelectID).parent().next();
-            var needsRefresh = false;
             for(var id in dataMap) {
                 if(dataMap.hasOwnProperty(id)) {
                     if(!id.startsWith("order_")) {
                         var $elem = $('#'+id);
                         if($elem.length==0) {
-                            needsRefresh = true;
                             // try to get it from the server
                             $.ajax({
                                 type: "POST",

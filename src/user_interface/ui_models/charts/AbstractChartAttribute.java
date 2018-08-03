@@ -170,8 +170,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     protected ContainerTag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
         String id = getGroupByChartFieldName(attrName);
         List<AbstractAttribute> availableGroups = groupByAttributes.stream().filter(attr->attr.isDisplayable()&&userRoleFunction.apply(attr.getName())).collect(Collectors.toList());
-        Map<String,List<String>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
-                .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
+        Map<String,List<Pair<String,String>>> groupedGroupAttrs = new TreeMap<>(availableGroups.stream().collect(Collectors.groupingBy(filter->filter.getRootName())).entrySet()
+                .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->new Pair<>(attr.getFullName(), "")).collect(Collectors.toList()))));
         String clazz = "single-select2";
         return div().withClass("row").with(
                 div().withClass("col-8").with(
@@ -215,20 +215,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             );
         };
     }
-
-
-    protected Stream<Pair<String,PortfolioList>> groupPortfolioListForGivenAttribute(PortfolioList portfolioList, String attribute) {
-        String groupedBy = attrNameToGroupByAttrNameMap.get(attribute);
-        Integer maxLimit = attrNameToMaxGroupSizeMap.get(attribute);
-        Boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attribute,false);
-        if(maxLimit==null) maxLimit = 1;
-        List<String> groupByList = new ArrayList<>();
-        if(groupedBy!=null) {
-            groupByList.add(groupedBy);
-        }
-        return portfolioList.groupedBy(groupByList).filter(g->includeBlank||!g.getSecond().isBlankGroup()).sorted((p1,p2)->Integer.compare(p2.getSecond().getItemList().size(),p1.getSecond().getItemList().size())).limit(maxLimit);
-    }
-
+    
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         System.out.println("Starting params for: "+getName());

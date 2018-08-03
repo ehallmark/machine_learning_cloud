@@ -2172,7 +2172,7 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Map<String,List<String>> orderedClassifications, String defaultOption) {
+    public static Tag technologySelectWithCustomClass(String name, String id, String clazz, Map<String,List<Pair<String,String>>> orderedClassifications, String defaultOption) {
         ContainerTag select = select().attr("style","width:100%;").withName(name).withId(id).withClass(clazz);
         if(defaultOption==null) select = select.attr("multiple","multiple");
         else {
@@ -2183,8 +2183,8 @@ public class SimilarPatentServer {
                         orderedClassifications.entrySet().stream().map(e-> {
                             String optGroup = e.getKey();
                             return optgroup().attr("label",humanAttributeFor(optGroup)).attr("name",optGroup).with(
-                                    e.getValue().stream().map(technology->{
-                                        return div().with(option(humanAttributeFor(technology)).withValue(technology));
+                                    e.getValue().stream().map(pair->{
+                                        return div().with(option(humanAttributeFor(pair.getFirst())).withValue(pair.getFirst()).attr("data-id", pair.getSecond()));
                                     }).collect(Collectors.toList())
                             );
                         }).collect(Collectors.toList())
