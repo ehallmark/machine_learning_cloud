@@ -1322,7 +1322,12 @@ $(document).ready(function() {
                             success: function(data) {
                                 if(data && data.hasOwnProperty('results')) {
                                     $formList.append(data.results);
-                                    $formList.children().last().show();
+                                    var $new = $formList.children().last();
+                                    $new.show();
+                                    var $newFilters = $new.find('.nested-filter-select');
+                                    if($newFilters.length > 0) {
+                                        setupNestedFilterSelects($newFilters);
+                                    }
                                 }
                             },
                             dataType: "json"
