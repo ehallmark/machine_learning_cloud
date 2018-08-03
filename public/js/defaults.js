@@ -1410,8 +1410,8 @@ $(document).ready(function() {
             $loaders.hide();
         } else if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
             showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"],null);
-            showTemplateFormHelper("#attributesForm",data["attributesmap"],"#multiselect-nested-filter-select-attributesNested_filter");
-            showTemplateFormHelper("#filtersForm",data["filtersmap"], '#multiselect-nested-filter-select-attributes');
+            showTemplateFormHelper("#attributesForm",data["attributesmap"],"#multiselect-nested-filter-select-attributes");
+            showTemplateFormHelper("#filtersForm",data["filtersmap"], '#multiselect-nested-filter-select-attributesNested_filter');
             showTemplateFormHelper("#chartsForm",data["chartsmap"],'#multiselect-nested-filter-select-chartModels');
             try {
                 showTemplateFormHelper("#highlightForm",data["highlightmap"],null);
@@ -1421,8 +1421,8 @@ $(document).ready(function() {
             $loaders.hide();
         } else if(data.hasOwnProperty('searchOptionsMap')) { // data came from newly added node
             showTemplateFormHelper("#searchOptionsForm",$.parseJSON(data["searchOptionsMap"]),null);
-            showTemplateFormHelper("#attributesForm",$.parseJSON(data["attributesMap"]),"#multiselect-nested-filter-select-attributesNested_filter");
-            showTemplateFormHelper("#filtersForm",$.parseJSON(data["filtersMap"]),'#multiselect-nested-filter-select-attributes');
+            showTemplateFormHelper("#attributesForm",$.parseJSON(data["attributesMap"]),"#multiselect-nested-filter-select-attributes");
+            showTemplateFormHelper("#filtersForm",$.parseJSON(data["filtersMap"]),'#multiselect-nested-filter-select-attributesNested_filter');
             showTemplateFormHelper("#chartsForm",$.parseJSON(data["chartsMap"]),'#multiselect-nested-filter-select-chartModels');
             try {
                 showTemplateFormHelper("#highlightForm",data["highlightMap"],null);
