@@ -40,6 +40,10 @@ do
     echo "Backing up..."
     source scripts/production/backup.sh
 
+    echo "Indexing updates..."
+    source scripts/production/update_elasticsearch.sh
+
+
     # turn off python server for no real reason
     while ps -p $ENCODER_PID
     do
