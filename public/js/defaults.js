@@ -1429,7 +1429,7 @@ $(document).ready(function() {
         } else {
             doFunction();
         }
-    });
+    };
 
     var showTemplateFunction = function(data,tree,node){
         if(node!==null){ resetSearchForm(); }
