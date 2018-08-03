@@ -79,27 +79,6 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
      $options.each(function(i,option){
          var id = $(option).val();
          var newElemId = $(option).attr('data-id');
-         if(!newElemId) {
-            newElemId = id;
-         }
-         if($('#'+newElemId).length==0) {
-            // get option from server
-            $.ajax({
-                type: "POST",
-                url: '/form_elem_by_id',
-                data: {
-                    id: newElemId
-                },
-                success: function(data) {
-                    if(data && data.hasOwnProperty('results')) {
-                        $formList.append(data.results);
-                        var $new = $formList.children().last();
-                        $new.show();
-                    }
-                },
-                dataType: "json"
-            });
-         }
          var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
          var wasHidden = $draggable.parent().is(':hidden');
          if(!preventHighlight && wasHidden) {
