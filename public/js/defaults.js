@@ -1,6 +1,6 @@
 var selectionCache = new Set([]);
 var previewSelectionCache = new Set([]);
-
+var formIDRequestedCache = new Set([]);
 var nestedFilterSelectFunction = function(e,preventHighlight) {
      var $options = $(e.currentTarget.selectedOptions);
      var $select = $(this);
@@ -45,8 +45,9 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
          var option = $options.get(i);
          var id = $(option).val();
          var newElemId = $(option).attr('data-id');
-         if($('#'+newElemId).length==0) {
+         if($('#'+newElemId).length==0 && !formIDRequestedCache.has(newElemId)) {
              // get option from server
+             formIDRequestedCache.add(newElemId);
              $.ajax({
                  type: "POST",
                  url: '/form_elem_by_id',
@@ -1405,7 +1406,10 @@ $(document).ready(function() {
                 if(dataMap.hasOwnProperty(id)) {
                     if(!id.startsWith("order_")) {
                         var $elem = $('#'+id);
-                        if($elem.length==0) {
+                        if($elem.length==0 && !formIDRequestedCache.has(newElemId)) {
+                            // get option from server
+                            formIDRequestedCache.add(newElemId);
+
                             // try to get it from the server
                             $.ajax({
                                 type: "POST",
@@ -1428,7 +1432,7 @@ $(document).ready(function() {
                     }
                 }
             }
-            setTimeout(doFunction, 100);
+            doFunction();
         } else {
             doFunction();
         }

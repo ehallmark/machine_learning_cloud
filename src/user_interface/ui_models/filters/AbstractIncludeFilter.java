@@ -52,7 +52,8 @@ public class AbstractIncludeFilter extends AbstractFilter {
         }
     }
 
-    @Override public String getId() {
+    @Override
+    public String getId() {
         if(!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
             return super.getId();
         } else {
