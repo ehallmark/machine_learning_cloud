@@ -349,6 +349,9 @@ public class BigQueryServer extends SimilarPatentServer {
         loadAttributes();
         loadFilterModels();
         loadChartModels();
+        roleToAttributeFunctionMap.keySet().forEach(role->{
+            ROLE_TO_FORM_ELEMENTS_BY_ID.put(role, Collections.synchronizedMap(new HashMap<>()));
+        });
         addToFormElements(allAttributes);
         addToFormElements(allFilters);
         addToFormElements(allCharts);
