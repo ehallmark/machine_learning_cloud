@@ -1406,9 +1406,9 @@ $(document).ready(function() {
                 if(dataMap.hasOwnProperty(id)) {
                     if(!id.startsWith("order_")) {
                         var $elem = $('#'+id);
-                        if($elem.length==0 && !formIDRequestedCache.has(newElemId)) {
+                        if($elem.length==0 && !formIDRequestedCache.has(id)) {
                             // get option from server
-                            formIDRequestedCache.add(newElemId);
+                            formIDRequestedCache.add(id);
 
                             // try to get it from the server
                             $.ajax({
