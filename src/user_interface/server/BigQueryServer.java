@@ -364,14 +364,18 @@ public class BigQueryServer extends SimilarPatentServer {
                     if(child instanceof NestedAttribute) {
                         ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,true).render());
                     } else {
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getAttributeId(), child.getOptionsTag(f,true).render());
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getAttributeId(), child.getOptionsTag(f,null,null,(d1,d2)->div().with(d1,d2), false, true).render());
                     }
                 });
             });
         } else if(attr instanceof AbstractNestedFilter) {
             ((AbstractNestedFilter) attr).getFilters().forEach(child->{
                 roleToAttributeFunctionMap.forEach((role,f)->{
-                    ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f,true).render());
+                    if(child instanceof AbstractNestedFilter) {
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f, true).render());
+                    } else {
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f,null,null,true).render());
+                    }
                 });
             });
         }
