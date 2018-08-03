@@ -57,11 +57,11 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
                      },
                      success: function(data) {
                          if(data && data.hasOwnProperty('results')) {
-                             $formList.append(data.results);
-                             var $new = $formList.children().last();
+                             var $new = $(data.results);
+                             $formList.append($new);
                              $new.show();
-                             var $newFilters = $formList.find('.nested-filter-select');
-                             setupNestedFilterSelects($newFilters);
+                             var $newFilters = $new.find('.nested-filter-select');
+                             setupNestedFilterSelects($newFilters, $new);
                          }
                      },
                      dataType: "json"
@@ -135,7 +135,7 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
 }
 
 
-var setupNestedFilterSelects = function($selects) {
+var setupNestedFilterSelects = function($selects, $topLevelElem) {
     var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
     // nested forms
 
@@ -145,7 +145,7 @@ var setupNestedFilterSelects = function($selects) {
     $selects.select2(displayItemSelectOptions);
     $selects.on("change", nestedFilterSelectFunction);
 
-    $('.attributeElement .collapsible-header .remove-button').click(function(e) {
+    $topLevelElem.find('.attributeElement .collapsible-header .remove-button').click(function(e) {
         e.stopPropagation();
         // get name
         var label = $(this).attr('data-model');
@@ -159,7 +159,7 @@ var setupNestedFilterSelects = function($selects) {
     });
 
 
-    $('.multiselect').select2({
+    $topLevelElem.find('.multiselect').select2({
         minimumResultsForSearch: 5,
         closeOnSelect: false,
         templateSelection: select2SelectedFunction
@@ -173,7 +173,7 @@ var setupNestedFilterSelects = function($selects) {
         return $(elem.html_result);
     };
 
-    $('.multiselect-ajax').select2({
+    $topLevelElem.find('.multiselect-ajax').select2({
       width: "100%",
       ajax: {
         url: function() { return $(this).attr("data-url"); },
@@ -191,7 +191,7 @@ var setupNestedFilterSelects = function($selects) {
       templateResult: ajaxMultiTemplateResultFunction
     });
 
-    $('.single-select2').select2({
+    $topLevelElem.find('.single-select2').select2({
         minimumResultsForSearch: 10,
         width: "100%",
         templateSelection: select2SelectedFunction
@@ -202,7 +202,7 @@ var setupNestedFilterSelects = function($selects) {
     if(numericAttributes&&numericAttributes.attr('value')) {
         numericAttributes = JSON.parse(numericAttributes.attr('value'));
     }
-    $('.collect-by-select').select2({
+    $topLevelElem.find('.collect-by-select').select2({
         minimumResultsForSearch: 10,
         width: "100%",
         templateSelection: select2SelectedFunction
@@ -250,13 +250,13 @@ var setupNestedFilterSelects = function($selects) {
         }
     });
 
-    setCollapsibleHeaders(".collapsible-header");
+    setCollapsibleHeaders($topLevelElem.find(".collapsible-header");
 
-    var $nestedLists = $('.nested-form-list');
+    var $nestedLists = $topLevelElem.find('.nested-form-list');
     $nestedLists.sortable();
     $nestedLists.disableSelection();
 
-    $('input[type="checkbox"]').click(function(e) {
+    $topLevelElem.find('input[type="checkbox"]').click(function(e) {
         if($(this).prop("checked")==true) {
             $(this).val('on');
         } else {
@@ -265,7 +265,7 @@ var setupNestedFilterSelects = function($selects) {
         return true;
     });
 
-    $( ".datepicker" ).datepicker({
+    $topLevelElem.find(".datepicker" ).datepicker({
        changeMonth: true,
        changeYear: true,
        dateFormat: 'yy-mm-dd'
@@ -604,7 +604,7 @@ $(document).ready(function() {
            //alert("Please include some attributes in the Attributes section.");
        //}
 
-       setCollapsibleHeaders('#results .tab-pane .content .collapsible-header');
+       setCollapsibleHeaders($('#results').find('.tab-pane .content .collapsible-header'));
 
        if(data.hasOwnProperty('tableCnt')) {
             var tableCnt = data.tableCnt;
@@ -1230,7 +1230,7 @@ $(document).ready(function() {
         return templateDataFunction(null,null,name,true,callback,null,extract_to_usergroup);
     });
 
-    setupNestedFilterSelects($('select.nested-filter-select'));
+    setupNestedFilterSelects($('select.nested-filter-select'), $(document));
 
     $('.sidebar .nav-item .btn').click(function(e){
         $('.sidebar .nav-item .btn').removeClass('active');
@@ -1422,11 +1422,11 @@ $(document).ready(function() {
                                     },
                                     success: function(data) {
                                         if(data && data.hasOwnProperty('results')) {
-                                            $formList.append(data.results);
-                                            var $new = $formList.children().last();
+                                            var $new = $(data.results);
+                                            $formList.append($new);
                                             $new.show();
-                                            var $newFilters = $formList.find('.nested-filter-select');
-                                            setupNestedFilterSelects($newFilters);
+                                            var $newFilters = $new.find('.nested-filter-select');
+                                            setupNestedFilterSelects($newFilters, $new);
                                         }
                                     },
                                     dataType: "json"
@@ -1570,8 +1570,8 @@ var findByValue = function(inputs, value) {
 };
 
 
-var setCollapsibleHeaders = function(selector) {
-    $(selector).click(function () {
+var setCollapsibleHeaders = function($selector) {
+    $selector.click(function () {
         $header = $(this);
         //getting the next element
         $content = $($header.attr("data-target"));
@@ -1612,8 +1612,6 @@ var setCollapsibleHeaders = function(selector) {
             });
         }
     });
-
-
 };
 
 var showDatasetFunction = function(data,tree,node){
