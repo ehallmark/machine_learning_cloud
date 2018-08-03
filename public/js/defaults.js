@@ -1313,7 +1313,7 @@ $(document).ready(function() {
     var showTemplateFormHelper = function(formSelector,dataMap,mainSelectID) {
         // pull any attrs necessary from server
         if(mainSelectID) {
-            var $formList = $(mainSelectID).find('.nested-form-list').parent().next();
+            var $formList = $(mainSelectID).parent().next();
             $.each(dataMap, function(id, value) {
                 if(!id.startsWith("order_")) {
                     var $elem = $('#'+id);
