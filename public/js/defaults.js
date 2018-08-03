@@ -41,6 +41,28 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
 
      $options.each(function(i,option){
          var id = $(option).val();
+         if($('#'+id).length==0) {
+            // get option from server
+            $.ajax({
+                type: "POST",
+                url: '/form_elem_by_id',
+                data: {
+                    id: id
+                },
+                success: function(data) {
+                    if(data && data.hasOwnProperty('results')) {
+                        $formList.append(data.results);
+                        var $new = $formList.children().last();
+                        $new.show();
+                        var $newFilters = $formList.find('.nested-filter-select');
+                        if($newFilters.length > 0) {
+                            setupNestedFilterSelects($newFilters);
+                        }
+                    }
+                },
+                dataType: "json"
+            });
+         }
          var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
          var wasHidden = $draggable.parent().is(':hidden');
          if(!preventHighlight && wasHidden) {
@@ -1305,101 +1327,109 @@ $(document).ready(function() {
 
 
     var showTemplateFormHelper = function(formSelector,dataMap,mainSelectID) {
+        var doFunction = function() {
+            $.each(dataMap,function(id,value) {
+                if(!id.startsWith("order_")) {
+                     var order = null;
+                     if(dataMap.hasOwnProperty("order_"+id)) {
+                         order = dataMap["order_"+id];
+                     }
+
+                     var $elem = $('#'+id);
+                     var $draggable = $elem.closest(".attributeElement");
+                     $draggable.parent().show();
+                     if(order!==null&& ($elem.is('select.nested-filter-select') || $elem.is('div.attribute'))) {
+                         $draggable.parent().attr("sort-order",order);
+                     }
+                     if($elem.attr('type')==="checkbox") {
+                         $elem.prop('checked',value==='on');
+                     }
+                     if($elem.hasClass('multiselect-ajax')) {
+                         var labeledValues = [];
+                         var needToFindLabels = [];
+                         for(var i = 0; i < value.length; i++) {
+                             var val = value[i];
+                             if($elem.find('option[value="'+val+'"]').length) {
+                                 labeledValues.push(val); // good to go
+                             } else {
+                                 needToFindLabels.push(val); // not good :(
+                             }
+                         }
+                         $elem.val(labeledValues).trigger('change');
+                         if(needToFindLabels.length > 0) {
+                           // get label
+                           $.ajax({
+                             type: "GET",
+                             url: $elem.attr("data-url"),
+                             data: {
+                               get_label_for: needToFindLabels
+                             },
+                             success: function(data) {
+                               if(data.hasOwnProperty('labels')&&data.hasOwnProperty('values')) {
+                                 for(var i = 0; i < data.labels.length; i++) {
+                                   var newVal = new Option(data.labels[i],data.values[i],true,true);
+                                   $elem.append(newVal);
+                                 }
+                               }
+                             },
+                             error: function(jqXHR, exception) {
+                               for(var i = 0; i < needToFindLabels.length; i++) {
+                                 var val = needToFindLabels[i];
+                                 var newVal = new Option(val,val,true,true);
+                                 $elem.append(newVal);
+                               }
+                             },
+                             dataType: "json"
+                           });
+                         }
+
+                     } else {
+                         $elem.val(value);
+                     }
+                     $elem.not('select.nested-filter-select').trigger('change');
+                 }
+            });
+            $(formSelector+' select.nested-filter-select').filter(':first').trigger('change', [true]);
+        };
         // pull any attrs necessary from server
         if(mainSelectID) {
             var $formList = $(mainSelectID).parent().next();
-            $.each(dataMap, function(id, value) {
-                if(!id.startsWith("order_")) {
-                    var $elem = $('#'+id);
-                    if($elem.length==0) {
-                        // try to get it from the server
-                        $.ajax({
-                            type: "POST",
-                            url: '/form_elem_by_id',
-                            data: {
-                                id: id
-                            },
-                            success: function(data) {
-                                if(data && data.hasOwnProperty('results')) {
-                                    $formList.append(data.results);
-                                    var $new = $formList.children().last();
-                                    $new.show();
-                                    var $newFilters = $new.find('.nested-filter-select');
-                                    if($newFilters.length > 0) {
-                                        setupNestedFilterSelects($newFilters);
+            $.when(function() {
+                $.each(dataMap, function(id, value) {
+                    if(!id.startsWith("order_")) {
+                        var $elem = $('#'+id);
+                        if($elem.length==0) {
+                            // try to get it from the server
+                            $.ajax({
+                                type: "POST",
+                                url: '/form_elem_by_id',
+                                data: {
+                                    id: id
+                                },
+                                success: function(data) {
+                                    if(data && data.hasOwnProperty('results')) {
+                                        $formList.append(data.results);
+                                        var $new = $formList.children().last();
+                                        $new.show();
                                     }
-                                }
-                            },
-                            dataType: "json"
-                        });
-                    }
-                }
-            });
-        }
-
-        $.each(dataMap,function(id,value) {
-            if(!id.startsWith("order_")) {
-                var order = null;
-                if(dataMap.hasOwnProperty("order_"+id)) {
-                    order = dataMap["order_"+id];
-                }
-
-                var $elem = $('#'+id);
-                var $draggable = $elem.closest(".attributeElement");
-                $draggable.parent().show();
-                if(order!==null&& ($elem.is('select.nested-filter-select') || $elem.is('div.attribute'))) {
-                    $draggable.parent().attr("sort-order",order);
-                }
-                if($elem.attr('type')==="checkbox") {
-                    $elem.prop('checked',value==='on');
-                }
-                if($elem.hasClass('multiselect-ajax')) {
-                    var labeledValues = [];
-                    var needToFindLabels = [];
-                    for(var i = 0; i < value.length; i++) {
-                        var val = value[i];
-                        if($elem.find('option[value="'+val+'"]').length) {
-                            labeledValues.push(val); // good to go
-                        } else {
-                            needToFindLabels.push(val); // not good :(
+                                },
+                                dataType: "json"
+                            });
                         }
                     }
-                    $elem.val(labeledValues).trigger('change');
-                    if(needToFindLabels.length > 0) {
-                      // get label
-                      $.ajax({
-                        type: "GET",
-                        url: $elem.attr("data-url"),
-                        data: {
-                          get_label_for: needToFindLabels
-                        },
-                        success: function(data) {
-                          if(data.hasOwnProperty('labels')&&data.hasOwnProperty('values')) {
-                            for(var i = 0; i < data.labels.length; i++) {
-                              var newVal = new Option(data.labels[i],data.values[i],true,true);
-                              $elem.append(newVal);
-                            }
-                          }
-                        },
-                        error: function(jqXHR, exception) {
-                          for(var i = 0; i < needToFindLabels.length; i++) {
-                            var val = needToFindLabels[i];
-                            var newVal = new Option(val,val,true,true);
-                            $elem.append(newVal);
-                          }
-                        },
-                        dataType: "json"
-                      });
-                    }
-
-                } else {
-                    $elem.val(value);
+                });
+                return $formList;
+            }).done(function($formList) {
+                var $newFilters = $formList.find('.nested-filter-select');
+                if($newFilters.length > 0) {
+                    setupNestedFilterSelects($newFilters);
                 }
-                $elem.not('select.nested-filter-select').trigger('change');
-            }
-        });
-        $(formSelector+' select.nested-filter-select').filter(':first').trigger('change', [true]);
-    };
+                doFunction();
+            });
+        } else {
+            doFunction();
+        }
+    });
 
     var showTemplateFunction = function(data,tree,node){
         if(node!==null){ resetSearchForm(); }
