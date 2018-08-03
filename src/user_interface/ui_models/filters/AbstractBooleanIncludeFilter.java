@@ -69,7 +69,7 @@ public class AbstractBooleanIncludeFilter extends AbstractFilter {
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
-        return div();
+        return div().withId(getId());
     }
 
     public boolean isActive() {
