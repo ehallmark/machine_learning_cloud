@@ -110,7 +110,133 @@ var setupNestedFilterSelects = function($selects) {
     });
     $selects.select2(displayItemSelectOptions);
     $selects.on("change", nestedFilterSelectFunction);
-}
+
+    $('.attributeElement .collapsible-header .remove-button').click(function(e) {
+        e.stopPropagation();
+        // get name
+        var label = $(this).attr('data-model');
+        var $select = $($(this).attr('data-select'));
+        var values = $select.val();
+        var idx = $.inArray(label,values);
+        if(idx >= 0) {
+            values.splice(idx,1);
+            $select.val(values).trigger('change',[true]);
+        }
+    });
+
+
+    $('.multiselect').select2({
+        minimumResultsForSearch: 5,
+        closeOnSelect: false,
+        templateSelection: select2SelectedFunction
+    });
+
+    // how results look in the dropdown
+    var ajaxMultiTemplateResultFunction = function(elem) {
+        if (!elem.html_result) {
+            return elem.text;
+        }
+        return $(elem.html_result);
+    };
+
+    $('.multiselect-ajax').select2({
+      width: "100%",
+      ajax: {
+        url: function() { return $(this).attr("data-url"); },
+        dataType: "json",
+        delay: 100,
+        data: function(params) {
+            var query = {
+                search: params.term,
+                page: params.page || 1
+            };
+
+            return query;
+        }
+      },
+      templateResult: ajaxMultiTemplateResultFunction
+    });
+
+    $('.single-select2').select2({
+        minimumResultsForSearch: 10,
+        width: "100%",
+        templateSelection: select2SelectedFunction
+    });
+
+    // handle collect by for pivot tables
+    var numericAttributes = $('#numeric-attributes-list');
+    if(numericAttributes&&numericAttributes.attr('value')) {
+        numericAttributes = JSON.parse(numericAttributes.attr('value'));
+    }
+    $('.collect-by-select').select2({
+        minimumResultsForSearch: 10,
+        width: "100%",
+        templateSelection: select2SelectedFunction
+    }).on('change', function(e) {
+        var val = $(this).val();
+        var $type = $(this).closest('.collect-container').find('select.collect-type');
+        if(val) {
+            var prevType = $type.val();
+            // update type select from selected value
+            var usePrevType = false;
+            if(!numericAttributes.includes(val)) {
+                if(prevType && ['Count','Cardinality'].includes(prevType)) {
+                    usePrevType=true;
+                }
+
+                $type.empty();
+                $type.append('<option value="Cardinality">Distinct Count</option>');
+                $type.append('<option value="Count">Total Count</option>');
+            } else {
+                if(prevType && ['Sum','Average','Max','Min','StdDeviation','Variance'].includes(prevType)) {
+                    usePrevType=true;
+                }
+
+                $type.empty();
+                $type.append('<option value="Sum">Sum</option>');
+                $type.append('<option value="Average">Average</option>');
+                $type.append('<option value="Max">Max</option>');
+                $type.append('<option value="Min">Min</option>');
+                $type.append('<option value="StdDeviation">Standard Deviation</option>');
+                $type.append('<option value="Variance">Variance</option>');
+                $type.append('<option value="Count">Total Count</option>');
+                $type.append('<option value="Cardinality">Distinct Count</option>');
+            }
+            $type.select2({
+                minimumResultsForSearch: 10,
+                width: "100%",
+                templateSelection: select2SelectedFunction
+            });
+            if(usePrevType) {
+                $type.val(prevType);
+            }
+            $type.trigger('select2.change');
+        } else {
+            $type.val(null).trigger('select2.change');
+        }
+    });
+
+    setCollapsibleHeaders(".collapsible-header");
+
+    var $nestedLists = $('.nested-form-list');
+    $nestedLists.sortable();
+    $nestedLists.disableSelection();
+
+    $('input[type="checkbox"]').click(function(e) {
+        if($(this).prop("checked")==true) {
+            $(this).val('on');
+        } else {
+            $(this).val('off');
+        }
+        return true;
+    });
+
+    $( ".datepicker" ).datepicker({
+       changeMonth: true,
+       changeYear: true,
+       dateFormat: 'yy-mm-dd'
+    });
+};
 
 
 var setupNavigationTabs = function() {
@@ -1070,13 +1196,6 @@ $(document).ready(function() {
         return templateDataFunction(null,null,name,true,callback,null,extract_to_usergroup);
     });
 
-    $('.update-default-attributes-button').click(function(e) {
-        e.preventDefault();
-        $('#update-default-attributes-form').submit();
-    });
-
-
-
     setupNestedFilterSelects($('select.nested-filter-select'));
 
     $('.sidebar .nav-item .btn').click(function(e){
@@ -1084,133 +1203,8 @@ $(document).ready(function() {
         $(this).addClass('active');
     });
 
-    $('.attributeElement .collapsible-header .remove-button').click(function(e) {
-        e.stopPropagation();
-        // get name
-        var label = $(this).attr('data-model');
-        var $select = $($(this).attr('data-select'));
-        var values = $select.val();
-        var idx = $.inArray(label,values);
-        if(idx >= 0) {
-            values.splice(idx,1);
-            $select.val(values).trigger('change',[true]);
-        }
-    });
-
-
-    $('.multiselect').select2({
-        minimumResultsForSearch: 5,
-        closeOnSelect: false,
-        templateSelection: select2SelectedFunction
-    });
-
-    // how results look in the dropdown
-    var ajaxMultiTemplateResultFunction = function(elem) {
-        if (!elem.html_result) {
-            return elem.text;
-        }
-        return $(elem.html_result);
-    };
-
-    $('.multiselect-ajax').select2({
-      width: "100%",
-      ajax: {
-        url: function() { return $(this).attr("data-url"); },
-        dataType: "json",
-        delay: 100,
-        data: function(params) {
-            var query = {
-                search: params.term,
-                page: params.page || 1
-            };
-
-            return query;
-        }
-      },
-      templateResult: ajaxMultiTemplateResultFunction
-    });
-
-    $('.single-select2').select2({
-        minimumResultsForSearch: 10,
-        width: "100%",
-        templateSelection: select2SelectedFunction
-    });
-
-    // handle collect by for pivot tables
-    var numericAttributes = $('#numeric-attributes-list');
-    if(numericAttributes&&numericAttributes.attr('value')) {
-        numericAttributes = JSON.parse(numericAttributes.attr('value'));
-    }
-    $('.collect-by-select').select2({
-        minimumResultsForSearch: 10,
-        width: "100%",
-        templateSelection: select2SelectedFunction
-    }).on('change', function(e) {
-        var val = $(this).val();
-        var $type = $(this).closest('.collect-container').find('select.collect-type');
-        if(val) {
-            var prevType = $type.val();
-            // update type select from selected value
-            var usePrevType = false;
-            if(!numericAttributes.includes(val)) {
-                if(prevType && ['Count','Cardinality'].includes(prevType)) {
-                    usePrevType=true;
-                }
-
-                $type.empty();
-                $type.append('<option value="Cardinality">Distinct Count</option>');
-                $type.append('<option value="Count">Total Count</option>');
-            } else {
-                if(prevType && ['Sum','Average','Max','Min','StdDeviation','Variance'].includes(prevType)) {
-                    usePrevType=true;
-                }
-
-                $type.empty();
-                $type.append('<option value="Sum">Sum</option>');
-                $type.append('<option value="Average">Average</option>');
-                $type.append('<option value="Max">Max</option>');
-                $type.append('<option value="Min">Min</option>');
-                $type.append('<option value="StdDeviation">Standard Deviation</option>');
-                $type.append('<option value="Variance">Variance</option>');
-                $type.append('<option value="Count">Total Count</option>');
-                $type.append('<option value="Cardinality">Distinct Count</option>');
-            }
-            $type.select2({
-                minimumResultsForSearch: 10,
-                width: "100%",
-                templateSelection: select2SelectedFunction
-            });
-            if(usePrevType) {
-                $type.val(prevType);
-            }
-            $type.trigger('select2.change');
-        } else {
-            $type.val(null).trigger('select2.change');
-        }
-    });
-
-    setCollapsibleHeaders(".collapsible-header");
-
-    var $nestedLists = $('.nested-form-list');
-    $nestedLists.sortable();
-    $nestedLists.disableSelection();
 
     $('#main-content-id').addClass('show');
-
-    $('input[type="checkbox"]').click(function(e) {
-        if($(this).prop("checked")==true) {
-            $(this).val('on');
-        } else {
-            $(this).val('off');
-        }
-        return true;
-    });
-
-    $( ".datepicker" ).datepicker({
-       changeMonth: true,
-       changeYear: true,
-       dateFormat: 'yy-mm-dd'
-    });
     $('#sidebar-jstree-wrapper').show();
 
     /*$(document).uitooltip({
@@ -1328,6 +1322,7 @@ $(document).ready(function() {
                             success: function(data) {
                                 if(data && data.hasOwnProperty('results')) {
                                     $formList.append(data.results);
+                                    $formList.children().last().show();
                                 }
                             },
                             dataType: "json"
