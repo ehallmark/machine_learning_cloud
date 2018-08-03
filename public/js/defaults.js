@@ -1428,7 +1428,7 @@ $(document).ready(function() {
                     }
                 }
             }
-            doFunction();
+            setTimeout(doFunction, 100);
         } else {
             doFunction();
         }
