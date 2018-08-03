@@ -1,5 +1,7 @@
 package user_interface.ui_models.attributes;
 
+import data_pipeline.helpers.Function2;
+import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +9,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import seeding.Constants;
 import seeding.google.elasticsearch.Attributes;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.filters.*;
 
 import java.util.*;
@@ -76,8 +79,41 @@ public abstract class AbstractAttribute {
         return parent==null? getName() : parent.getRootName();
     }
 
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return div().with(div().withClass("attribute").withId(getAttributeId())); }
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+        return div().with(div().withClass("attribute").withId(getAttributeId()));
+    }
+
+    public ContainerTag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren) {
+        String collapseId = "collapse-filters-"+getFullName().replaceAll("[\\[\\].]","");
+        String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
+        Tag childTag;
+        List<String> inputIds = new ArrayList<>();
+        if(getInputIds()!=null) {
+            inputIds.addAll(getInputIds());
+        }
+        if(this instanceof NestedAttribute && ! (this instanceof AbstractChartAttribute) && perAttr) {
+            childTag = ((NestedAttribute) this).getNestedOptions(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineTagFunction, perAttr, loadChildren);
+        } else {
+            childTag = getOptionsTag(userRoleFunction, loadChildren);
+            ContainerTag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(getFullName()) : null;
+            if(additionalTag!=null) {
+                childTag = combineTagFunction.apply(additionalTag,(ContainerTag)childTag);
+            }
+            if(additionalInputIdsFunction!=null) {
+                List<String> additional = additionalInputIdsFunction.apply(getFullName());
+                if(additional!=null) {
+                    inputIds.addAll(additional);
+                }
+            }
+        }
+        String id = ((NestedAttribute)getParent()).getId();
+        String attrName = getFullName();
+        String humanName = SimilarPatentServer.humanAttributeFor(attrName);
+        if(inputIds.isEmpty()) inputIds = null;
+        return div().attr("style", styleString).with(
+                SimilarPatentServer.createAttributeElement(humanName, attrName,null,collapseId,childTag, id, getAttributeId(), inputIds, isNotYetImplemented(), getDescription().render())
+        );
+    }
 
     public abstract String getType();
 

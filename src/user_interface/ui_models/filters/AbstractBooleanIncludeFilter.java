@@ -68,7 +68,7 @@ public class AbstractBooleanIncludeFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
         return div();
     }
 

@@ -55,7 +55,7 @@ public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
         return div().with(
                datasetAttribute.getFilterTag(getName(),getId())
         );

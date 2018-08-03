@@ -10,6 +10,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -117,13 +118,16 @@ public class AbstractNestedFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return getOptionsTag(userRoleFunction, null, null);
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+        if (loadChildren) {
+            return getOptionsTag(userRoleFunction, null, null, loadChildren);
+        } else {
+            return getNestedOptions(userRoleFunction, null, null, loadChildren);
+        }
     }
 
 
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction) {
-        String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
+    public Tag getNestedOptions(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, boolean loadChildren) {
         List<AbstractFilter> availableFilters = filters.stream().filter(filter->filter.getAttribute()==null||(filter.getAttribute().isDisplayable()&&userRoleFunction.apply(filter.getAttribute().getRootName()))).collect(Collectors.toList());
         Map<String,List<String>> filterGroups = new TreeMap<>(availableFilters.stream().collect(Collectors.groupingBy(filter->filter.getFullPrerequisite())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getFullName()).collect(Collectors.toList()))));
@@ -134,33 +138,13 @@ public class AbstractNestedFilter extends AbstractFilter {
                 div().with(
                         SimilarPatentServer.technologySelectWithCustomClass(getName(),id,clazz, filterGroups, null)
                 ), div().withClass("nested-form-list").with(
+                        loadChildren ?
                         availableFilters.stream().map(filter->{
-                            String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
-                            Tag childTag;
-                            List<String> inputIds = new ArrayList<>();
-                            if(filter.getInputIds()!=null) {
-                                inputIds.addAll(filter.getInputIds());
-                            }
-                            if(filter instanceof AbstractNestedFilter && filterType.equals(FilterType.Nested)) {
-                                childTag = ((AbstractNestedFilter) filter).getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction);
-                            } else {
-                                childTag = filter.getOptionsTag(userRoleFunction);
-                                Tag additionalTag = additionalTagFunction!=null ? additionalTagFunction.apply(filter.getName()) : null;
-                                if(additionalTag!=null) {
-                                    childTag = div().with(additionalTag,childTag);
-                                }
-                                if(additionalInputIdsFunction!=null) {
-                                    List<String> additional = additionalInputIdsFunction.apply(filter.getName());
-                                    if(additional!=null) {
-                                        inputIds.addAll(additional);
-                                    }
-                                }
-                            }
-
-                            if(inputIds.isEmpty()) inputIds = null;
-                            return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(SimilarPatentServer.humanAttributeFor(filter.getName()),filter.getName(),filter.getOptionGroup(),collapseId,childTag,id, filter.getAttributeId(), inputIds, filter.isNotYetImplemented(), filter.getDescription().render())
-                            );
+                            return filter.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, loadChildren);
+                        }).collect(Collectors.toList())
+                                // we need the dataset filter to always exist
+                                : availableFilters.stream().filter(f->f.getAttribute().getName().equals(Constants.DATASET_NAME)).map(filter->{
+                            return filter.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, loadChildren);
                         }).collect(Collectors.toList())
                 )
         );

@@ -97,6 +97,7 @@ public class BigQueryServer extends SimilarPatentServer {
     public static final String LOGIN_URL = GLOBAL_PREFIX+"/login";
     public static final String NEW_USER_URL = GLOBAL_PREFIX+"/new_user";
     public static final String DELETE_USER_URL = GLOBAL_PREFIX+"/delete_user";
+    public static final String FORM_ELEMENT_BY_ID_URL = GLOBAL_PREFIX+"/form_elem_by_id";
     public static final String EDIT_USER_GROUP_URL = GLOBAL_PREFIX+"/edit_user_group";
     public static final String EDIT_USER_URL = GLOBAL_PREFIX+"/edit_user";
     public static final String NEW_USER_GROUP_URL = GLOBAL_PREFIX+"/new_user_group";
@@ -123,6 +124,8 @@ public class BigQueryServer extends SimilarPatentServer {
     public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable.json";
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String PRESET_USER_GROUP = "presets";
+    public static final Map<String,Map<String,String>> ROLE_TO_FORM_ELEMENTS_BY_ID = Collections.synchronizedMap(new HashMap<>());
+
     private static Map<String,AggregationChart<?>> chartModelMap = new HashMap<>();
 
     static {
@@ -346,8 +349,30 @@ public class BigQueryServer extends SimilarPatentServer {
         loadAttributes();
         loadFilterModels();
         loadChartModels();
+        addToFormElements(allAttributes);
+        addToFormElements(allFilters);
+        addToFormElements(allCharts);
     }
 
+    private static void addToFormElements(AbstractAttribute attr) {
+        if (attr instanceof NestedAttribute) {
+            ((NestedAttribute) attr).getAttributes().forEach(child->{
+                roleToAttributeFunctionMap.forEach((role,f)->{
+                    if(child instanceof NestedAttribute) {
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,true).render());
+                    } else {
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getAttributeId(), child.getOptionsTag(f,true).render());
+                    }
+                });
+            });
+        } else if(attr instanceof AbstractNestedFilter) {
+            ((AbstractNestedFilter) attr).getFilters().forEach(child->{
+                roleToAttributeFunctionMap.forEach((role,f)->{
+                    ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f,true).render());
+                });
+            });
+        }
+    }
 
     public static void loadChartModels() {
         List<AbstractAttribute> attributes = new ArrayList<>();
@@ -936,6 +961,19 @@ public class BigQueryServer extends SimilarPatentServer {
             authorize(req,res);
             return handleReport(req,res);
         });
+
+        post(FORM_ELEMENT_BY_ID_URL, (req, res) -> {
+            authorize(req,res);
+            String formID = extractString(req, "id", null);
+            if(formID==null) {
+                return null;
+            }
+            String role = req.session().attribute("role");
+            if(role == null) return null;
+            String element = ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).get(formID);
+            return new Gson().toJson(Collections.singletonMap("results", element));
+        });
+
 
         post(PREVIEW_URL, (req,res) -> {
             authorize(req, res);
@@ -3118,7 +3156,7 @@ public class BigQueryServer extends SimilarPatentServer {
                         div().withClass("collapsible-form row").with(
                                 div().withClass("col-12").with(
                                         div().withClass("attributeElement").with(
-                                                attribute.getOptionsTag(userRoleFunction)
+                                                attribute.getOptionsTag(userRoleFunction, false)
                                         )
                                 )
                         )

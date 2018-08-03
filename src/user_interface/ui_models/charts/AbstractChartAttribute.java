@@ -91,8 +91,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return this.getOptionsTag(userRoleFunction,null,null,DEFAULT_COMBINE_BY_FUNCTION, true);
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+        return this.getOptionsTag(userRoleFunction,null,null,DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
     }
 
     private ContainerTag getPlotGroupsTogetherTag(String attrName) {
@@ -108,7 +108,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
 
 
     @Override
-    protected ContainerTag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr) {
+    public ContainerTag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren) {
         Function<String,ContainerTag> newTagFunction;
         Function<String,List<String>> newAdditionalIdsFunction;
         if(groupByAttributes!=null) {
@@ -172,7 +172,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         Function<String,List<String>> idsFunction = str -> {
             return Stream.of(collectorIdsFunction.apply(str), newAdditionalIdsFunction.apply(str)).flatMap(list->list.stream()).collect(Collectors.toList());
         };
-        return super.getOptionsTag(userRoleFunction,tagFunction,idsFunction,DEFAULT_COMBINE_BY_FUNCTION, true);
+        return super.getOptionsTag(userRoleFunction,tagFunction,idsFunction,DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
     }
 
     protected ContainerTag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {

@@ -61,7 +61,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
         return div().with(
                 textarea().withClass("form-control").attr("placeholder","1 assignee name per line.").withId(getId()).withName(getId())
         );

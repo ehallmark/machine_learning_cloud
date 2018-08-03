@@ -135,7 +135,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
         ContainerTag tag;
         if (!fieldType.equals(FieldType.Multiselect)||filterType.equals(FilterType.PrefixExclude)||filterType.equals(FilterType.PrefixInclude)) {
             tag= div().with(

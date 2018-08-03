@@ -1,6 +1,118 @@
 var selectionCache = new Set([]);
 var previewSelectionCache = new Set([]);
 
+var nestedFilterSelectFunction = function(e,preventHighlight) {
+     var $options = $(e.currentTarget.selectedOptions);
+     var $select = $(this);
+     var $selectWrapper = $select.parent().parent();
+     var addedDraggables = [];
+
+     var $hiddenOptions = $(e.currentTarget).find("option");
+     if($options.length>0) { $hiddenOptions = $hiddenOptions.not($options); }
+     $hiddenOptions.each(function(i,option){
+         var id = $(option).val();
+         var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
+
+         // update attributes
+         var divAttribute = $draggable.attr('data-attribute');
+         if(divAttribute) {
+            $draggable.find('#'+divAttribute).addClass("disabled");
+         }
+         var inputs = $draggable.data('inputs');
+         if(inputs && inputs.length > 0) {
+            $.each(inputs,function() {
+                var $this = $('#'+this);
+                if($this.length == 0) {
+                    alert('Missing: '+this);
+                } else {
+                    $this.prop('disabled',true);
+                    if($this.attr('type')==='checkbox') {
+                        $this.prop('checked', false);
+                    } else {
+                        $this.val(null).filter('select').trigger('change', [preventHighlight]);
+                    }
+                }
+            });
+         }
+
+         $draggable.parent().hide();
+         return true;
+     });
+
+     $options.each(function(i,option){
+         var id = $(option).val();
+         var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
+         var wasHidden = $draggable.parent().is(':hidden');
+         if(!preventHighlight && wasHidden) {
+             addedDraggables.push($draggable);
+         }
+
+         // update attributes
+         var divAttribute = $draggable.attr('data-attribute');
+         if(divAttribute) {
+            $draggable.find('#'+divAttribute).removeClass("disabled");
+         }
+         var inputs = $draggable.data('inputs');
+         if(inputs && inputs.length > 0) {
+            $.each(inputs,function() {
+                var $this = $('#'+this);
+                if($this.length == 0) {
+                    alert('Missing: '+this);
+                } else {
+                    $('#'+this).prop('disabled', false).trigger('focus').filter('select').trigger('change', [preventHighlight]);
+                }
+            });
+         }
+
+         $draggable.parent().show();
+     });
+
+     // sort this
+     $selectWrapper.find('.nested-form-list').filter(':first').each(function() {
+         var list = $(this);
+         var elems = list.children().filter('[sort-order]').detach();
+         if(elems.length>0) {
+             elems.sort(function(a,b) {
+                 var i = parseInt($(a).attr("sort-order"));
+                 var j = parseInt($(b).attr("sort-order"));
+                 return (i > j) ? 1 : (i < j) ? -1 : 0;
+             });
+             // remove sort
+             elems.removeAttr("sort-order");
+             list.append(elems);
+             list.sortable('refreshPositions');
+         }
+     });
+
+
+     if(addedDraggables.length == 1) { // added by human
+         $selectWrapper.find('.highlight').removeClass('highlight');
+         $.each(addedDraggables, function() {
+             var $draggable = $(this);
+             $draggable.addClass('highlight');
+             $draggable.click(function() { // highlight until clicked
+                 $(this).removeClass('highlight');
+             });
+             var $parent = $draggable.parent();
+             $parent.parent().prepend($parent);
+         });
+     }
+     return true;
+}
+
+
+var setupNestedFilterSelects = function($selects) {
+    var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
+    // nested forms
+
+    $selects.each(function(){
+        $(this).attr('title', 'Click to view available options...');
+    });
+    $selects.select2(displayItemSelectOptions);
+    $selects.on("change", nestedFilterSelectFunction);
+}
+
+
 var setupNavigationTabs = function() {
     var $navTabs = $('.nav-tabs li a');
     $navTabs.off('click');
@@ -963,155 +1075,9 @@ $(document).ready(function() {
         $('#update-default-attributes-form').submit();
     });
 
-    var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
-    // nested forms
-
-    $('select.nested-filter-select').each(function(){
-        $(this).attr('title', 'Click to view available options...');
-    });
-    $('select.nested-filter-select').select2(displayItemSelectOptions);
-
-    var nestedFilterSelectFunction = function(e,preventHighlight) {
-         var $options = $(e.currentTarget.selectedOptions);
-         var $select = $(this);
-         var $selectWrapper = $select.parent().parent();
-         var addedDraggables = [];
-
-         //if(!child) { // disable full subtree tree
-             var $hiddenOptions = $(e.currentTarget).find("option");
-             if($options.length>0) { $hiddenOptions = $hiddenOptions.not($options); }
-             $hiddenOptions.each(function(i,option){
-                 var id = $(option).val();
-                 var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-
-                 // update attributes
-                 var divAttribute = $draggable.attr('data-attribute');
-                 if(divAttribute) {
-                    $draggable.find('#'+divAttribute).addClass("disabled");
-                 }
-                 var inputs = $draggable.data('inputs');
-                 if(inputs && inputs.length > 0) {
-                    $.each(inputs,function() {
-                        var $this = $('#'+this);
-                        if($this.length == 0) {
-                            alert('Missing: '+this);
-                        } else {
-                            $this.prop('disabled',true);
-                            if($this.attr('type')==='checkbox') {
-                                $this.prop('checked', false);
-                            } else {
-                                $this.val(null).filter('select').trigger('change', [preventHighlight]);
-                            }
-                        }
-                    });
-                 }
-
-                 $draggable.parent().hide();
-                 return true;
-             });
-         //}
-
-         $options.each(function(i,option){
-             var id = $(option).val();
-             var $draggable = $selectWrapper.find('.attributeElement[data-model="'+id+'"]');
-             var wasHidden = $draggable.parent().is(':hidden');
-             if(!preventHighlight && wasHidden) {
-                 addedDraggables.push($draggable);
-             }
-
-             // update attributes
-             var divAttribute = $draggable.attr('data-attribute');
-             if(divAttribute) {
-                $draggable.find('#'+divAttribute).removeClass("disabled");
-             }
-             var inputs = $draggable.data('inputs');
-             if(inputs && inputs.length > 0) {
-                $.each(inputs,function() {
-                    var $this = $('#'+this);
-                    if($this.length == 0) {
-                        alert('Missing: '+this);
-                    } else {
-                        $('#'+this).prop('disabled', false).trigger('focus').filter('select').trigger('change', [preventHighlight]);
-                    }
-                });
-             }
-
-             $draggable.parent().show();
-         });
-
-         // sort this
-         $selectWrapper.find('.nested-form-list').filter(':first').each(function() {
-             var list = $(this);
-             var elems = list.children().filter('[sort-order]').detach();
-             if(elems.length>0) {
-                 elems.sort(function(a,b) {
-                     var i = parseInt($(a).attr("sort-order"));
-                     var j = parseInt($(b).attr("sort-order"));
-                     return (i > j) ? 1 : (i < j) ? -1 : 0;
-                 });
-                 // remove sort
-                 elems.removeAttr("sort-order");
-                 list.append(elems);
-                 list.sortable('refreshPositions');
-             }
-         });
 
 
-         if(addedDraggables.length == 1) { // added by human
-             $selectWrapper.find('.highlight').removeClass('highlight');
-             $.each(addedDraggables, function() {
-                 var $draggable = $(this);
-                 $draggable.addClass('highlight');
-                 $draggable.click(function() { // highlight until clicked
-                     $(this).removeClass('highlight');
-                 });
-                 var $parent = $draggable.parent();
-                 $parent.parent().prepend($parent);
-             });
-         }
-         return true;
-    }
-
-    $('select.nested-filter-select').on("change", nestedFilterSelectFunction);
-
-    // THIS FUNCTION HANDLES "POP-OVER" OF SELECTED FILTERS INTO ATTRIBUTES
-    /*
-    var $attrSelect = $('#multiselect-nested-filter-select-attributes');
-    $('#filters-row select.nested-filter-select').on("select2:select", function(e) {
-        var $elem = $(e.params.data.element);
-        var $parent = $elem.parent();
-        if($parent.is('optgroup')) {
-            var attrName = $parent.attr('name');
-            var parentName = null;
-            var childName = null;
-            if(attrName.includes('.')) {
-                parentName = attrName.split('.')[0];
-                childName = attrName.split('.')[1];
-            } else {
-                parentName = attrName;
-            }
-
-            // handle parent
-            var values = $attrSelect.val();
-            if(!values.includes(parentName)) {
-                values.push(parentName);
-                $attrSelect.val(values).trigger('change', [true]);
-            }
-
-            // handle any children
-            if(childName != null) {
-                var $childAttrSelect = $('#multiselect-nested-filter-select-'+parentName);
-                if($parent.length > 0) {
-                    // handle parent
-                    var childValues = $childAttrSelect.val();
-                    if(!childValues.includes(attrName)) {
-                        childValues.push(attrName);
-                        $childAttrSelect.val(childValues).trigger('change', [true]);
-                    }
-                }
-            }
-        }
-    });*/
+    setupNestedFilterSelects($('select.nested-filter-select'));
 
     $('.sidebar .nav-item .btn').click(function(e){
         $('.sidebar .nav-item .btn').removeClass('active');
@@ -1344,7 +1310,33 @@ $(document).ready(function() {
     };
 
 
-    var showTemplateFormHelper = function(formSelector,dataMap) {
+    var showTemplateFormHelper = function(formSelector,dataMap,mainSelectID) {
+        // pull any attrs necessary from server
+        if(mainSelectID) {
+            var $formList = $(mainSelectID).find('.nested-form-list').parent().next();
+            $.each(dataMap, function(id, value) {
+                if(!id.startsWith("order_")) {
+                    var $elem = $('#'+id);
+                    if($elem.length==0) {
+                        // try to get it from the server
+                        $.ajax({
+                            type: "POST",
+                            url: '/form_elem_by_id',
+                            data: {
+                                id: id
+                            },
+                            success: function(data) {
+                                if(data && data.hasOwnProperty('results')) {
+                                    $formList.append(data.results);
+                                }
+                            },
+                            dataType: "json"
+                        });
+                    }
+                }
+            });
+        }
+
         $.each(dataMap,function(id,value) {
             if(!id.startsWith("order_")) {
                 var order = null;
@@ -1417,23 +1409,23 @@ $(document).ready(function() {
             alert("Error finding template.");
             $loaders.hide();
         } else if(data.hasOwnProperty('searchoptionsmap')) { // data came from li node
-            showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"]);
-            showTemplateFormHelper("#attributesForm",data["attributesmap"]);
-            showTemplateFormHelper("#filtersForm",data["filtersmap"]);
-            showTemplateFormHelper("#chartsForm",data["chartsmap"]);
+            showTemplateFormHelper("#searchOptionsForm",data["searchoptionsmap"],null);
+            showTemplateFormHelper("#attributesForm",data["attributesmap"],"#multiselect-nested-filter-select-attributesNested_filter");
+            showTemplateFormHelper("#filtersForm",data["filtersmap"], '#multiselect-nested-filter-select-attributes');
+            showTemplateFormHelper("#chartsForm",data["chartsmap"],'#multiselect-nested-filter-select-chartModels');
             try {
-                showTemplateFormHelper("#highlightForm",data["highlightmap"]);
+                showTemplateFormHelper("#highlightForm",data["highlightmap"],null);
             } catch(err) {
 
             }
             $loaders.hide();
         } else if(data.hasOwnProperty('searchOptionsMap')) { // data came from newly added node
-            showTemplateFormHelper("#searchOptionsForm",$.parseJSON(data["searchOptionsMap"]));
-            showTemplateFormHelper("#attributesForm",$.parseJSON(data["attributesMap"]));
-            showTemplateFormHelper("#filtersForm",$.parseJSON(data["filtersMap"]));
-            showTemplateFormHelper("#chartsForm",$.parseJSON(data["chartsMap"]));
+            showTemplateFormHelper("#searchOptionsForm",$.parseJSON(data["searchOptionsMap"]),null);
+            showTemplateFormHelper("#attributesForm",$.parseJSON(data["attributesMap"]),"#multiselect-nested-filter-select-attributesNested_filter");
+            showTemplateFormHelper("#filtersForm",$.parseJSON(data["filtersMap"]),'#multiselect-nested-filter-select-attributes');
+            showTemplateFormHelper("#chartsForm",$.parseJSON(data["chartsMap"]),'#multiselect-nested-filter-select-chartModels');
             try {
-                showTemplateFormHelper("#highlightForm",data["highlightMap"]);
+                showTemplateFormHelper("#highlightForm",data["highlightMap"],null);
             } catch(err) {
 
             }

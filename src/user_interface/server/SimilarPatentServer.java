@@ -1146,18 +1146,6 @@ public class SimilarPatentServer {
             }
         });
 
-        get(HOME_URL, (req, res) -> {
-            if(softAuthorize(req,res)) {
-                return templateWrapper(passwordHandler,true, req, res, candidateSetModelsForm(req.session().attribute("role")),true);
-            } else {
-                return null;
-            }
-        });
-
-        get(UPDATE_DEFAULT_ATTRIBUTES_URL, (req,res) -> {
-            authorize(req,res);
-            return templateWrapper(passwordHandler,true,req,res, defaultAttributesModelForm(req.session().attribute("username"),req.session().attribute("role")),true);
-        });
 
         get(RESET_DEFAULT_TEMPLATE_URL, (req,res)->{
             authorize(req,res);
@@ -2203,159 +2191,12 @@ public class SimilarPatentServer {
                 );
     }
 
-    private static Tag innerAttributesAndCharts(Function<String,Boolean> userRoleFunction, Tag buttons) {
-        return div().withClass("row").with(
-                div().withClass("col-12").with(
-                        ul().withClass("nav nav-tabs").attr("role","tablist").with(
-                                li().withClass("nav-item").with(
-                                        a("Attributes").withClass("nav-link active show").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
-                                ),li().withClass("nav-item").with(
-                                        a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
-                                )
-                        )
-                ),
-                div().withClass("col-12").with(
-                        div().withClass("row tab-content").with(
-                                div().withClass("col-12 tab-pane fade active show").withId("data-tab").attr("role","tabpanel").with(
-                                        div().withClass("row").with(
-                                                loaderTag(),
-                                                div().withClass("col-12").withId("attributesForm").with(
-                                                        customFormRow("attributes", allAttributes, userRoleFunction)
-                                                ),buttons, br(),
-                                                div().withClass("col-12 content").with(
-
-                                                )
-                                        )
-                                ),
-                                div().withClass("col-12 tab-pane fade").withId("chart-tab").attr("role","tabpanel").with(
-                                        div().withClass("row").with(
-                                                loaderTag(),
-                                                div().withClass("col-12").withId("chartsForm").with(
-                                                        customFormRow("charts",allCharts, userRoleFunction)
-                                                ),buttons, br(),
-                                                div().withClass("col-12 content").with(
-
-                                                )
-                                        )
-                                )
-                        )
-                )
-        );
-    }
-
-    private static Tag innerFiltersAndSettings(Function<String,Boolean> userRoleFunction, Tag buttons) {
-        return div().withClass("col-12").with(
-                div().withClass("row").with(
-                        div().withClass("col-12 form-top").with(
-                                ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
-                                        li().withClass("nav-item").with(
-                                                a("Filters").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
-                                        ),li().withClass("nav-item").with(
-                                                a("Sort And Limit").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
-                                        ),li().withClass("nav-item").with(
-                                                a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab3").attr("role","tab")
-                                        )
-                                )
-                        ),
-                        div().withClass("col-12").with(
-                                div().withClass("row tab-content").with(
-                                        div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
-                                                div().withClass("row").with(
-                                                        loaderTag(),
-                                                        div().withClass("col-12").withId("filtersForm").with(
-                                                                customFormRow("filters", allFilters, userRoleFunction)
-                                                        )
-                                                )
-                                        ),
-                                        div().withClass("col-12 tab-pane fade show").attr("role","tabpanel").withId("tab2").with(
-                                                div().withClass("row").with(
-                                                        loaderTag(),
-                                                        div().withClass("col-12").withId("searchOptionsForm").with(
-                                                                mainOptionsRow()
-                                                        )
-                                                )
-                                        ),
-                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab3").with(
-                                                div().withClass("collapsible-form row").withId("highlightForm").with(
-                                                        loaderTag(),
-                                                        h5("Settings"),
-                                                        div().withClass("col-12 attributeElement").with(
-                                                                label("Highlighting").attr("style","width: 100%;").with(
-                                                                        input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
-                                                                )
-                                                        ), div().withClass("col-12 attributeElement").with(
-                                                                label("Filter Nested Attributes").attr("style","width: 100%;").with(
-                                                                        input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
-                                                                )
-                                                        ), div().withClass("col-12 attributeElement").with(
-                                                                label("List Item Separator").attr("style","width: 100%;").with(
-                                                                        input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder("; ").withName(LIST_ITEM_SEPARATOR_FIELD)
-                                                                )
-                                                        )
-                                                )
-                                        )
-                                )
-                        ),
-                        buttons
-                )
-        );
-    }
 
     private static Tag loaderTag() {
         return div().withClass("loader col-12").attr("style","display: none;").with(
                 img().attr("height","48").attr("width","48").withSrc("/images/loader48.gif")
         );
     }
-
-    private static Tag defaultAttributesModelForm(String user, String role) {
-        if(user==null || role==null) return null;
-        System.out.println("Loading default attributes page for user "+user+" with role "+role+".");
-        Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
-        Tag buttons = div().withClass("col-10 offset-1").with(
-                div().withClass("btn-group row").with(
-                        a().withText("Go Back").withHref(HOME_URL).withClass("btn btn-outline-secondary div-button go-back-default-attributes-button"),
-                        div().withText("Update Defaults").withClass("btn btn-outline-secondary div-button update-default-attributes-button")
-                )
-        );
-        return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px; margin-top: 20px;").with(
-                span().withId("main-content-id").withClass("collapse").with(
-                        div().withClass("col-12").withId("attributesForm").with(
-                                h4("Update defaults for "+user+"."),
-                                a("Reset defaults").withHref(RESET_DEFAULT_TEMPLATE_URL)
-                        ), br(),
-                        form().withAction(UPDATE_DEFAULT_ATTRIBUTES_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId("update-default-attributes-form").with(
-                                input().withType("hidden").withName("name").withValue("default"),
-                                innerFiltersAndSettings(userRoleFunction,buttons),
-                                div().withClass("col-12").attr("style","margin-top: 20px;").with(
-                                        innerAttributesAndCharts(userRoleFunction,buttons)
-                                )
-                        )
-                )
-        );
-    }
-
-    private static Tag candidateSetModelsForm(String role) {
-        if(role==null) return null;
-        Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
-        Tag buttons =  div().withClass("col-10 offset-1").with(
-                div().withClass("btn-group row").with(
-                        div().withText("Generate Report").withClass("btn btn-outline-secondary div-button "+GENERATE_REPORTS_FORM_ID+"-button"),
-                        div().withText("Download to CSV").withClass("btn btn-outline-secondary div-button download-to-excel-button")
-                )
-        );
-        return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
-                span().withId("main-content-id").withClass("collapse").with(
-                        form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
-                                input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
-                                innerFiltersAndSettings(userRoleFunction,buttons),
-                                div().withClass("col-12").attr("style","margin-top: 20px;").withId("results").with(
-                                        innerAttributesAndCharts(userRoleFunction,buttons)
-                                )
-                        )
-                )
-        );
-    }
-
 
     private static Tag customFormHeader() {
         return div().withClass("row header-main header-top").with(
@@ -2381,23 +2222,6 @@ public class SimilarPatentServer {
         return div().withClass("row").with(
                 div().withId(id+"-panel-toggle").withClass("col-12").with(
                         h5(text).withClass("collapsible-header").attr("style","margin-bottom: 15px;").attr("data-target","#"+id)
-                )
-        );
-    }
-
-    private static Tag customFormRow(String type, AbstractAttribute attribute, Function<String,Boolean> userRoleFunction) {
-        String shortTitle = type.substring(0,1).toUpperCase()+type.substring(1);
-        String groupID = type+"-row";
-        return span().with(
-                toggleButton(groupID, shortTitle),
-                span().withId(groupID).withClass("collapse show").with(
-                        div().withClass("collapsible-form row").with(
-                                div().withClass("col-12").with(
-                                        div().withClass("attributeElement").with(
-                                                attribute.getOptionsTag(userRoleFunction)
-                                        )
-                                )
-                        )
                 )
         );
     }

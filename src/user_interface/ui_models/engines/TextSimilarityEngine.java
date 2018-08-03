@@ -2,7 +2,6 @@ package user_interface.ui_models.engines;
 
 import com.google.gson.Gson;
 import j2html.tags.Tag;
-import org.bson.Document;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
@@ -20,7 +19,8 @@ import java.util.function.Function;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.textarea;
-import static user_interface.server.SimilarPatentServer.*;
+import static user_interface.server.SimilarPatentServer.TEXT_TO_SEARCH_FOR;
+import static user_interface.server.SimilarPatentServer.extractString;
 
 /**
  * Created by ehallmark on 2/28/17.
@@ -93,7 +93,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
         return div().with(
                 textarea().withClass("form-control").attr("placeholder","Enter any text or document").withId(getId()).withName(getId())
         );

@@ -44,7 +44,7 @@ public class CPCSimilarityEngine extends AbstractSimilarityEngine implements Aja
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
         return div().with(
                 AbstractIncludeFilter.ajaxMultiSelect(getId(), ajaxUrl(), getId())
         );

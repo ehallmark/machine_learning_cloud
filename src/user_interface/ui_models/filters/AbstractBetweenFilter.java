@@ -129,7 +129,7 @@ public class AbstractBetweenFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
         String type = getFieldType().equals(FieldType.Date) ? "text" : "number";
         String additionalClasses = getFieldType().equals(FieldType.Date) ? "datepicker" : "";
         return div().withClass("row").with(

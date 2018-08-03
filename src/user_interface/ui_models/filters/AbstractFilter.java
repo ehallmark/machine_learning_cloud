@@ -7,6 +7,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import seeding.Constants;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
@@ -14,6 +15,7 @@ import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttri
 import java.util.*;
 import java.util.function.Function;
 
+import static j2html.TagCreator.div;
 import static j2html.TagCreator.span;
 
 /**
@@ -73,7 +75,38 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     }
 
     @Override
-    public abstract Tag getOptionsTag(Function<String,Boolean> userRoleFunction);
+    public abstract Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren);
+
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, boolean loadChildren) {
+        String collapseId = "collapse-filters-"+getName().replaceAll("[\\[\\]]","");
+        String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
+        Tag childTag;
+        List<String> inputIds = new ArrayList<>();
+        if(getInputIds()!=null) {
+            inputIds.addAll(getInputIds());
+        }
+        if(this instanceof AbstractNestedFilter && filterType.equals(FilterType.Nested)) {
+            childTag = ((AbstractNestedFilter) this).getNestedOptions(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,loadChildren);
+        } else {
+            childTag = getOptionsTag(userRoleFunction,loadChildren);
+            Tag additionalTag = additionalTagFunction!=null ? additionalTagFunction.apply(getName()) : null;
+            if(additionalTag!=null) {
+                childTag = div().with(additionalTag,childTag);
+            }
+            if(additionalInputIdsFunction!=null) {
+                List<String> additional = additionalInputIdsFunction.apply(getName());
+                if(additional!=null) {
+                    inputIds.addAll(additional);
+                }
+            }
+        }
+        String id = getParent().getId();
+
+        if(inputIds.isEmpty()) inputIds = null;
+        return div().attr("style", styleString).with(
+                SimilarPatentServer.createAttributeElement(SimilarPatentServer.humanAttributeFor(getName()),getName(),getOptionGroup(),collapseId,childTag,id, getAttributeId(), inputIds, isNotYetImplemented(), getDescription().render())
+        );
+    }
 
     @Override
     public Collection<String> getAllValues() {

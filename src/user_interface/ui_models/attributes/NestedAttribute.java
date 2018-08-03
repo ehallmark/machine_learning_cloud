@@ -6,7 +6,6 @@ import j2html.tags.Tag;
 import lombok.Getter;
 import seeding.google.elasticsearch.attributes.NonStoredTextAttribute;
 import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregate_charts.AggregatePivotChart;
 import user_interface.ui_models.filters.AbstractFilter;
 
@@ -77,13 +76,15 @@ public abstract class NestedAttribute extends AbstractAttribute {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return getOptionsTag(userRoleFunction, null, null, (tag1,tag2)->div().with(tag1,tag2), false);
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+        if (loadChildren) {
+            return getOptionsTag(userRoleFunction, null, null, (tag1, tag2) -> div().with(tag1, tag2), false, loadChildren);
+        } else {
+            return getNestedOptions(userRoleFunction, null, null, (tag1, tag2) -> div().with(tag1, tag2), false, loadChildren);
+        }
     }
 
-
-    protected ContainerTag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr) {
-        String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
+    public ContainerTag getNestedOptions(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren) {
         String name = getFullName().replace(".","");
         String clazz = CLAZZ;
         String id = getId();
@@ -97,35 +98,10 @@ public abstract class NestedAttribute extends AbstractAttribute {
                         ),
                         SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),id,clazz, applicableAttributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
-                        applicableAttributes.stream().map(filter->{
-                            String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\].]","");
-                            Tag childTag;
-                            List<String> inputIds = new ArrayList<>();
-                            if(filter.getInputIds()!=null) {
-                                inputIds.addAll(filter.getInputIds());
-                            }
-                            if(filter instanceof NestedAttribute && ! (filter instanceof AbstractChartAttribute) && perAttr) {
-                                childTag = ((NestedAttribute) filter).getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineTagFunction, perAttr);
-                            } else {
-                                childTag = filter.getOptionsTag(userRoleFunction);
-                                ContainerTag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(filter.getFullName()) : null;
-                                if(additionalTag!=null) {
-                                    childTag = combineTagFunction.apply(additionalTag,(ContainerTag)childTag);
-                                }
-                                if(additionalInputIdsFunction!=null) {
-                                    List<String> additional = additionalInputIdsFunction.apply(filter.getFullName());
-                                    if(additional!=null) {
-                                        inputIds.addAll(additional);
-                                    }
-                                }
-                            }
-                            String attrName = filter.getFullName();
-                            String humanName = SimilarPatentServer.humanAttributeFor(attrName);
-                            if(inputIds.isEmpty()) inputIds = null;
-                            return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(humanName, attrName,null,collapseId,childTag, id, filter.getAttributeId(), inputIds, filter.isNotYetImplemented(), filter.getDescription().render())
-                            );
-                        }).collect(Collectors.toList())
+                        loadChildren ?
+                        applicableAttributes.stream().map(attr->{
+                            return attr.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, combineTagFunction, perAttr, loadChildren);
+                        }).collect(Collectors.toList()) : Collections.emptyList()
                 )
         );
     }

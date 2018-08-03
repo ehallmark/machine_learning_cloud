@@ -19,7 +19,6 @@ import static user_interface.server.SimilarPatentServer.*;
  * Created by ehallmark on 2/28/17.
  */
 public class PatentSimilarityEngine extends AbstractSimilarityEngine {
-    protected Map<String, List<String>> assetFieldToAssetsMap;
     public PatentSimilarityEngine(String tableName) {
         super(tableName, Attributes.PUBLICATION_NUMBER_FULL, Attributes.ENC, false);
     }
@@ -67,7 +66,7 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
         return div().with(
                 textarea().withClass("form-control").attr("placeholder","1 publication per line (eg. US8321100)").withId(getId()).withName(getId())
         );
