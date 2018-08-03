@@ -34,6 +34,11 @@ public abstract class NestedAttribute extends AbstractAttribute {
         if(setParent){
             this.attributes.forEach(attr->{
                 attr.setParent(this);
+                attr.formParent=this;
+            });
+        } else {
+            this.attributes.forEach(attr->{
+                attr.formParent=this;
             });
         }
     }

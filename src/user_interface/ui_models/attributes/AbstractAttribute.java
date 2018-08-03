@@ -24,7 +24,7 @@ import static j2html.TagCreator.span;
  */
 public abstract class AbstractAttribute {
     protected Collection<AbstractFilter.FilterType> filterTypes;
-
+    protected AbstractAttribute formParent;
     public AbstractAttribute clone() {
         try {
             return this.getClass().newInstance();
@@ -111,7 +111,7 @@ public abstract class AbstractAttribute {
                 }
             }
         }
-        String id = ((NestedAttribute)getParent()).getId();
+        String id = ((NestedAttribute)formParent.getParent()).getId();
         String attrName = getFullName();
         String humanName = SimilarPatentServer.humanAttributeFor(attrName);
         if(inputIds.isEmpty()) inputIds = null;
