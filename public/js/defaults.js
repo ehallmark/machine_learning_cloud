@@ -1402,32 +1402,35 @@ $(document).ready(function() {
         // pull any attrs necessary from server
         if(mainSelectID) {
             var $formList = $(mainSelectID).parent().next();
-            for(var id in dataMap) {
-                if(dataMap.hasOwnProperty(id)) {
-                    if(!id.startsWith("order_")) {
-                        var $elem = $('#'+id);
-                        if($elem.length==0 && !formIDRequestedCache.has(id)) {
-                            // get option from server
-                            formIDRequestedCache.add(id);
+            // do it two times to get nested stuff
+            for(var times = 0; times < 2; times++) {
+                for(var id in dataMap) {
+                    if(dataMap.hasOwnProperty(id)) {
+                        if(!id.startsWith("order_")) {
+                            var $elem = $('#'+id);
+                            if($elem.length==0 && !formIDRequestedCache.has(id)) {
+                                // get option from server
+                                formIDRequestedCache.add(id);
 
-                            // try to get it from the server
-                            $.ajax({
-                                type: "POST",
-                                url: '/form_elem_by_id',
-                                data: {
-                                    id: id
-                                },
-                                success: function(data) {
-                                    if(data && data.hasOwnProperty('results')) {
-                                        var $new = $(data.results);
-                                        $formList.append($new);
-                                        $new.show();
-                                        var $newFilters = $new.find('.nested-filter-select');
-                                        setupNestedFilterSelects($newFilters, $new);
-                                    }
-                                },
-                                dataType: "json"
-                            });
+                                // try to get it from the server
+                                $.ajax({
+                                    type: "POST",
+                                    url: '/form_elem_by_id',
+                                    data: {
+                                        id: id
+                                    },
+                                    success: function(data) {
+                                        if(data && data.hasOwnProperty('results')) {
+                                            var $new = $(data.results);
+                                            $formList.append($new);
+                                            $new.show();
+                                            var $newFilters = $new.find('.nested-filter-select');
+                                            setupNestedFilterSelects($newFilters, $new);
+                                        }
+                                    },
+                                    dataType: "json"
+                                });
+                            }
                         }
                     }
                 }
