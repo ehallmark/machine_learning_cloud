@@ -65,7 +65,7 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
                          }
                      },
                      dataType: "json"
-                 });
+                 })
              );
          }
      }
