@@ -1418,8 +1418,7 @@ $(document).ready(function() {
                         }
                     }
                 });
-                return $formList;
-            }).done(function($formList) {
+            }).done(function() {
                 var $newFilters = $formList.find('.nested-filter-select');
                 if($newFilters.length > 0) {
                     setupNestedFilterSelects($newFilters);
