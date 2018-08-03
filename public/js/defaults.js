@@ -40,6 +40,7 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
      });
 
      var $formList = $select.parent().next();
+     var needsRefresh = false;
      $options.each(function(i,option){
          var id = $(option).val();
          var newElemId = $(option).attr('data-id');
@@ -47,6 +48,7 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
             newElemId = id;
          }
          if($('#'+newElemId).length==0) {
+            needsRefresh = true;
             // get option from server
             $.ajax({
                 type: "POST",
@@ -59,10 +61,6 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
                         $formList.append(data.results);
                         var $new = $formList.children().last();
                         $new.show();
-                        var $newFilters = $formList.find('.nested-filter-select');
-                        if($newFilters.length > 0) {
-                            setupNestedFilterSelects($newFilters);
-                        }
                     }
                 },
                 dataType: "json"
@@ -93,6 +91,13 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
 
          $draggable.parent().show();
      });
+
+     if(needsRefresh) {
+        var $newFilters = $formList.find('.nested-filter-select');
+        if($newFilters.length > 0) {
+            setupNestedFilterSelects($newFilters);
+        }
+     }
 
      // sort this
      $selectWrapper.find('.nested-form-list').filter(':first').each(function() {
