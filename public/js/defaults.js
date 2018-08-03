@@ -39,6 +39,7 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
          return true;
      });
 
+     var $formList = $select.parent().next();
      $options.each(function(i,option){
          var id = $(option).val();
          if($('#'+id).length==0) {
