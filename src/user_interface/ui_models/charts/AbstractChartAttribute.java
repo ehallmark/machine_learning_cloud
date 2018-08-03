@@ -13,7 +13,6 @@ import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.*;
 import java.util.function.Function;
@@ -215,7 +214,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
             );
         };
     }
-    
+
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         System.out.println("Starting params for: "+getName());

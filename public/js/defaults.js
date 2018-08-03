@@ -59,9 +59,7 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
                         var $new = $formList.children().last();
                         $new.show();
                         var $newFilters = $formList.find('.nested-filter-select');
-                        if($newFilters.length > 0) {
-                            setupNestedFilterSelects($newFilters);
-                        }
+                        setupNestedFilterSelects($newFilters);
                     }
                 },
                 dataType: "json"
