@@ -93,21 +93,10 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
         if (loadChildren) {
-            return this.getNestedOptions(userRoleFunction, null, null, DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
-        } else {
             return this.getOptionsTag(userRoleFunction, null, null, DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
+        } else {
+            return this.getNestedOptions(userRoleFunction, null, null, DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
         }
-    }
-
-    private ContainerTag getPlotGroupsTogetherTag(String attrName) {
-        attrName = getGroupByChartFieldName(attrName);
-        return div().withClass("row").with(
-                div().withClass("col-12").with(
-                        label("Plot Groups Together").attr("title","Plot groups together on the same chart.").with(
-                                input().attr("style","float: left;").withValue("off").withId(attrName+ PLOT_GROUPS_ON_SAME_CHART_FIELD).withName(attrName+PLOT_GROUPS_ON_SAME_CHART_FIELD).withType("checkbox")
-                        )
-                )
-        );
     }
 
     @Override
@@ -175,7 +164,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         Function<String,List<String>> idsFunction = str -> {
             return Stream.of(collectorIdsFunction.apply(str), newAdditionalIdsFunction.apply(str)).flatMap(list->list.stream()).collect(Collectors.toList());
         };
-        return super.getOptionsTag(userRoleFunction,tagFunction,idsFunction,DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
+        return super.getNestedOptions(userRoleFunction,tagFunction,idsFunction,DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
     }
 
     protected ContainerTag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {
