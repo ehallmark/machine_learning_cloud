@@ -63,17 +63,15 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
                         $formList.append(data.results);
                         var $new = $formList.children().last();
                         $new.show();
+                        var $newFilters = $formList.find('.nested-filter-select');
+                        if($newFilters.length > 0) {
+                            setupNestedFilterSelects($newFilters);
+                        }
                     }
                 },
                 dataType: "json"
             });
          }
-     }
-     if(needsRefresh) {
-        var $newFilters = $formList.find('.nested-filter-select');
-        if($newFilters.length > 0) {
-            setupNestedFilterSelects($newFilters);
-        }
      }
 
      $options.each(function(i,option){
