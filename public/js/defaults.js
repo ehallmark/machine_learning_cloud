@@ -41,7 +41,9 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
 
      var $formList = $select.parent().next();
      var needsRefresh = false;
-     $options.each(function(i,option){
+     // get any missing elements first
+     for(var i = 0; i < $options.length; i++) {
+         var option = $options.get(i);
          var id = $(option).val();
          var newElemId = $(option).attr('data-id');
          if(!newElemId) {
@@ -49,6 +51,38 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
          }
          if($('#'+newElemId).length==0) {
             needsRefresh = true;
+            // get option from server
+            $.ajax({
+                type: "POST",
+                url: '/form_elem_by_id',
+                data: {
+                    id: newElemId
+                },
+                success: function(data) {
+                    if(data && data.hasOwnProperty('results')) {
+                        $formList.append(data.results);
+                        var $new = $formList.children().last();
+                        $new.show();
+                    }
+                },
+                dataType: "json"
+            });
+         }
+     }
+     if(needsRefresh) {
+        var $newFilters = $formList.find('.nested-filter-select');
+        if($newFilters.length > 0) {
+            setupNestedFilterSelects($newFilters);
+        }
+     }
+
+     $options.each(function(i,option){
+         var id = $(option).val();
+         var newElemId = $(option).attr('data-id');
+         if(!newElemId) {
+            newElemId = id;
+         }
+         if($('#'+newElemId).length==0) {
             // get option from server
             $.ajax({
                 type: "POST",
@@ -91,13 +125,6 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
 
          $draggable.parent().show();
      });
-
-     if(needsRefresh) {
-        var $newFilters = $formList.find('.nested-filter-select');
-        if($newFilters.length > 0) {
-            setupNestedFilterSelects($newFilters);
-        }
-     }
 
      // sort this
      $selectWrapper.find('.nested-form-list').filter(':first').each(function() {
@@ -1402,13 +1429,15 @@ $(document).ready(function() {
             $(formSelector+' select.nested-filter-select').filter(':first').trigger('change', [true]);
         };
         // pull any attrs necessary from server
-        if(mainSelectID) {
+       /* if(mainSelectID) {
             var $formList = $(mainSelectID).parent().next();
-            $.when(function() {
-                $.each(dataMap, function(id, value) {
+            var needsRefresh = false;
+            for(var id in dataMap) {
+                if(dataMap.hasOwnProperty(id)) {
                     if(!id.startsWith("order_")) {
                         var $elem = $('#'+id);
                         if($elem.length==0) {
+                            needsRefresh = true;
                             // try to get it from the server
                             $.ajax({
                                 type: "POST",
@@ -1421,23 +1450,20 @@ $(document).ready(function() {
                                         $formList.append(data.results);
                                         var $new = $formList.children().last();
                                         $new.show();
+                                        var $newFilters = $formList.find('.nested-filter-select');
+                                        if($newFilters.length > 0) {
+                                            setupNestedFilterSelects($newFilters);
+                                        }
                                     }
                                 },
                                 dataType: "json"
                             });
                         }
                     }
-                });
-            }).done(function() {
-                var $newFilters = $formList.find('.nested-filter-select');
-                if($newFilters.length > 0) {
-                    setupNestedFilterSelects($newFilters);
                 }
-                doFunction();
-            });
-        } else {
-            doFunction();
-        }
+            }
+        } */
+        doFunction();
     };
 
     var showTemplateFunction = function(data,tree,node){
