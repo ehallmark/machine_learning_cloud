@@ -10,6 +10,7 @@ import seeding.Constants;
 import seeding.google.elasticsearch.Attributes;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.charts.AbstractChartAttribute;
+import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.filters.*;
 
 import java.util.*;
@@ -104,7 +105,7 @@ public abstract class AbstractAttribute {
             if(additionalTag!=null) {
                 childTag = combineTagFunction.apply(additionalTag,(ContainerTag)childTag);
             }
-            if(additionalInputIdsFunction!=null) {
+            if(additionalInputIdsFunction!=null && !(this instanceof AbstractChartAttribute)) {
                 List<String> additional = additionalInputIdsFunction.apply(getFullName());
                 if(additional!=null) {
                     inputIds.addAll(additional);
