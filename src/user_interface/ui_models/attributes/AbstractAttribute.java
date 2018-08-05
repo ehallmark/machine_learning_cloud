@@ -100,7 +100,7 @@ public abstract class AbstractAttribute {
             } else {
                 childTag = getOptionsTag(userRoleFunction, loadChildren);
             }
-            ContainerTag additionalTag = additionalTagFunction!=null&&perAttr ? additionalTagFunction.apply(getFullName()) : null;
+            ContainerTag additionalTag = additionalTagFunction!=null && perAttr && !(this instanceof AbstractChartAttribute) ? additionalTagFunction.apply(getFullName()) : null;
             if(additionalTag!=null) {
                 childTag = combineTagFunction.apply(additionalTag,(ContainerTag)childTag);
             }
