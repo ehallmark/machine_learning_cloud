@@ -90,7 +90,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
                         tag2
                 )
         );
-        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true,loadChildren);
+        return super.getNestedOptions(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true,loadChildren);
     }
 
     private ContainerTag getAdditionalTagPerAttr(String attrName) {

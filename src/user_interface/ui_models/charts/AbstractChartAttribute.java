@@ -25,7 +25,6 @@ import static j2html.TagCreator.*;
  * Created by Evan on 6/17/2017.
  */
 public abstract class AbstractChartAttribute extends NestedAttribute implements DependentAttribute<AbstractChartAttribute> {
-    public static final String PLOT_GROUPS_ON_SAME_CHART_FIELD = "plotGroupsSameChart";
     public static final String MAX_GROUP_FIELD = "maxGroupSizeField";
     public static final String INCLUDE_BLANK_FIELD = "includeBlanks";
     public static final int DEFAULT_MAX_SLICES = 30;
@@ -89,14 +88,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         return attrName.replace(getName().replace("[", "").replace("]", "") + ".", "").replace(".", "");
     }
 
-    @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
-        if (loadChildren) {
-            return this.getOptionsTag(userRoleFunction, null, null, DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
-        } else {
-            return this.getNestedOptions(userRoleFunction, null, null, DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
-        }
-    }
+
 
     @Override
     public ContainerTag getNestedOptions(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren) {

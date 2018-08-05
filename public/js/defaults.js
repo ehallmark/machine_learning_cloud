@@ -1412,6 +1412,7 @@ $(document).ready(function() {
         if(mainSelectID) {
             var $formList = $(mainSelectID).parent().next();
             // do it two times to get nested stuff
+            var ids_to_fetch = [];
             for(var id in dataMap) {
                 if(dataMap.hasOwnProperty(id)) {
                     if(!id.startsWith("order_")) {
@@ -1419,29 +1420,31 @@ $(document).ready(function() {
                         if($elem.length==0 && !formIDRequestedCache.has(id)) {
                             // get option from server
                             formIDRequestedCache.add(id);
-
-                            // try to get it from the server
-                            $.ajax({
-                                type: "POST",
-                                url: '/form_elem_by_id',
-                                data: {
-                                    id: id
-                                },
-                                success: function(data) {
-                                    if(data && data.hasOwnProperty('results')) {
-                                        var $new = $(data.results);
-                                        $formList.append($new);
-                                        $new.show();
-                                        var $newFilters = $new.find('.nested-filter-select');
-                                        setupNestedFilterSelects($newFilters, $new);
-                                        doFunction();
-                                    }
-                                },
-                                dataType: "json"
-                            });
+                            ids_to_fetch.push(id);
                         }
                     }
                 }
+            }
+            if(ids_to_fetch.length>0) {
+                // try to get it from the server
+                $.ajax({
+                    type: "POST",
+                    url: '/form_elem_by_id',
+                    data: {
+                        ids: ids_to_fetch
+                    },
+                    success: function(data) {
+                        if(data && data.hasOwnProperty('results')) {
+                            var $new = $(data.results);
+                            $formList.append($new);
+                            $new.show();
+                            var $newFilters = $new.find('.nested-filter-select');
+                            setupNestedFilterSelects($newFilters, $new);
+                            doFunction();
+                        }
+                    },
+                    dataType: "json"
+                });
             }
         }
         doFunction();

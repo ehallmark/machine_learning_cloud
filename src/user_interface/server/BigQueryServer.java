@@ -972,12 +972,18 @@ public class BigQueryServer extends SimilarPatentServer {
         post(FORM_ELEMENT_BY_ID_URL, (req, res) -> {
             authorize(req,res);
             String formID = extractString(req, "id", null);
-            if(formID==null) {
+            List<String> formIds = extractArray(req, "ids");
+            if(formID==null&&formIds.isEmpty()) {
                 return null;
             }
             String role = req.session().attribute("role");
             if(role == null) return null;
-            String element = ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).get(formID);
+            String element;
+            if(formID==null) {
+                element = String.join("", formIds.stream().map(id->ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).get(id)).collect(Collectors.toList()));
+            } else {
+                element = ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).get(formID);
+            }
             return new Gson().toJson(Collections.singletonMap("results", element));
         });
 

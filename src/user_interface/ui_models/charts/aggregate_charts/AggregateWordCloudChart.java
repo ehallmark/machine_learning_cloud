@@ -80,7 +80,7 @@ public class AggregateWordCloudChart extends AggregationChart<WordCloudChart> {
                         tag2
                 )
         );
-        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true,loadChildren);
+        return super.getNestedOptions(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true,loadChildren);
     }
 
     private ContainerTag getAdditionalTagPerAttr(String attrName) {
