@@ -972,7 +972,8 @@ public class BigQueryServer extends SimilarPatentServer {
         post(FORM_ELEMENT_BY_ID_URL, (req, res) -> {
             authorize(req,res);
             String formID = extractString(req, "id", null);
-            List<String> formIds = extractArray(req, "ids");
+            List<String> formIds = extractArray(req, "ids[]");
+            System.out.println("Found form ids: "+String.join("; ", formIds));
             if(formID==null&&formIds.isEmpty()) {
                 return null;
             }
