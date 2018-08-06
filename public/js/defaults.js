@@ -1261,6 +1261,14 @@ $(document).ready(function() {
     }); */
 
 
+    $('.custom-menu').click(function() {
+        e.preventDefault();
+        e.stopPropagation();
+        var mainMenu = $('#main-menu');
+        mainMenu.slideToggle();
+    });
+
+
     if(document.getElementById('acclaim_expert_filter')) {
         var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
             lineNumbers: false,

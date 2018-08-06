@@ -14,6 +14,16 @@
     margin-right: 0 !important;
 }
 
+.custom-menu {
+    cursor: pointer;
+}
+.custom-menu div {
+    width: 35px;
+    height: 5px;
+    background-color: black;
+    margin: 6px 0;
+}
+
 #new-dataset-from-asset-list-overlay,#k-for-clustering-overlay,#create-assignee-datasets-overlay {
     position: fixed;
     display: none;

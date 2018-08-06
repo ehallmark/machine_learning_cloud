@@ -1215,6 +1215,14 @@ public class BigQueryServer extends SimilarPatentServer {
 
     }
 
+    private static Tag createMenuIcon() {
+        return span().withClass("custom-menu").attr("title", "Click to toggle main menu.").with(
+                div(),
+                div(),
+                div()
+        );
+    }
+
     private static Object handleAjaxRequest(Request req, Function<String,List<String>> resultsSearchFunction, Function<String,String> labelFunction, Function<String,String> htmlResultFunction) {
         List<String> neededLabels = extractArray(req,"get_label_for[]");
         if(neededLabels.size()>0) {
@@ -2954,38 +2962,45 @@ public class BigQueryServer extends SimilarPatentServer {
                                         nav().withClass("sidebar col-3").attr("style","z-index: 2; overflow-y: auto; height: 100%; position: fixed; padding-top: 75px;").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").with(authorized ? div().withText("Signed in as "+req.session().attribute("username")+" ("+req.session().attribute("role")+").") : div().withText("Not signed in.")),
-                                                        div().withClass("col-12").with(authorized && showDynamicUserGroups ? span().with(
-                                                                form().withAction(GLOBAL_PREFIX+"/change_dynamic_user_group").withMethod("POST").with(
-                                                                        label("Change User Group").with(
-                                                                                select().withClass("single-select2 form-control").attr("onchange","this.form.submit()").withName("userGroup").with(
-                                                                                        option(dynamicUserGroup==null?userGroup:dynamicUserGroup).attr("selected","selected").withValue(dynamicUserGroup==null?userGroup:dynamicUserGroup)
-                                                                                ).with(
-                                                                                        handler.getUserGroups().stream().filter(group->{
-                                                                                            return dynamicUserGroup==null?!userGroup.equals(group):!dynamicUserGroup.equals(group);
-                                                                                        }).map(group->{
-                                                                                            return option(group).withValue(group);
-                                                                                        }).collect(Collectors.toList())
-                                                                                )
+                                                        div().withClass("col-12").with(
+                                                                createMenuIcon()
+                                                        ),
+                                                        div().withClass("col-12").withId("main-menu").with(
+                                                                div().withClass("row").with(
+                                                                        div().withClass("col-12").with(authorized ? a("Sign Out").withHref(GLOBAL_PREFIX+"/logout") : a("Log In").withHref(GLOBAL_PREFIX+"/")),
+                                                                        div().withClass("col-12").with(authorized && showDynamicUserGroups ? span().attr("style","margin-bottom: 0; padding-bottom: 0;").with(
+                                                                                form().withAction(GLOBAL_PREFIX+"/change_dynamic_user_group").attr("style","margin-bottom: 0; padding-bottom: 0;").withMethod("POST").with(
+                                                                                        label("Change User Group").with(
+                                                                                                select().withClass("single-select2 form-control").attr("onchange","this.form.submit()").withName("userGroup").with(
+                                                                                                        option(dynamicUserGroup==null?userGroup:dynamicUserGroup).attr("selected","selected").withValue(dynamicUserGroup==null?userGroup:dynamicUserGroup)
+                                                                                                ).with(
+                                                                                                        handler.getUserGroups().stream().filter(group->{
+                                                                                                            return dynamicUserGroup==null?!userGroup.equals(group):!dynamicUserGroup.equals(group);
+                                                                                                        }).map(group->{
+                                                                                                            return option(group).withValue(group);
+                                                                                                        }).collect(Collectors.toList())
+                                                                                                )
 
-                                                                        )
-                                                                )
-                                                        ) : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Sign Out").withHref(GLOBAL_PREFIX+"/logout") : a("Log In").withHref(GLOBAL_PREFIX+"/")),
-                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref(CREATE_USER_URL) : a("Contact Us").withTarget("_blank").withHref("http://www.gttgrp.com")),
-                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref(EDIT_USER_GROUP_URL) : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Change Password").withHref(EDIT_USER_URL) : span()),
-                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref(DELETE_USER_URL) : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Update Default Template").attr("title", "The current form will become the new default template.").withId("update-default-attributes-form").withHref("#")
-                                                                .with(
-                                                                        br(),a("Reset Default Template").attr("title", "Resets the default template.").withHref(RESET_DEFAULT_TEMPLATE_URL)
-                                                                ).with(
-                                                                        canUpdateUserGroup ? span().with(br(),
-                                                                                label("For User Group?").attr("title", "Warning: Selecting this option will affect the default template for all users in this user group.").with(
-                                                                                        input().withType("checkbox").withValue("on").withId("extract_to_usergroup")
+                                                                                        )
                                                                                 )
-                                                                        ) : span()
-                                                        ) : span()),
-                                                        div().withClass("col-12").with(authorized ? a("Help").withTarget("_blank").withHref("/help") : span())
+                                                                        ) : span()),
+                                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref(CREATE_USER_URL) : a("Contact Us").withTarget("_blank").withHref("http://www.gttgrp.com")),
+                                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref(EDIT_USER_GROUP_URL) : span()),
+                                                                        div().withClass("col-12").with(authorized ? a("Change Password").withHref(EDIT_USER_URL) : span()),
+                                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref(DELETE_USER_URL) : span()),
+                                                                        div().withClass("col-12").with(authorized ? a("Update Default Template").attr("title", "The current form will become the new default template.").withId("update-default-attributes-form").withHref("#")
+                                                                                .with(
+                                                                                        br(),a("Reset Default Template").attr("title", "Resets the default template.").withHref(RESET_DEFAULT_TEMPLATE_URL)
+                                                                                ).with(
+                                                                                        canUpdateUserGroup ? span().with(br(),
+                                                                                                label("For User Group?").attr("title", "Warning: Selecting this option will affect the default template for all users in this user group.").with(
+                                                                                                        input().withType("checkbox").withValue("on").withId("extract_to_usergroup")
+                                                                                                )
+                                                                                        ) : span()
+                                                                                ) : span()),
+                                                                        div().withClass("col-12").with(authorized ? a("Help").withTarget("_blank").withHref("/help") : span())
+                                                                )
+                                                        )
 
                                                 ), hr(),
                                                 (!authorized) ? div() : div().with(
