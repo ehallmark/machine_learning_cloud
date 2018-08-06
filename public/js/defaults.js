@@ -339,7 +339,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     e.stopPropagation();
                 });
                 if($table.find('thead th').length > 0) {
-                   var $dyna = $table
+                   $table
                    .bind('dynatable:afterUpdate', function() {
                         var $paginationTable = $('#dynatable-pagination-links-main-preview-data-table');
                         $paginationTable.click(function() {
@@ -364,7 +364,10 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                         paginate: true
                      }
                    });
-                   $dyna.process();
+                   setTimeout(function() {
+                       var $dyna = $table.data('dynatable');
+                       $dyna.process();
+                   }, 50);
                 }
             }
         }
