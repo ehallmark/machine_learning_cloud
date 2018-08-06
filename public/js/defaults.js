@@ -1473,7 +1473,7 @@ $(document).ready(function() {
             } catch(err) {
 
             }
-            $loaders.hide();
+            setTimeout(function() { $loaders.hide(); }, 200);
         } else if(data.hasOwnProperty('searchOptionsMap')) { // data came from newly added node
             showTemplateFormHelper("#searchOptionsForm",$.parseJSON(data["searchOptionsMap"]),null);
             showTemplateFormHelper("#attributesForm",$.parseJSON(data["attributesMap"]),"#multiselect-nested-filter-select-attributes");
@@ -1484,7 +1484,8 @@ $(document).ready(function() {
             } catch(err) {
 
             }
-            $loaders.hide();
+            setTimeout(function() { $loaders.hide(); }, 200);
+
         } else if(data.hasOwnProperty('file')) {
             // need to get data
             var defaultFile = node === null;
