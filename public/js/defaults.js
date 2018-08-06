@@ -336,9 +336,11 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     });
                 });
                 $box.children().css({
-                    paddingTop: 50,
                     backgroundColor: 'white',
-                    padding: 25,
+                    paddingTop: 75,
+                    paddingLeft: 25,
+                    paddingRight: 25,
+                    paddingBottom: 5,
                     marginLeft: 0,
                     marginRight: 0,
                     cursor: 'default',
@@ -348,8 +350,8 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 });
                 $box.children().children().css({
                     maxHeight: '100%',
-                    height: '80%'
-
+                    height: '80%',
+                    paddingBottom: 20
                 });
                 $box.children().hide();
                 $box.show();
