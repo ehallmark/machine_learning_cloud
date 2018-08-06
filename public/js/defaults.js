@@ -339,7 +339,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     e.stopPropagation();
                 });
                 if($table.find('thead th').length > 0) {
-                   $table
+                   var $dyna = $table
                    .bind('dynatable:afterUpdate', function() {
                         var $paginationTable = $('#dynatable-pagination-links-main-preview-data-table');
                         $paginationTable.click(function() {
@@ -352,8 +352,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                         var all_rows_checked = update_table_function('#main-preview-data-table', previewSelectionCache);
                         $('#preview-data-table-select-all').prop('checked', all_rows_checked).trigger('change');
                         return true;
-                   })
-                   .dynatable({
+                   }).dynatable({
                      dataset: {
                        ajax: true,
                        ajaxUrl: 'dataTable.json?tableId=preview',
@@ -365,6 +364,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                         paginate: true
                      }
                    });
+                   $dyna.process();
                 }
             }
         }
