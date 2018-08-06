@@ -373,7 +373,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                    setTimeout(function() {
                        var $dyna = $table.data('dynatable');
                        $dyna.process();
-                   }, 50);
+                   }, 1000);
                 }
                 $box.children().slideDown();
             }
