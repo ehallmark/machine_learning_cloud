@@ -1419,7 +1419,6 @@ $(document).ready(function() {
                         var $elem = $('#'+id);
                         if($elem.length==0 && !formIDRequestedCache.has(id)) {
                             // get option from server
-                            formIDRequestedCache.add(id);
                             ids_to_fetch.push(id);
                         }
                     }
@@ -1437,6 +1436,9 @@ $(document).ready(function() {
                         if(data && data.hasOwnProperty('results')) {
                             var $new = $(data.results);
                             $formList.append($new);
+                            for(var i = 0; i < data.ids.length; i++) {
+                                formIDRequestedCache.add(data.ids[i]);
+                            }
                             $new.show();
                             var $newFilters = $new.find('.nested-filter-select');
                             setupNestedFilterSelects($newFilters, $new);

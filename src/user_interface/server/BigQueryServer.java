@@ -996,12 +996,18 @@ public class BigQueryServer extends SimilarPatentServer {
             String role = req.session().attribute("role");
             if(role == null) return null;
             String element;
+            Map<String,Object> results;
             if(formID==null) {
-                element = String.join("", formIds.stream().map(id->ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID.get(role).get(id)).filter(f->f!=null).collect(Collectors.toList()));
+                List<String> ids = formIds.stream().filter(f->f!=null).filter(id->ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID.get(role).containsKey(id)).collect(Collectors.toList());
+                element = String.join("", ids.stream().map(id->ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID.get(role).get(id)).filter(f->f!=null).collect(Collectors.toList()));
+                results = new HashMap<>();
+                results.put("results", element);
+                results.put("ids", ids);
             } else {
                 element = ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).get(formID);
+                results = Collections.singletonMap("results", element);
             }
-            return new Gson().toJson(Collections.singletonMap("results", element));
+            return new Gson().toJson(results);
         });
 
 
