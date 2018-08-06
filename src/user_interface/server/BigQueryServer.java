@@ -365,7 +365,7 @@ public class BigQueryServer extends SimilarPatentServer {
                     child.getOptionsTag(f, true, childTags);
                     System.out.println("Found child tags: "+String.join("\nTag: ", childTags.keySet()));
                     childTags.forEach((id, tag)->{
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(id, tag);
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(id, "<div style=\"margin-left: 5%; margin-right: 5%;\">"+tag+"</div>");
                     });
                     ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,false, null).render());
                 });

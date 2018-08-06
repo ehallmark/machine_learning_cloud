@@ -1,5 +1,7 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
+import data_pipeline.helpers.Function2;
+import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
@@ -50,6 +52,12 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                         ), tbody()
                 )
         )   ;
+    }
+
+
+    @Override
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
+        return super.getOptionsTag(userRoleFunction,null,null,DEFAULT_COMBINE_BY_FUNCTION,true,loadChildren,idToTagMap);
     }
 
 
