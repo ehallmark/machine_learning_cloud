@@ -16,9 +16,12 @@
 
 .custom-menu {
     cursor: pointer;
+    width: 100%;
+    float: left;
+    margin-left: 45%;
 }
 .custom-menu div {
-    width: 35px;
+    width: 10%;
     height: 5px;
     background-color: black;
     margin: 6px 0;

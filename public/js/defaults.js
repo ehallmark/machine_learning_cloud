@@ -1261,7 +1261,7 @@ $(document).ready(function() {
     }); */
 
 
-    $('.custom-menu').click(function() {
+    $('.custom-menu').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         var mainMenu = $('#main-menu');
