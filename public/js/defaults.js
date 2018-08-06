@@ -344,7 +344,9 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     },
                     stop: function(e) {
                         e.stopPropagation();
-                        $box.click(boxFunc);
+                        setTimeout(function() {
+                            $box.click(boxFunc);
+                        },500);
                     }
                 });
                 $box.click(boxFunc);
