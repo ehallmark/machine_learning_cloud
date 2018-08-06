@@ -321,7 +321,8 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 $table.parent().prepend($table.parent().prev());
                 $table.parent().children().eq(1).toggleClass('row col-12').css('margin-bottom', 15);
                 $table.parent().parent().resizable({
-                    handles: 's'
+                    handles: 's',
+                    containment: $box
                 });
                 $box.click(function(e) {
                     e.stopPropagation();
@@ -341,6 +342,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     marginLeft: 0,
                     marginRight: 0,
                     cursor: 'default',
+                    maxHeight: '100%',
                     borderBottomLeftRadius: 15,
                     borderBottomRightRadius: 15
                 });
