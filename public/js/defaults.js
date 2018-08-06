@@ -317,6 +317,8 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 var tableId = 'main-preview-data-table';
                 var $table = $('#'+tableId);
                 $table.wrap('<div style="overflow-y: auto; width: 100%; max-height: 65%;"></div>');
+                $table.parent().prepend($table.parent().prev());
+                $table.parent().prepend($table.parent().prev());
                 $table.parent().parent().resizable({
                     handles: 's'
                 });
