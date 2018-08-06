@@ -315,7 +315,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 });
                 var tableId = 'main-preview-data-table';
                 var $table = $('#'+tableId);
-                $table.wrap('<div style="overflow-y: auto; width: 100%; height: 100%;"></div>');
+                $table.wrap('<div style="overflow-y: auto; width: 100%; max-height: 80%;"></div>');
                 $box.click(function(e) {
                     e.stopPropagation();
                     $box.remove();
@@ -328,8 +328,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     padding: 25,
                     marginLeft: 0,
                     marginRight: 0,
-                    cursor: 'default',
-                    height: '100%'
+                    cursor: 'default'
                 });
                 $('#data-table-preview').click(function(e) {
                     e.stopPropagation();
