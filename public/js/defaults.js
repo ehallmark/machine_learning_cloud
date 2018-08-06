@@ -319,6 +319,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 $table.wrap('<div style="overflow-y: auto; width: 100%; max-height: 65%;"></div>');
                 $table.parent().prepend($table.parent().prev());
                 $table.parent().prepend($table.parent().prev());
+                $table.parent().children().eq(1).toggleClass('row col-12').css('margin-bottom', 15);
                 $table.parent().parent().resizable({
                     handles: 's'
                 });
