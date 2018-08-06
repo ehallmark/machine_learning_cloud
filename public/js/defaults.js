@@ -320,21 +320,34 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 $table.parent().prepend($table.parent().prev());
                 $table.parent().prepend($table.parent().prev());
                 $table.parent().children().eq(1).toggleClass('row col-12').css('margin-bottom', 15);
+
+                var boxFunc = function(e) {
+                     e.stopPropagation();
+                     $box.remove();
+                     previewSelectionCache.clear();
+                     setupNavigationTabs();
+                     $('#data-charts,#data-table').find('table.table').each(function() {
+                         var $this = $(this);
+                         var $t = $this.data('dynatable');
+                         $t.process();
+                     });
+                };
                 $table.parent().parent().resizable({
                     handles: 's',
-                    containment: $box
+                    containment: $box,
+                    start: function(e) {
+                        e.stopPropagation();
+                        $box.off('click');
+                    },
+                    resize: function(e) {
+                        e.stopPropagation();
+                    },
+                    stop: function(e) {
+                        e.stopPropagation();
+                        $box.click(boxFunc);
+                    }
                 });
-                $box.click(function(e) {
-                    e.stopPropagation();
-                    $box.remove();
-                    previewSelectionCache.clear();
-                    setupNavigationTabs();
-                    $('#data-charts,#data-table').find('table.table').each(function() {
-                        var $this = $(this);
-                        var $t = $this.data('dynatable');
-                        $t.process();
-                    });
-                });
+                $box.click(boxFunc);
                 $box.children().css({
                     backgroundColor: 'white',
                     paddingTop: 75,
