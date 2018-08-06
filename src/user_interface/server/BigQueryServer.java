@@ -2965,7 +2965,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         div().withClass("col-12").with(
                                                                 createMenuIcon()
                                                         ),
-                                                        div().withClass("col-12").withId("main-menu").with(
+                                                        div().withClass("col-12").withId("main-menu").attr("style","display: none;").with(
                                                                 div().withClass("row").with(
                                                                         div().withClass("col-12").with(authorized ? a("Sign Out").withHref(GLOBAL_PREFIX+"/logout") : a("Log In").withHref(GLOBAL_PREFIX+"/")),
                                                                         div().withClass("col-12").with(authorized && showDynamicUserGroups ? span().attr("style","margin-bottom: 0; padding-bottom: 0;").with(
