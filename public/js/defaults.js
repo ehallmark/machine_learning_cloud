@@ -306,6 +306,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
             if(data.hasOwnProperty('html')) {
                 var $box = $('<div class="lightbox"></div>');
                 $(document.body).append($box);
+                $box.hide();
                 $box.append(data.html);
                 var $preview = $box.find('#data-table-preview');
                 var xButton = $('<span style="float: right; cursor: pointer;">X</span>');
@@ -333,7 +334,9 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     padding: 25,
                     marginLeft: 0,
                     marginRight: 0,
-                    cursor: 'default'
+                    cursor: 'default',
+                    borderBottomLeftRadius: 15,
+                    borderBottomRightRadius: 15
                 });
                 $('#data-table-preview').parent().click(function(e) {
                     e.stopPropagation();
@@ -369,6 +372,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                        $dyna.process();
                    }, 50);
                 }
+                $box.slideDown();
             }
         }
     });
