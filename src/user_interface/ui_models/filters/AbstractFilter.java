@@ -75,9 +75,9 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     }
 
     @Override
-    public abstract Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren);
+    public abstract Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap);
 
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         String collapseId = "collapse-filters-"+getName().replaceAll("[\\[\\]]","");
         String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
         Tag childTag;
@@ -86,9 +86,9 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
             inputIds.addAll(getInputIds());
         }
         if(this instanceof AbstractNestedFilter && filterType.equals(FilterType.Nested)) {
-            childTag = ((AbstractNestedFilter) this).getNestedOptions(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,loadChildren);
+            childTag = ((AbstractNestedFilter) this).getNestedOptions(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,loadChildren, idToTagMap);
         } else {
-            childTag = getOptionsTag(userRoleFunction,loadChildren);
+            childTag = getOptionsTag(userRoleFunction,loadChildren, idToTagMap);
             Tag additionalTag = additionalTagFunction!=null ? additionalTagFunction.apply(getName()) : null;
             if(additionalTag!=null) {
                 childTag = div().with(additionalTag,childTag);

@@ -14,10 +14,7 @@ import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.highcharts.ArraySeries;
 import user_interface.ui_models.charts.highcharts.HeatMapChart;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,7 +33,7 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
 
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
         Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getIncludeRemainingField(attrName),getMaxSlicesField(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
@@ -46,7 +43,7 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
                         tag2
                 )
         );
-        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true,loadChildren);
+        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true,loadChildren,idToTagMap);
     }
 
 

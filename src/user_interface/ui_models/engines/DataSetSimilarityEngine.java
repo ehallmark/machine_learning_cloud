@@ -10,6 +10,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -55,7 +56,7 @@ public class DataSetSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         return div().with(
                datasetAttribute.getFilterTag(getName(),getId())
         );

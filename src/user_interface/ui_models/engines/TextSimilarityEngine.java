@@ -93,7 +93,7 @@ public class TextSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         return div().with(
                 textarea().withClass("form-control").attr("placeholder","Enter any text or document").withId(getId()).withName(getId())
         );

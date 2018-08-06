@@ -16,6 +16,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.function.Function;
 
@@ -129,7 +130,7 @@ public class AbstractBetweenFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         String type = getFieldType().equals(FieldType.Date) ? "text" : "number";
         String additionalClasses = getFieldType().equals(FieldType.Date) ? "datepicker" : "";
         return div().withClass("row").with(

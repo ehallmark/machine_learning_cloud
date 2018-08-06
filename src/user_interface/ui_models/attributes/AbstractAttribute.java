@@ -80,11 +80,11 @@ public abstract class AbstractAttribute {
         return parent==null? getName() : parent.getRootName();
     }
 
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         return div().with(div().withClass("attribute").withId(getAttributeId()));
     }
 
-    public ContainerTag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren) {
+    public ContainerTag getOptionsTag(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren, Map<String,String> idToTagMap) {
         String collapseId = "collapse-filters-"+getFullName().replaceAll("[\\[\\].]","");
         String styleString = "margin-left: 5%; margin-right: 5%; display: none;";
         Tag childTag;
@@ -93,13 +93,13 @@ public abstract class AbstractAttribute {
             inputIds.addAll(getInputIds());
         }
         if(this instanceof NestedAttribute && ! (this instanceof AbstractChartAttribute) && perAttr) {
-            childTag = ((NestedAttribute) this).getNestedOptions(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineTagFunction, perAttr, loadChildren);
+            childTag = ((NestedAttribute) this).getNestedOptions(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineTagFunction, perAttr, loadChildren, idToTagMap);
         } else {
             System.out.println("Class: "+this.getClass().getName());
             if(this instanceof NestedAttribute) {
-                childTag = ((NestedAttribute)this).getNestedOptions(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, combineTagFunction, perAttr, loadChildren);
+                childTag = ((NestedAttribute)this).getNestedOptions(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, combineTagFunction, perAttr, loadChildren, idToTagMap);
             } else {
-                childTag = getOptionsTag(userRoleFunction, loadChildren);
+                childTag = getOptionsTag(userRoleFunction, loadChildren, idToTagMap);
             }
             ContainerTag additionalTag = additionalTagFunction!=null && perAttr && !(this instanceof AbstractChartAttribute) ? additionalTagFunction.apply(getFullName()) : null;
             if(additionalTag!=null) {

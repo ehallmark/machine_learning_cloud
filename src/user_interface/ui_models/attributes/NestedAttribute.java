@@ -82,15 +82,17 @@ public abstract class NestedAttribute extends AbstractAttribute {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         if (loadChildren) {
-            return getOptionsTag(userRoleFunction, null, null, (tag1, tag2) -> div().with(tag1, tag2), false, loadChildren);
+            return getOptionsTag(userRoleFunction, null, null, (tag1, tag2) -> div().with(tag1, tag2), false, loadChildren, idToTagMap);
         } else {
-            return getNestedOptions(userRoleFunction, null, null, (tag1, tag2) -> div().with(tag1, tag2), false, loadChildren);
+            return getNestedOptions(userRoleFunction, null, null, (tag1, tag2) -> div().with(tag1, tag2), false, loadChildren, idToTagMap);
         }
     }
 
-    public ContainerTag getNestedOptions(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren) {
+
+
+    public ContainerTag getNestedOptions(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren, Map<String,String> idToTagMap) {
         String name = getFullName().replace(".","");
         String clazz = CLAZZ;
         String id = getId();
@@ -105,6 +107,11 @@ public abstract class NestedAttribute extends AbstractAttribute {
             }
             return new Pair<>(attr.getFullName(), elemId);
         }).collect(Collectors.toList());
+        if(idToTagMap!=null) {
+            applicableAttributes.forEach(attr -> {
+                idToTagMap.put(attr.getAttributeId(), attr.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, combineTagFunction, perAttr, loadChildren, idToTagMap).render());
+            });
+        }
         return div().with(
                 div().with(
                         groupbyTag==null?span():div().with(
@@ -115,7 +122,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                 ), div().withClass("nested-form-list").with(
                         loadChildren ?
                         applicableAttributes.stream().map(attr->{
-                            return attr.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, combineTagFunction, perAttr, loadChildren);
+                            return attr.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, combineTagFunction, perAttr, loadChildren, idToTagMap);
                         }).collect(Collectors.toList()) : Collections.emptyList()
                 )
         );

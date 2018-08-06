@@ -15,10 +15,7 @@ import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.charts.highcharts.ColumnChart;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import static j2html.TagCreator.*;
@@ -73,7 +70,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
         Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getSwapAxesAttrFieldName(attrName),getDrilldownAttrFieldName(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
@@ -83,7 +80,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
                         tag2
                 )
         );
-        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true,loadChildren);
+        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true,loadChildren,idToTagMap);
     }
 
 

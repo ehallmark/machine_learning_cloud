@@ -10,6 +10,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
@@ -72,7 +73,7 @@ public class AbstractLessThanFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         String type = getFieldType().equals(FieldType.Date) ? "text" : "number";
         String additionalClasses = getFieldType().equals(FieldType.Date) ? "datepicker" : "";
         return div().with(

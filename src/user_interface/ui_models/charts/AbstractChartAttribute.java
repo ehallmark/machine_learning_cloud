@@ -88,10 +88,8 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         return attrName.replace(getName().replace("[", "").replace("]", "") + ".", "").replace(".", "");
     }
 
-
-
     @Override
-    public ContainerTag getNestedOptions(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren) {
+    public ContainerTag getNestedOptions(Function<String,Boolean> userRoleFunction, Function<String,ContainerTag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, Function2<ContainerTag,ContainerTag,ContainerTag> combineTagFunction, boolean perAttr, boolean loadChildren, Map<String,String> idToTagMap) {
         Function<String,ContainerTag> newTagFunction;
         Function<String,List<String>> newAdditionalIdsFunction;
         if(groupByAttributes!=null) {
@@ -155,7 +153,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
         Function<String,List<String>> idsFunction = str -> {
             return Stream.of(collectorIdsFunction.apply(str), newAdditionalIdsFunction.apply(str)).flatMap(list->list.stream()).collect(Collectors.toList());
         };
-        return super.getNestedOptions(userRoleFunction,tagFunction,idsFunction,DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren);
+        return super.getNestedOptions(userRoleFunction,tagFunction,idsFunction,DEFAULT_COMBINE_BY_FUNCTION, true, loadChildren,idToTagMap);
     }
 
     protected ContainerTag getGroupedByFunction(String attrName,Function<String,Boolean> userRoleFunction) {

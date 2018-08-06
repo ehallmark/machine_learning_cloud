@@ -9,6 +9,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
@@ -44,7 +45,7 @@ public class CPCSimilarityEngine extends AbstractSimilarityEngine implements Aja
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         return div().with(
                 AbstractIncludeFilter.ajaxMultiSelect(getId(), ajaxUrl(), getId())
         );

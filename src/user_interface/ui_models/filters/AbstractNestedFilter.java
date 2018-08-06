@@ -124,16 +124,16 @@ public class AbstractNestedFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         if (loadChildren) {
-            return getOptionsTag(userRoleFunction, null, null, loadChildren);
+            return getOptionsTag(userRoleFunction, null, null, loadChildren, idToTagMap);
         } else {
-            return getNestedOptions(userRoleFunction, null, null, loadChildren);
+            return getNestedOptions(userRoleFunction, null, null, loadChildren, idToTagMap);
         }
     }
 
 
-    public Tag getNestedOptions(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, boolean loadChildren) {
+    public Tag getNestedOptions(Function<String,Boolean> userRoleFunction, Function<String,Tag> additionalTagFunction, Function<String,List<String>> additionalInputIdsFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         List<AbstractFilter> availableFilters = filters.stream().filter(filter->filter.getAttribute()==null||(filter.getAttribute().isDisplayable()&&userRoleFunction.apply(filter.getAttribute().getRootName()))).collect(Collectors.toList());
         Map<String,List<Pair<String,String>>> filterGroups = new TreeMap<>(availableFilters.stream().collect(Collectors.groupingBy(filter->filter.getFullPrerequisite())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->new Pair<>(attr.getFullName(),attr.getId())).collect(Collectors.toList()))));
@@ -146,11 +146,11 @@ public class AbstractNestedFilter extends AbstractFilter {
                 ), div().withClass("nested-form-list").with(
                         loadChildren ?
                         availableFilters.stream().map(filter->{
-                            return filter.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, loadChildren);
+                            return filter.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, loadChildren, idToTagMap);
                         }).collect(Collectors.toList())
                                 // we need the dataset filter to always exist
                                 : availableFilters.stream().filter(f->f.getAttribute().getName().equals(Constants.DATASET_NAME)).map(filter->{
-                            return filter.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, loadChildren);
+                            return filter.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, loadChildren, idToTagMap);
                         }).collect(Collectors.toList())
                 )
         );

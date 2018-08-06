@@ -66,7 +66,7 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         return div().with(
                 textarea().withClass("form-control").attr("placeholder","1 publication per line (eg. US8321100)").withId(getId()).withName(getId())
         );

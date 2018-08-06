@@ -361,10 +361,18 @@ public class BigQueryServer extends SimilarPatentServer {
         if (attr instanceof NestedAttribute) {
             ((NestedAttribute) attr).getAttributes().forEach(child->{
                 roleToAttributeFunctionMap.forEach((role,f)->{
-                    if(child instanceof NestedAttribute) {
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,true).render());
+                    if(child instanceof AbstractChartAttribute) {
+                        Map<String, String> childTags = new HashMap<>();
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,false, childTags).render());
+                        System.out.println("Found child tags: "+String.join("\nTag: ", childTags.keySet()));
+                        childTags.forEach((id, tag)->{
+                            ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(id, tag);
+                        });
+
+                    } else if(child instanceof NestedAttribute) {
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,true, null).render());
                     } else {
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getAttributeId(), child.getOptionsTag(f,null,null,(d1,d2)->div().with(d1,d2), false, true).render());
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getAttributeId(), child.getOptionsTag(f,null,null,(d1,d2)->div().with(d1,d2), false, true, null).render());
                     }
                 });
             });
@@ -372,9 +380,9 @@ public class BigQueryServer extends SimilarPatentServer {
             ((AbstractNestedFilter) attr).getFilters().forEach(child->{
                 roleToAttributeFunctionMap.forEach((role,f)->{
                     if(child instanceof AbstractNestedFilter) {
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f, true).render());
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f, true, null).render());
                     } else {
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f,null,null,true).render());
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f,null,null,true, null).render());
                     }
                 });
             });
@@ -981,7 +989,7 @@ public class BigQueryServer extends SimilarPatentServer {
             if(role == null) return null;
             String element;
             if(formID==null) {
-                element = String.join("", formIds.stream().map(id->ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).get(id)).collect(Collectors.toList()));
+                element = String.join("", formIds.stream().map(id->ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).get(id)).filter(f->f!=null).collect(Collectors.toList()));
             } else {
                 element = ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).get(formID);
             }
@@ -3170,7 +3178,7 @@ public class BigQueryServer extends SimilarPatentServer {
                         div().withClass("collapsible-form row").with(
                                 div().withClass("col-12").with(
                                         div().withClass("attributeElement").with(
-                                                attribute.getOptionsTag(userRoleFunction, false)
+                                                attribute.getOptionsTag(userRoleFunction, false, null)
                                         )
                                 )
                         )

@@ -8,6 +8,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import static j2html.TagCreator.div;
@@ -68,7 +69,7 @@ public class AbstractBooleanIncludeFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren) {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         return div().withId(getId());
     }
 
