@@ -1449,8 +1449,7 @@ $(document).ready(function() {
                     doFunction();
                     setTimeout(function() {
                         doFunction();
-
-                    }, 100);
+                    }, 500);
                 });
             } else {
                 doFunction();
