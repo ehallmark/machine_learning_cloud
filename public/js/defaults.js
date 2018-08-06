@@ -336,7 +336,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     });
                 });
                 $box.children().css({
-                    marginTop: 50,
+                    paddingTop: 50,
                     backgroundColor: 'white',
                     padding: 25,
                     marginLeft: 0,
@@ -345,6 +345,11 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     maxHeight: '100%',
                     borderBottomLeftRadius: 15,
                     borderBottomRightRadius: 15
+                });
+                $box.children().children().css({
+                    maxHeight: '100%',
+                    height: '80%'
+
                 });
                 $box.children().hide();
                 $box.show();
