@@ -352,24 +352,28 @@ public class BigQueryServer extends SimilarPatentServer {
         roleToAttributeFunctionMap.keySet().forEach(role->{
             ROLE_TO_FORM_ELEMENTS_BY_ID.put(role, Collections.synchronizedMap(new HashMap<>()));
         });
-        addToFormElements(allAttributes);
-        addToFormElements(allFilters);
-        addToFormElements(allCharts);
+        addToFormElements(allAttributes,false);
+        addToFormElements(allFilters,false);
+        addToFormElements(allCharts,true);
     }
 
-    private static void addToFormElements(AbstractAttribute attr) {
-        if (attr instanceof NestedAttribute) {
+    private static void addToFormElements(AbstractAttribute attr, boolean allCharts) {
+        if(allCharts) {
+            roleToAttributeFunctionMap.forEach((role,f)-> {
+                ((NestedAttribute) attr).getAttributes().forEach(child->{
+                    Map<String, String> childTags = new HashMap<>();
+                    child.getOptionsTag(f, true, childTags);
+                    System.out.println("Found child tags: "+String.join("\nTag: ", childTags.keySet()));
+                    childTags.forEach((id, tag)->{
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(id, tag);
+                    });
+                    ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,false, null).render());
+                });
+            });
+        } else if (attr instanceof NestedAttribute) {
             ((NestedAttribute) attr).getAttributes().forEach(child->{
                 roleToAttributeFunctionMap.forEach((role,f)->{
-                    if(child instanceof AbstractChartAttribute) {
-                        Map<String, String> childTags = new HashMap<>();
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,false, childTags).render());
-                        System.out.println("Found child tags: "+String.join("\nTag: ", childTags.keySet()));
-                        childTags.forEach((id, tag)->{
-                            ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(id, tag);
-                        });
-
-                    } else if(child instanceof NestedAttribute) {
+                    if(child instanceof NestedAttribute) {
                         ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,true, null).render());
                     } else {
                         ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getAttributeId(), child.getOptionsTag(f,null,null,(d1,d2)->div().with(d1,d2), false, true, null).render());

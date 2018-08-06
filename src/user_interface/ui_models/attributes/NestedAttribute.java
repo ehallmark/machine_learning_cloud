@@ -109,7 +109,13 @@ public abstract class NestedAttribute extends AbstractAttribute {
         }).collect(Collectors.toList());
         if(idToTagMap!=null) {
             applicableAttributes.forEach(attr -> {
-                idToTagMap.put(attr.getAttributeId(), attr.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, combineTagFunction, perAttr, loadChildren, idToTagMap).render());
+                String attrId;
+                if(attr instanceof NestedAttribute) {
+                    attrId = ((NestedAttribute) attr).getId();
+                } else {
+                    attrId = attr.getAttributeId();
+                }
+                idToTagMap.put(attrId, attr.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, combineTagFunction, perAttr, loadChildren, idToTagMap).render());
             });
         }
         return div().with(
