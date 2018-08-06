@@ -1426,7 +1426,7 @@ $(document).ready(function() {
             }
             if(ids_to_fetch.length>0) {
                 // try to get it from the server
-                $.ajax({
+                $.when($.ajax({
                     type: "POST",
                     url: '/form_elem_by_id',
                     data: {
@@ -1442,14 +1442,18 @@ $(document).ready(function() {
                             $new.show();
                             var $newFilters = $new.find('.nested-filter-select');
                             setupNestedFilterSelects($newFilters, $new);
-                            doFunction();
                         }
                     },
                     dataType: "json"
+                })).done(function() {
+                    doFunction();
                 });
+            } else {
+                doFunction();
             }
+        } else {
+            doFunction();
         }
-        doFunction();
     };
 
     var showTemplateFunction = function(data,tree,node){
