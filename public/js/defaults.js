@@ -315,7 +315,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 });
                 var tableId = 'main-preview-data-table';
                 var $table = $('#'+tableId);
-                $table.wrap('<div style="overflow-y: auto; width: 100%; max-height: 80%;"></div>');
+                $table.wrap('<div style="overflow-y: auto; width: 100%; max-height: 65%;"></div>');
                 $box.click(function(e) {
                     e.stopPropagation();
                     $box.remove();
@@ -330,12 +330,20 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     marginRight: 0,
                     cursor: 'default'
                 });
-                $('#data-table-preview').click(function(e) {
+                $('#data-table-preview').parent().click(function(e) {
                     e.stopPropagation();
                 });
                 if($table.find('thead th').length > 0) {
                    $table
                    .bind('dynatable:afterUpdate', function() {
+                        var $paginationTable = $('#dynatable-pagination-links-main-preview-data-table');
+                        $paginationTable.click(function() {
+                            setTimeout(function() {
+                                $('#main-preview-data-table').parent().animate({
+                                    scrollTop: 0
+                                }, 200);
+                            }, 100);
+                        });
                         var all_rows_checked = update_table_function('#main-preview-data-table', previewSelectionCache);
                         $('#preview-data-table-select-all').prop('checked', all_rows_checked).trigger('change');
                         return true;
