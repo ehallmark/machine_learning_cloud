@@ -359,7 +359,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                             e.preventDefault();
                             var $dyna = $table.data('dynatable');
                             var val = parseInt($(this).attr('data-dynatable-page'), 10);
-                            $dyna.paginationPage.set(5);
+                            $dyna.paginationPage.set(val);
                             $dyna.process();
                         });
                         var all_rows_checked = update_table_function('#main-preview-data-table', previewSelectionCache);
