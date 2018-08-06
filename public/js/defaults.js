@@ -305,8 +305,8 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
             }
             if(data.hasOwnProperty('html')) {
                 var $box = $('<div class="lightbox"></div>');
-                $(document.body).append($box);
                 $box.hide();
+                $(document.body).append($box);
                 $box.append(data.html);
                 var $preview = $box.find('#data-table-preview');
                 var xButton = $('<span style="float: right; cursor: pointer;">X</span>');
@@ -338,6 +338,9 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     borderBottomLeftRadius: 15,
                     borderBottomRightRadius: 15
                 });
+                $box.children().hide();
+                $box.show();
+
                 $('#data-table-preview').parent().click(function(e) {
                     e.stopPropagation();
                 });
@@ -372,7 +375,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                        $dyna.process();
                    }, 50);
                 }
-                $box.slideDown();
+                $box.children().slideDown();
             }
         }
     });
