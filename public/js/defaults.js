@@ -356,7 +356,8 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                        records: []
                      },
                      features: {
-                        pushState: false
+                        pushState: false,
+                        paginate: true
                      }
                    });
                 }
@@ -644,7 +645,10 @@ $(document).ready(function() {
                                         var group2 = null;
                                         var group1 = null;
                                         if(index2 >= 0) {
-                                            group2 = headers.eq(index2).text();
+                                            group2 = headers.eq(index2).attr('data-dynatable-column');
+                                            if(!group2) {
+                                                group2 = headers.get(index2).nodeValue.trim();
+                                            }
                                         }
                                         group1 = $td.parent().children().eq(0).text();
                                         handlePreviewAssetsAjax($table.parent().attr('id'), group1, group2);
