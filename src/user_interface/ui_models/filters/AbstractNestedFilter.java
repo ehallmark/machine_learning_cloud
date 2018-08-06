@@ -148,8 +148,8 @@ public class AbstractNestedFilter extends AbstractFilter {
                         availableFilters.stream().map(filter->{
                             return filter.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, loadChildren, idToTagMap);
                         }).collect(Collectors.toList())
-                                // we need the dataset filter to always exist
-                                : availableFilters.stream().filter(f->f.getAttribute().getName().equals(Constants.DATASET_NAME)).map(filter->{
+                                // we need the dataset filter to always exist and the acclaim expert filter
+                                : availableFilters.stream().filter(f->f.getAttribute().getName().equals(AcclaimExpertSearchFilter.NAME)||f.getAttribute().getName().equals(Constants.DATASET_NAME)).map(filter->{
                             return filter.getOptionsTag(userRoleFunction, additionalTagFunction, additionalInputIdsFunction, loadChildren, idToTagMap);
                         }).collect(Collectors.toList())
                 )
