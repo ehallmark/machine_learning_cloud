@@ -1,6 +1,7 @@
 var selectionCache = new Set([]);
 var previewSelectionCache = new Set([]);
 var formIDRequestedCache = new Set([]);
+var doFunction = null;
 var nestedFilterSelectFunction = function(e,preventHighlight) {
      var $options = $(e.currentTarget.selectedOptions);
      var $select = $(this);
@@ -61,6 +62,9 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
                          $new.show();
                          var $newFilters = $new.find('.nested-filter-select');
                          setupNestedFilterSelects($newFilters, $new);
+                         if(doFunction!==null) {
+                            doFunction();
+                         }
                      }
                  },
                  dataType: "json"
@@ -1344,7 +1348,7 @@ $(document).ready(function() {
 
 
     var showTemplateFormHelper = function(formSelector,dataMap,mainSelectID) {
-        var doFunction = function() {
+        doFunction = function() {
             $.each(dataMap,function(id,value) {
                 if(!id.startsWith("order_")) {
                      var order = null;
