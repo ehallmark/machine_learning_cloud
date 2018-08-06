@@ -1798,7 +1798,7 @@ public class SimilarPatentServer {
                 ),
                 div().withClass("row").with(
                         div().withClass("col-6").with(
-                                span().withText("Number of assets selected: ").attr("style", "float: left;").with(
+                                span().withText("Number of assets selected: ").attr("style", preview?"": "float: left;").with(
                                     span().withClass("table-selection-counter")
                                 )
                         ), div().withClass("col-6").with(
