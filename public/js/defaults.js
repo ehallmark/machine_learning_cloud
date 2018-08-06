@@ -379,6 +379,9 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                    });
                 }
                 $box.children().slideDown();
+                $box.children().resizable({
+                    handles: 's'
+                });
             }
         }
     });
