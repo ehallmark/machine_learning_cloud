@@ -329,7 +329,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     marginLeft: 0,
                     marginRight: 0,
                     cursor: 'default',
-                    height: 80%
+                    height: '100%'
                 });
                 $('#data-table-preview').click(function(e) {
                     e.stopPropagation();
