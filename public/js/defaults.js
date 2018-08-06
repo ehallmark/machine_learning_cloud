@@ -1,7 +1,6 @@
 var selectionCache = new Set([]);
 var previewSelectionCache = new Set([]);
 var formIDRequestedCache = new Set([]);
-var inProgress = 0;
 var nestedFilterSelectFunction = function(e,preventHighlight) {
      var $options = $(e.currentTarget.selectedOptions);
      var $select = $(this);
@@ -48,7 +47,6 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
          var newElemId = $(option).attr('data-id');
          if($('#'+newElemId).length==0 && !formIDRequestedCache.has(newElemId)) {
              // get option from server
-             inProgress = inProgress + 1;
              formIDRequestedCache.add(newElemId);
              $.ajax({
                  type: "POST",
@@ -64,9 +62,6 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
                          var $newFilters = $new.find('.nested-filter-select');
                          setupNestedFilterSelects($newFilters, $new);
                      }
-                 },
-                 complete: function() {
-                     inProgress = inProgress - 1;
                  },
                  dataType: "json"
              });
@@ -1431,7 +1426,6 @@ $(document).ready(function() {
             }
             if(ids_to_fetch.length>0) {
                 // try to get it from the server
-                inProgress = 0;
                 $.when($.ajax({
                     type: "POST",
                     url: '/form_elem_by_id',
@@ -1452,19 +1446,11 @@ $(document).ready(function() {
                     },
                     dataType: "json"
                 })).done(function() {
+                    doFunction();
                     setTimeout(function() {
-                        var maxTime = 2000;
-                        var time = 0;
-                        var func = function() {
-                            time = time+50;
-                            if(inProgress>0 && time < maxTime) {
-                                setTimeout(func, 50);
-                            } else {
-                                doFunction();
-                            }
-                        }
+                        doFunction();
 
-                    }, 50);
+                    }, 100);
                 });
             } else {
                 doFunction();
