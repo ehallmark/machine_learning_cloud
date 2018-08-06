@@ -355,6 +355,13 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                                 }, 200);
                             }, 100);
                         });
+                        $paginationTable.find('li a[data-dynatable-page]').click(function(e) {
+                            e.preventDefault();
+                            var $dyna = $table.data('dynatable');
+                            var val = parseInt($(this).attr('data-dynatable-page'), 10);
+                            $dyna.paginationPage.set(5);
+                            $dyna.process();
+                        });
                         var all_rows_checked = update_table_function('#main-preview-data-table', previewSelectionCache);
                         $('#preview-data-table-select-all').prop('checked', all_rows_checked).trigger('change');
                         return true;
@@ -370,10 +377,6 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                         paginate: true
                      }
                    });
-                   setTimeout(function() {
-                       var $dyna = $table.data('dynatable');
-                       $dyna.process();
-                   }, 1000);
                 }
                 $box.children().slideDown();
             }
