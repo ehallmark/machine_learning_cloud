@@ -125,7 +125,7 @@ public class BigQueryServer extends SimilarPatentServer {
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String PRESET_USER_GROUP = "presets";
     public static final Map<String,Map<String,String>> ROLE_TO_FORM_ELEMENTS_BY_ID = Collections.synchronizedMap(new HashMap<>());
-
+    public static final Map<String,Map<String,String>> ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,AggregationChart<?>> chartModelMap = new HashMap<>();
 
     static {
@@ -351,6 +351,7 @@ public class BigQueryServer extends SimilarPatentServer {
         loadChartModels();
         roleToAttributeFunctionMap.keySet().forEach(role->{
             ROLE_TO_FORM_ELEMENTS_BY_ID.put(role, Collections.synchronizedMap(new HashMap<>()));
+            ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID.put(role, Collections.synchronizedMap(new HashMap<>()));
         });
         addToFormElements(allAttributes,false);
         addToFormElements(allFilters,false);
@@ -365,18 +366,18 @@ public class BigQueryServer extends SimilarPatentServer {
                     child.getOptionsTag(f, true, childTags);
                     System.out.println("Found child tags: "+String.join("\nTag: ", childTags.keySet()));
                     childTags.forEach((id, tag)->{
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(id, "<div style=\"margin-left: 5%; margin-right: 5%;\">"+tag+"</div>");
+                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(id, tag);
                     });
-                    ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,false, null).render());
+                    ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,false, null).render());
                 });
             });
         } else if (attr instanceof NestedAttribute) {
             ((NestedAttribute) attr).getAttributes().forEach(child->{
                 roleToAttributeFunctionMap.forEach((role,f)->{
                     if(child instanceof NestedAttribute) {
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,true, null).render());
+                        ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID.get(role).put(((NestedAttribute) child).getId(), child.getOptionsTag(f,true, null).render());
                     } else {
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getAttributeId(), child.getOptionsTag(f,null,null,(d1,d2)->div().with(d1,d2), false, true, null).render());
+                        ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID.get(role).put(child.getAttributeId(), child.getOptionsTag(f,null,null,(d1,d2)->div().with(d1,d2), false, true, null).render());
                     }
                 });
             });
@@ -384,13 +385,16 @@ public class BigQueryServer extends SimilarPatentServer {
             ((AbstractNestedFilter) attr).getFilters().forEach(child->{
                 roleToAttributeFunctionMap.forEach((role,f)->{
                     if(child instanceof AbstractNestedFilter) {
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f, true, null).render());
+                        ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f, true, null).render());
                     } else {
-                        ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f,null,null,true, null).render());
+                        ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID.get(role).put(child.getId(), child.getOptionsTag(f,null,null,true, null).render());
                     }
                 });
             });
         }
+        ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID.forEach((role,map)->{
+            ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).putAll(map);
+        });
     }
 
     public static void loadChartModels() {
@@ -993,7 +997,7 @@ public class BigQueryServer extends SimilarPatentServer {
             if(role == null) return null;
             String element;
             if(formID==null) {
-                element = String.join("", formIds.stream().map(id->ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).get(id)).filter(f->f!=null).collect(Collectors.toList()));
+                element = String.join("", formIds.stream().map(id->ROLE_TO_TOP_LEVEL_FORM_ELEMENTS_BY_ID.get(role).get(id)).filter(f->f!=null).collect(Collectors.toList()));
             } else {
                 element = ROLE_TO_FORM_ELEMENTS_BY_ID.get(role).get(formID);
             }
