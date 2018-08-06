@@ -321,7 +321,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                     $box.remove();
                     previewSelectionCache.clear();
                     setupNavigationTabs();
-                    $('#data-charts,#data-table').find('table').each(function() {
+                    $('#data-charts,#data-table').find('table.table').each(function() {
                         var $this = $(this);
                         var $t = $this.data('dynatable');
                         $t.process();
