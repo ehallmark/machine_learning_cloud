@@ -16,15 +16,18 @@
 
 .custom-menu {
     cursor: pointer;
-    width: 100%;
+    width: 10%;
     float: left;
     margin-left: 45%;
+    margin-right: 45%;
+    margin-top: 10px;
 }
 .custom-menu div {
-    width: 10%;
+    width: 100%;
     height: 5px;
     background-color: black;
     margin: 6px 0;
+    border-radius: 5px;
 }
 
 #new-dataset-from-asset-list-overlay,#k-for-clustering-overlay,#create-assignee-datasets-overlay {
