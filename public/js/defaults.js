@@ -1449,7 +1449,14 @@ $(document).ready(function() {
                     doFunction();
                     setTimeout(function() {
                         doFunction();
+                    }, 200);
+                    setTimeout(function() {
+                        doFunction();
                     }, 500);
+                    setTimeout(function() {
+                        doFunction();
+                    }, 1000);
+
                 });
             } else {
                 doFunction();
@@ -1476,7 +1483,7 @@ $(document).ready(function() {
             } catch(err) {
 
             }
-            setTimeout(function() { $loaders.hide(); }, 200);
+            setTimeout(function() { $loaders.hide(); }, 250);
         } else if(data.hasOwnProperty('searchOptionsMap')) { // data came from newly added node
             showTemplateFormHelper("#searchOptionsForm",$.parseJSON(data["searchOptionsMap"]),null);
             showTemplateFormHelper("#attributesForm",$.parseJSON(data["attributesMap"]),"#multiselect-nested-filter-select-attributes");
@@ -1487,7 +1494,7 @@ $(document).ready(function() {
             } catch(err) {
 
             }
-            setTimeout(function() { $loaders.hide(); }, 200);
+            setTimeout(function() { $loaders.hide(); }, 250);
 
         } else if(data.hasOwnProperty('file')) {
             // need to get data
