@@ -2908,7 +2908,7 @@ public class BigQueryServer extends SimilarPatentServer {
             menuItems.add(a("Reset Default Template").withClass("btn btn-outline-secondary").attr("title", "Resets the default template.").withHref(RESET_DEFAULT_TEMPLATE_URL));
             if(canUpdateUserGroup) {
                 menuItems.add(label("For User Group?").withClass("btn btn-outline-secondary").attr("title", "Warning: Selecting this option will affect the default template for all users in this user group.").with(
-                        input().withType("checkbox").withValue("on").withId("extract_to_usergroup")
+                        input().withType("checkbox").attr("style", "margin-left: 10px").withValue("on").withId("extract_to_usergroup")
                 ));
             }
 
