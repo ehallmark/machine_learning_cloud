@@ -1127,9 +1127,9 @@ public class BigQueryServer extends SimilarPatentServer {
             return response.body();
         });
 
-        get("/images/faveicon-16x16.png", (request, response) -> {
+        get("/images/favicon-16x16.png", (request, response) -> {
             response.type("image/png");
-            String pathToImage = "public/images/faveicon-16x16.png";
+            String pathToImage = "public/images/favicon-16x16.png";
             File f = new File(pathToImage);
             BufferedImage bi = ImageIO.read(f);
             OutputStream out = response.raw().getOutputStream();
@@ -1139,9 +1139,9 @@ public class BigQueryServer extends SimilarPatentServer {
             return response.body();
         });
 
-        get("/images/faveicon-32x32.png", (request, response) -> {
+        get("/images/favicon-32x32.png", (request, response) -> {
             response.type("image/png");
-            String pathToImage = "public/images/faveicon-32x32.png";
+            String pathToImage = "public/images/favicon-32x32.png";
             File f = new File(pathToImage);
             BufferedImage bi = ImageIO.read(f);
             OutputStream out = response.raw().getOutputStream();
@@ -2944,8 +2944,8 @@ public class BigQueryServer extends SimilarPatentServer {
         return html().with(
                 head().with(
                         title("PSP - GTT Group"),
-                        link().withRel("icon").withType("image/png").withHref("/images/faveicon-16x16.png"),
-                        link().withRel("icon").withType("image/png").withHref("/images/faveicon-32x32.png"),
+                        link().withRel("icon").withType("image/png").withHref("/images/favicon-16x16.png"),
+                        link().withRel("icon").withType("image/png").withHref("/images/favicon-32x32.png"),
                         script().withSrc("/js/jquery-3.3.1.min.js"),
                         script().withSrc("/js/jquery-ui-1.12.1.min.js"),
                         script().withText(
