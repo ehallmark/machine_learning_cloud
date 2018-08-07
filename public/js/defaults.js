@@ -753,13 +753,6 @@ $(document).ready(function() {
                       alert(chartData.message);
                    } else {
                       var $chartDiv = $('#'+chartData.chartId.toString());
-                      if(chartData.chartId==='chart-0') {
-                        if($chartDiv.is(':visible')) {
-                            $('html,body').animate({
-                                scrollTop: $chartDiv.offset().top-150
-                            }, 500);
-                        }
-                      }
                       for(var j = 0; j < chartData.charts.length; j++) {
                         var $currChart = $('<div id="'+ chartData.chartId+"-"+j.toString() +'"></div>');
                         var isStockChart = chartData.isStockCharts[j];
