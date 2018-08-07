@@ -2918,7 +2918,7 @@ public class BigQueryServer extends SimilarPatentServer {
         if(authorized && showDynamicUserGroups) {
             menuItems.add(
                     form().withAction(GLOBAL_PREFIX+"/change_dynamic_user_group").attr("onclick","$(this).find('select.single-select2').select2('open');").withClass("btn btn-outline-secondary").attr("style", "margin-bottom: 0px").withMethod("POST").with(
-                            label("Change User Group").with(br(),
+                            label("Change User Group").withId("change_user_group_label").with(br(),
                                     select().withClass("single-select2 form-control").attr("onchange","this.form.submit()").withName("userGroup").with(
                                             option(dynamicUserGroup==null?userGroup:dynamicUserGroup).attr("selected","selected").withValue(dynamicUserGroup==null?userGroup:dynamicUserGroup)
                                     ).with(

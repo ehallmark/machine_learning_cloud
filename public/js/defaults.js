@@ -275,6 +275,8 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
         },
         html: true
     });
+
+
 };
 
 
@@ -1353,6 +1355,10 @@ $(document).ready(function() {
             lineWrapping: true
         });
     }
+
+    $('#change_user_group_label').click(function(e) {
+        e.stopPropagation();
+    });
 
     var update_expert_query_display = function() {
         // text area
