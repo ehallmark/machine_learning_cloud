@@ -578,12 +578,7 @@ $(document).ready(function() {
            data: $form.serialize(),
            complete: function(jqxhr,status) {
              if(!canceledFunction()) {
-                var $scrollTo = $('#data-table');
-                if($scrollTo.length>0 && $scrollTo.is(':visible')) {
-                    $('html,body').animate({
-                        scrollTop: $scrollTo.offset().top-150
-                    }, 500);
-                }
+                $('#results-link').click();
              }
              stopCancellable();
              $button.prop('disabled',false).text(buttonText);

@@ -3094,7 +3094,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                         ), li().withClass("nav-item").with(
                                                 a("Visualizations").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
-                                                a("Results").withClass("nav-link").attr("data-toggle","tab").withHref("#results").attr("role","tab")
+                                                a("Results").withId("results-link").withClass("nav-link").attr("data-toggle","tab").withHref("#results").attr("role","tab")
                                         )
                                 )
                         ),
@@ -3138,7 +3138,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                                 label("List Item Separator").attr("style","width: 100%;").with(
                                                                                         input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder("; ").withName(LIST_ITEM_SEPARATOR_FIELD)
                                                                                 )
-                                                                        ),buttons,br()
+                                                                        )
                                                                 )
                                                         ),buttons, br()
                                                 )
