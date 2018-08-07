@@ -1516,17 +1516,11 @@ public class BigQueryServer extends SimilarPatentServer {
                 List<Map<String, String>> queriedData;
                 String searchStr;
                 if (req.queryMap("queries") != null && req.queryMap("queries").hasKey("search")) {
-                    String previousSearch = req.session().attribute("previousSearch" + paramIdx);
                     searchStr = req.queryMap("queries").value("search").toLowerCase();
                     if (searchStr == null || searchStr.trim().isEmpty()) {
                         queriedData = data;
-                    } else if (previousSearch != null && previousSearch.toLowerCase().equals(searchStr.toLowerCase())) {
-                        queriedData = req.session().attribute("queriedData" + paramIdx);
-
                     } else {
                         queriedData = new ArrayList<>(data.stream().filter(m -> m.values().stream().anyMatch(val -> val.toLowerCase().contains(searchStr))).collect(Collectors.toList()));
-                        req.session().attribute("previousSearch" + paramIdx, searchStr);
-                        req.session().attribute("queriedData" + paramIdx, queriedData);
                     }
                 } else {
                     searchStr = "";
