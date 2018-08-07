@@ -3099,7 +3099,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                         )
                                 )
                         ),
-                        div().withClass("col-12").attr("style", "position: fixed; width: 75%; height: 100%; top: 0px; margin-top: 140px; padding-bottom: 5px;").with(
+                        div().withClass("col-12").attr("style", "position: fixed; overflow-y: auto; width: 75%; bottom: 0px; top: 0px; margin-top: 138px; padding-top: 10px; padding-bottom: 5px;").with(
                                 div().withClass("row tab-content").with(
                                         div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
                                                 div().withClass("row").with(
@@ -3143,7 +3143,9 @@ public class BigQueryServer extends SimilarPatentServer {
                                                 div().withClass("collapsible-form row").withId("highlightForm").with(
                                                         br(),buttons,br(),
                                                         loaderTag(),
-                                                        h5("Settings"),
+                                                        div().withClass("col12").with(
+                                                                h5("Settings")
+                                                        ),
                                                         div().withClass("col-12 attributeElement").with(
                                                                 label("Highlighting").attr("style","width: 100%;").with(
                                                                         input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
