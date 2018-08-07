@@ -2920,6 +2920,7 @@ public class BigQueryServer extends SimilarPatentServer {
         return html().with(
                 head().with(
                         title("PSP - GTT Group"),
+                        link().withRel("icon").withType("image/png").withHref("/images/brand.png"),
                         script().withSrc("/js/jquery-3.3.1.min.js"),
                         script().withSrc("/js/jquery-ui-1.12.1.min.js"),
                         script().withText(
