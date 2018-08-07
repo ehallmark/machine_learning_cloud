@@ -2892,24 +2892,6 @@ public class BigQueryServer extends SimilarPatentServer {
         final boolean canUpdateUserGroup = role == null ? false : (role.equals(SUPER_USER)||role.equals(INTERNAL_USER));
 
         List<Tag> menuItems = new ArrayList<>();
-        if(authorized && showDynamicUserGroups) {
-            menuItems.add(span().attr("style","margin-bottom: 0; padding-bottom: 0;").with(
-                    form().withAction(GLOBAL_PREFIX+"/change_dynamic_user_group").attr("style","margin-bottom: 0; padding-bottom: 0;").withMethod("POST").with(
-                            label("Change User Group").with(
-                                    select().withClass("single-select2 form-control").attr("onchange","this.form.submit()").withName("userGroup").with(
-                                            option(dynamicUserGroup==null?userGroup:dynamicUserGroup).attr("selected","selected").withValue(dynamicUserGroup==null?userGroup:dynamicUserGroup)
-                                    ).with(
-                                            handler.getUserGroups().stream().filter(group->{
-                                                return dynamicUserGroup==null?!userGroup.equals(group):!dynamicUserGroup.equals(group);
-                                            }).map(group->{
-                                                return option(group).withValue(group);
-                                            }).collect(Collectors.toList())
-                                    )
-
-                            )
-                    )
-            ));
-        }
         if(authorized) {
             menuItems.add(a("Sign Out").withClass("btn btn-outline-secondary").withHref(GLOBAL_PREFIX+"/logout"));
             if(canPotentiallyCreateUser(role)) {
@@ -2925,11 +2907,11 @@ public class BigQueryServer extends SimilarPatentServer {
             menuItems.add(a("Update Default Template").withClass("btn btn-outline-secondary").attr("title", "The current form will become the new default template.").withId("update-default-attributes-form").withHref("#"));
             menuItems.add(a("Reset Default Template").withClass("btn btn-outline-secondary").attr("title", "Resets the default template.").withHref(RESET_DEFAULT_TEMPLATE_URL));
             if(canUpdateUserGroup) {
-                menuItems.add(div().withClass("col-12").with(label("For User Group?").attr("title", "Warning: Selecting this option will affect the default template for all users in this user group.").with(
+                menuItems.add(label("For User Group?").withClass("btn btn-outline-secondary").attr("title", "Warning: Selecting this option will affect the default template for all users in this user group.").with(
                         input().withType("checkbox").withValue("on").withId("extract_to_usergroup")
-                )));
+                ));
             }
-            
+
         } else {
             menuItems.add(a("Log In").withClass("btn btn-outline-secondary").withHref(GLOBAL_PREFIX+"/"));
             menuItems.add(a("Contact Us").withClass("btn btn-outline-secondary").withTarget("_blank").withHref("http://www.gttgrp.com"));
@@ -3012,6 +2994,22 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         ),
                                                         div().withClass("col-12").withId("main-menu").attr("style","display: none;").with(
                                                                 div().withClass("row").with(
+                                                                        (authorized && showDynamicUserGroups ? div().withClass("col-12").with(
+                                                                                form().withAction(GLOBAL_PREFIX+"/change_dynamic_user_group").attr("style","margin-bottom: 10; padding-bottom: 0;").withMethod("POST").with(
+                                                                                        label("Change User Group").with(
+                                                                                                select().withClass("single-select2 form-control").attr("onchange","this.form.submit()").withName("userGroup").with(
+                                                                                                        option(dynamicUserGroup==null?userGroup:dynamicUserGroup).attr("selected","selected").withValue(dynamicUserGroup==null?userGroup:dynamicUserGroup)
+                                                                                                ).with(
+                                                                                                        handler.getUserGroups().stream().filter(group->{
+                                                                                                            return dynamicUserGroup==null?!userGroup.equals(group):!dynamicUserGroup.equals(group);
+                                                                                                        }).map(group->{
+                                                                                                            return option(group).withValue(group);
+                                                                                                        }).collect(Collectors.toList())
+                                                                                                )
+
+                                                                                        )
+                                                                                )
+                                                                        ) : span()),
                                                                         div().withClass("col-12 btn-group-vertical").with(
                                                                                 menuItems
                                                                         )
