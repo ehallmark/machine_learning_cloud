@@ -2965,9 +2965,8 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         div().withClass("col-12").with(
                                                                 createMenuIcon()
                                                         ),
-                                                        div().withClass("col-12").withId("main-menu").attr("style","display: none;").with(
+                                                        div().withClass("col-12").withId("main-menu").withClass("btn-group-vertical").attr("style","display: none;").with(
                                                                 div().withClass("row").with(
-                                                                        div().withClass("col-12").with(authorized ? a("Sign Out").withHref(GLOBAL_PREFIX+"/logout") : a("Log In").withHref(GLOBAL_PREFIX+"/")),
                                                                         div().withClass("col-12").with(authorized && showDynamicUserGroups ? span().attr("style","margin-bottom: 0; padding-bottom: 0;").with(
                                                                                 form().withAction(GLOBAL_PREFIX+"/change_dynamic_user_group").attr("style","margin-bottom: 0; padding-bottom: 0;").withMethod("POST").with(
                                                                                         label("Change User Group").with(
@@ -2984,11 +2983,12 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                                         )
                                                                                 )
                                                                         ) : span()),
-                                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withHref(CREATE_USER_URL) : a("Contact Us").withTarget("_blank").withHref("http://www.gttgrp.com")),
-                                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withHref(EDIT_USER_GROUP_URL) : span()),
-                                                                        div().withClass("col-12").with(authorized ? a("Change Password").withHref(EDIT_USER_URL) : span()),
-                                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withHref(DELETE_USER_URL) : span()),
-                                                                        div().withClass("col-12").with(authorized ? a("Update Default Template").attr("title", "The current form will become the new default template.").withId("update-default-attributes-form").withHref("#")
+                                                                        div().withClass("col-12").with(authorized ? a("Sign Out").withClass("btn btn-outline-secondary").withHref(GLOBAL_PREFIX+"/logout") : a("Log In").withClass("btn btn-outline-secondary").withHref(GLOBAL_PREFIX+"/")),
+                                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withClass("btn btn-outline-secondary").withHref(CREATE_USER_URL) : a("Contact Us").withClass("btn btn-outline-secondary").withTarget("_blank").withHref("http://www.gttgrp.com")),
+                                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withClass("btn btn-outline-secondary").withHref(EDIT_USER_GROUP_URL) : span()),
+                                                                        div().withClass("col-12").with(authorized ? a("Change Password").withClass("btn btn-outline-secondary").withHref(EDIT_USER_URL) : span()),
+                                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withClass("btn btn-outline-secondary").withHref(DELETE_USER_URL) : span()),
+                                                                        div().withClass("col-12").with(authorized ? a("Update Default Template").withClass("btn btn-outline-secondary").attr("title", "The current form will become the new default template.").withId("update-default-attributes-form").withHref("#")
                                                                                 .with(
                                                                                         br(),a("Reset Default Template").attr("title", "Resets the default template.").withHref(RESET_DEFAULT_TEMPLATE_URL)
                                                                                 ).with(
@@ -2998,7 +2998,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                                                 )
                                                                                         ) : span()
                                                                                 ) : span()),
-                                                                        div().withClass("col-12").with(authorized ? a("Help").withTarget("_blank").withHref("/help") : span())
+                                                                        div().withClass("col-12").with(authorized ? a("Help").withClass("btn btn-outline-secondary").withTarget("_blank").withHref("/help") : span())
                                                                 )
                                                         )
 
