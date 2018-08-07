@@ -319,7 +319,6 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 $table.wrap('<div style="overflow-y: auto; width: 100%; height: 100%;"></div>');
                 $table.parent().prepend($table.parent().prev());
                 $table.parent().prepend($table.parent().prev());
-                $table.parent().children().eq(1).toggleClass('row col-12').css('margin-bottom', 15);
 
                 var boxFunc = function(e) {
                      e.stopPropagation();

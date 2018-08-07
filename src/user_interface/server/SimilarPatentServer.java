@@ -1796,16 +1796,18 @@ public class SimilarPatentServer {
                 form().withMethod("post").attr("style", "text-align: center;").withTarget("_blank").withAction(preview?PREVIEW_DOWNLOAD_URL:DOWNLOAD_URL).with(
                         button("Download to CSV").withType("submit").withClass("btn btn-outline-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
                 ),
-                div().withClass("row").with(
-                        div().withClass("col-6").with(
-                                span().withText("Number of assets selected: ").attr("style", preview?"": "float: left;").with(
-                                    span().withClass("table-selection-counter")
-                                )
-                        ), div().withClass("col-6").with(
-                                span().attr("style", "float: right;").with(
-                                        div().withId(preview?"preview-data-table-pagination-clone-holder":"data-table-pagination-clone-holder")
-                                )
-                        ),hr()
+                div().withClass("col-12").with(
+                        div().withClass("row").with(
+                            div().withClass("col-6").with(
+                                    span().withText("Number of assets selected: ").attr("style", "float: left;").with(
+                                        span().withClass("table-selection-counter")
+                                    )
+                            ), div().withClass("col-6").with(
+                                    span().attr("style", "float: right;").with(
+                                            div().withId(preview?"preview-data-table-pagination-clone-holder":"data-table-pagination-clone-holder")
+                                    )
+                            )
+                        )
                 ),
                 dataTableFromHeadersAndData(attributes, preview)
         );
