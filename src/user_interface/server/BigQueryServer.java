@@ -3203,7 +3203,7 @@ public class BigQueryServer extends SimilarPatentServer {
 
         );
 
-        
+
     }
 
     private static Tag toggleButton(String id, String text) {

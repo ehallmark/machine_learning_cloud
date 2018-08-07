@@ -1474,6 +1474,7 @@ $(document).ready(function() {
                  }
             });
             $(formSelector+' select.nested-filter-select').filter(':first').trigger('change', [true]);
+            update_expert_query_display();
         };
         // pull any attrs necessary from server
         if(mainSelectID) {
