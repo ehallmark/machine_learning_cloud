@@ -3091,7 +3091,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                         li().withClass("nav-item").with(
                                                 a("Filters").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
                                         ), li().withClass("nav-item").with(
-                                                a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
+                                                a("Data").withClass("nav-link").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
                                                 a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
@@ -3099,11 +3099,11 @@ public class BigQueryServer extends SimilarPatentServer {
                                         )
                                 )
                         ),
-                        div().withClass("col-12").with(
+                        div().withClass("col-12").attr("style", "position: fixed; width: 75%; height: 100%; top: 0px; margin-top: 140px; padding-bottom: 5px;").with(
                                 div().withClass("row tab-content").with(
                                         div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
                                                 div().withClass("row").with(
-                                                        buttons,br(),
+                                                        br(),buttons,br(),
                                                         div().withClass("col-12").withId("searchOptionsForm").with(
                                                                 mainOptionsRow()
                                                         )
@@ -3117,7 +3117,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                         ),
                                         div().withClass("col-12 tab-pane fade").withId("data-tab").attr("role","tabpanel").with(
                                                 div().withClass("row").with(
-                                                        buttons,br(),
+                                                        br(),buttons,br(),
                                                         loaderTag(),
                                                         div().withClass("col-12").withId("attributesForm").with(
                                                                 customFormRow("attributes", allAttributes, userRoleFunction)
@@ -3129,7 +3129,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                         ),
                                         div().withClass("col-12 tab-pane fade").withId("chart-tab").attr("role","tabpanel").with(
                                                 div().withClass("row").with(
-                                                        buttons,br(),
+                                                        br(),buttons,br(),
                                                         loaderTag(),
                                                         div().withClass("col-12").withId("chartsForm").with(
                                                                 customFormRow("charts",allCharts, userRoleFunction)
@@ -3141,7 +3141,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                         ),
                                         div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
                                                 div().withClass("collapsible-form row").withId("highlightForm").with(
-                                                        buttons,br(),
+                                                        br(),buttons,br(),
                                                         loaderTag(),
                                                         h5("Settings"),
                                                         div().withClass("col-12 attributeElement").with(
