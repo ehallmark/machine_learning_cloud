@@ -394,6 +394,24 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                         });
                         var all_rows_checked = update_table_function('#main-preview-data-table', previewSelectionCache);
                         $('#preview-data-table-select-all').prop('checked', all_rows_checked).trigger('change');
+
+                        var $clone = $paginationTable.clone(false);
+                        $clone.attr('id', 'dynatable-pagination-links-main-preview-data-table-clone');
+                        var $holder = $('#preview-data-table-pagination-clone-holder');
+                        $holder.empty();
+                        $holder.append($clone);
+                        var $original_links = $paginationTable.find('a');
+                        var $cloned_links = $clone.find('a');
+                        $cloned_links.each(function(index, element) {
+                            var $cloned_link = $(element);
+                            $cloned_link.attr('index', index.toString());
+                            $cloned_link.click(function() {
+                                var i = parseInt($cloned_link.attr('index'), 10);
+                                var $link = $($original_links.get(i));
+                                $link.click();
+                            });
+                        });
+
                         return true;
                    }).dynatable({
                      dataset: {

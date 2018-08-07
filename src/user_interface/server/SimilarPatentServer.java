@@ -1802,8 +1802,8 @@ public class SimilarPatentServer {
                                     span().withClass("table-selection-counter")
                                 )
                         ), div().withClass("col-6").with(
-                                preview ? span() : span().attr("style", "float: right;").with(
-                                        div().withId("data-table-pagination-clone-holder")
+                                span().attr("style", "float: right;").with(
+                                        div().withId(preview?"preview-data-table-pagination-clone-holder":"data-table-pagination-clone-holder")
                                 )
                         ),hr()
                 ),
