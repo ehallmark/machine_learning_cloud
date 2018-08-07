@@ -623,10 +623,11 @@ $(document).ready(function() {
 
     var successReportFrom = function(data) {
        var $tabs = $('#results .content');
+       $tabs.empty();
        try {
            var $content = $(data.message).children();
            $tabs.each(function(i,e){
-               $(this).html($content.get(i));
+               $(this).html($content);
            });
        } catch(ex) {
            $tabs.each(function(i,e){
