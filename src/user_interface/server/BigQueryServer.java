@@ -2919,7 +2919,7 @@ public class BigQueryServer extends SimilarPatentServer {
 
         return html().with(
                 head().with(
-                        title("AI Search Platform"),
+                        title("Patent Search Platform"),
                         script().withSrc("/js/jquery-3.3.1.min.js"),
                         script().withSrc("/js/jquery-ui-1.12.1.min.js"),
                         script().withText(
@@ -3194,7 +3194,7 @@ public class BigQueryServer extends SimilarPatentServer {
                 ),div().withClass("col-9").attr("style","padding-top: 30px; background-color: #c4c4c4;").with(
                         div().withClass("row").with(
                                  div().withClass("col-12").with(
-                                        h3("AI Search Platform").withClass("collapsible-header")
+                                        h3("Patent Search Platform").withClass("collapsible-header")
                                                 .attr("data-target","#main-content-id")
                                                 .attr("style","margin-top: -10px;")
                                 )
@@ -3202,6 +3202,8 @@ public class BigQueryServer extends SimilarPatentServer {
                 )
 
         );
+
+        
     }
 
     private static Tag toggleButton(String id, String text) {
