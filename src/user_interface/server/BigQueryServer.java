@@ -1127,6 +1127,30 @@ public class BigQueryServer extends SimilarPatentServer {
             return response.body();
         });
 
+        get("/images/faveicon-16x16.png", (request, response) -> {
+            response.type("image/png");
+            String pathToImage = "public/images/faveicon-16x16.png";
+            File f = new File(pathToImage);
+            BufferedImage bi = ImageIO.read(f);
+            OutputStream out = response.raw().getOutputStream();
+            ImageIO.write(bi, "png", out);
+            out.close();
+            response.status(200);
+            return response.body();
+        });
+
+        get("/images/faveicon-32x32.png", (request, response) -> {
+            response.type("image/png");
+            String pathToImage = "public/images/faveicon-32x32.png";
+            File f = new File(pathToImage);
+            BufferedImage bi = ImageIO.read(f);
+            OutputStream out = response.raw().getOutputStream();
+            ImageIO.write(bi, "png", out);
+            out.close();
+            response.status(200);
+            return response.body();
+        });
+
         // setup select2 ajax remote data sources
         get(Constants.DATASET_NAME_AJAX_URL, (req,res)->{
             String username = req.session(false).attribute("username");
