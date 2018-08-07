@@ -2890,6 +2890,51 @@ public class BigQueryServer extends SimilarPatentServer {
         boolean showDynamicUserGroups = authorized&&((role.equals(INTERNAL_USER)||role.equals(SUPER_USER)));
         String dynamicUserGroup = showDynamicUserGroups ? req.session().attribute("dynamicUserGroup") : null;
         final boolean canUpdateUserGroup = role == null ? false : (role.equals(SUPER_USER)||role.equals(INTERNAL_USER));
+
+        List<Tag> menuItems = new ArrayList<>();
+        if(authorized && showDynamicUserGroups) {
+            menuItems.add(span().attr("style","margin-bottom: 0; padding-bottom: 0;").with(
+                    form().withAction(GLOBAL_PREFIX+"/change_dynamic_user_group").attr("style","margin-bottom: 0; padding-bottom: 0;").withMethod("POST").with(
+                            label("Change User Group").with(
+                                    select().withClass("single-select2 form-control").attr("onchange","this.form.submit()").withName("userGroup").with(
+                                            option(dynamicUserGroup==null?userGroup:dynamicUserGroup).attr("selected","selected").withValue(dynamicUserGroup==null?userGroup:dynamicUserGroup)
+                                    ).with(
+                                            handler.getUserGroups().stream().filter(group->{
+                                                return dynamicUserGroup==null?!userGroup.equals(group):!dynamicUserGroup.equals(group);
+                                            }).map(group->{
+                                                return option(group).withValue(group);
+                                            }).collect(Collectors.toList())
+                                    )
+
+                            )
+                    )
+            ));
+        }
+        if(authorized) {
+            menuItems.add(a("Sign Out").withClass("btn btn-outline-secondary").withHref(GLOBAL_PREFIX+"/logout"));
+            if(canPotentiallyCreateUser(role)) {
+                menuItems.add(a("Create User").withClass("btn btn-outline-secondary").withHref(CREATE_USER_URL));
+            }
+            if(role.equals(SUPER_USER)) {
+                menuItems.add(a("Change User Group").withClass("btn btn-outline-secondary").withHref(EDIT_USER_GROUP_URL));
+                menuItems.add(a("Remove Users").withClass("btn btn-outline-secondary").withHref(DELETE_USER_URL));
+            }
+            menuItems.add(a("Change Password").withClass("btn btn-outline-secondary").withHref(EDIT_USER_URL));
+
+            menuItems.add(a("Help").withClass("btn btn-outline-secondary").withTarget("_blank").withHref("/help"));
+            menuItems.add(a("Update Default Template").withClass("btn btn-outline-secondary").attr("title", "The current form will become the new default template.").withId("update-default-attributes-form").withHref("#"));
+            menuItems.add(a("Reset Default Template").withClass("btn btn-outline-secondary").attr("title", "Resets the default template.").withHref(RESET_DEFAULT_TEMPLATE_URL));
+            if(canUpdateUserGroup) {
+                menuItems.add(div().withClass("col-12").with(label("For User Group?").attr("title", "Warning: Selecting this option will affect the default template for all users in this user group.").with(
+                        input().withType("checkbox").withValue("on").withId("extract_to_usergroup")
+                )));
+            }
+            
+        } else {
+            menuItems.add(a("Log In").withClass("btn btn-outline-secondary").withHref(GLOBAL_PREFIX+"/"));
+            menuItems.add(a("Contact Us").withClass("btn btn-outline-secondary").withTarget("_blank").withHref("http://www.gttgrp.com"));
+        }
+
         return html().with(
                 head().with(
                         title("AI Search Platform"),
@@ -2965,40 +3010,11 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         div().withClass("col-12").with(
                                                                 createMenuIcon()
                                                         ),
-                                                        div().withClass("col-12").withId("main-menu").withClass("btn-group-vertical").attr("style","display: none;").with(
+                                                        div().withClass("col-12").withId("main-menu").attr("style","display: none;").with(
                                                                 div().withClass("row").with(
-                                                                        div().withClass("col-12").with(authorized && showDynamicUserGroups ? span().attr("style","margin-bottom: 0; padding-bottom: 0;").with(
-                                                                                form().withAction(GLOBAL_PREFIX+"/change_dynamic_user_group").attr("style","margin-bottom: 0; padding-bottom: 0;").withMethod("POST").with(
-                                                                                        label("Change User Group").with(
-                                                                                                select().withClass("single-select2 form-control").attr("onchange","this.form.submit()").withName("userGroup").with(
-                                                                                                        option(dynamicUserGroup==null?userGroup:dynamicUserGroup).attr("selected","selected").withValue(dynamicUserGroup==null?userGroup:dynamicUserGroup)
-                                                                                                ).with(
-                                                                                                        handler.getUserGroups().stream().filter(group->{
-                                                                                                            return dynamicUserGroup==null?!userGroup.equals(group):!dynamicUserGroup.equals(group);
-                                                                                                        }).map(group->{
-                                                                                                            return option(group).withValue(group);
-                                                                                                        }).collect(Collectors.toList())
-                                                                                                )
-
-                                                                                        )
-                                                                                )
-                                                                        ) : span()),
-                                                                        div().withClass("col-12").with(authorized ? a("Sign Out").withClass("btn btn-outline-secondary").withHref(GLOBAL_PREFIX+"/logout") : a("Log In").withClass("btn btn-outline-secondary").withHref(GLOBAL_PREFIX+"/")),
-                                                                        div().withClass("col-12").with(authorized && canPotentiallyCreateUser(role) ? a("Create User").withClass("btn btn-outline-secondary").withHref(CREATE_USER_URL) : a("Contact Us").withClass("btn btn-outline-secondary").withTarget("_blank").withHref("http://www.gttgrp.com")),
-                                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Change User Group").withClass("btn btn-outline-secondary").withHref(EDIT_USER_GROUP_URL) : span()),
-                                                                        div().withClass("col-12").with(authorized ? a("Change Password").withClass("btn btn-outline-secondary").withHref(EDIT_USER_URL) : span()),
-                                                                        div().withClass("col-12").with(authorized && (role.equals(SUPER_USER)) ? a("Remove Users").withClass("btn btn-outline-secondary").withHref(DELETE_USER_URL) : span()),
-                                                                        div().withClass("col-12").with(authorized ? a("Update Default Template").withClass("btn btn-outline-secondary").attr("title", "The current form will become the new default template.").withId("update-default-attributes-form").withHref("#")
-                                                                                .with(
-                                                                                        br(),a("Reset Default Template").attr("title", "Resets the default template.").withHref(RESET_DEFAULT_TEMPLATE_URL)
-                                                                                ).with(
-                                                                                        canUpdateUserGroup ? span().with(br(),
-                                                                                                label("For User Group?").attr("title", "Warning: Selecting this option will affect the default template for all users in this user group.").with(
-                                                                                                        input().withType("checkbox").withValue("on").withId("extract_to_usergroup")
-                                                                                                )
-                                                                                        ) : span()
-                                                                                ) : span()),
-                                                                        div().withClass("col-12").with(authorized ? a("Help").withClass("btn btn-outline-secondary").withTarget("_blank").withHref("/help") : span())
+                                                                        div().withClass("col-12 btn-group-vertical").with(
+                                                                                menuItems
+                                                                        )
                                                                 )
                                                         )
 
