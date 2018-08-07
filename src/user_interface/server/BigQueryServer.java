@@ -2919,7 +2919,7 @@ public class BigQueryServer extends SimilarPatentServer {
 
         return html().with(
                 head().with(
-                        title("Patent Search Platform"),
+                        title("PSP - GTT Group"),
                         script().withSrc("/js/jquery-3.3.1.min.js"),
                         script().withSrc("/js/jquery-ui-1.12.1.min.js"),
                         script().withText(
