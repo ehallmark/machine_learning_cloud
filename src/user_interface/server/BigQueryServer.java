@@ -3083,46 +3083,6 @@ public class BigQueryServer extends SimilarPatentServer {
         );
     }
 
-    private static Tag innerAttributesAndCharts(Function<String,Boolean> userRoleFunction, Tag buttons) {
-        return div().withClass("row").with(
-                div().withClass("col-12").with(
-                        ul().withClass("nav nav-tabs").attr("role","tablist").with(
-                                li().withClass("nav-item").with(
-                                        a("Attributes").withClass("nav-link active show").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
-                                ),li().withClass("nav-item").with(
-                                        a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
-                                )
-                        )
-                ),
-                div().withClass("col-12").with(
-                        div().withClass("row tab-content").with(
-                                div().withClass("col-12 tab-pane fade active show").withId("data-tab").attr("role","tabpanel").with(
-                                        div().withClass("row").with(
-                                                loaderTag(),
-                                                div().withClass("col-12").withId("attributesForm").with(
-                                                        customFormRow("attributes", allAttributes, userRoleFunction)
-                                                ),buttons, br(),
-                                                div().withClass("col-12 content").with(
-
-                                                )
-                                        )
-                                ),
-                                div().withClass("col-12 tab-pane fade").withId("chart-tab").attr("role","tabpanel").with(
-                                        div().withClass("row").with(
-                                                loaderTag(),
-                                                div().withClass("col-12").withId("chartsForm").with(
-                                                        customFormRow("charts",allCharts, userRoleFunction)
-                                                ),buttons, br(),
-                                                div().withClass("col-12 content").with(
-
-                                                )
-                                        )
-                                )
-                        )
-                )
-        );
-    }
-
     private static Tag innerFiltersAndSettings(Function<String,Boolean> userRoleFunction, Tag buttons) {
         return div().withClass("col-12").with(
                 div().withClass("row").with(
@@ -3130,6 +3090,10 @@ public class BigQueryServer extends SimilarPatentServer {
                                 ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
                                         li().withClass("nav-item").with(
                                                 a("Filters").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
+                                        ), li().withClass("nav-item").with(
+                                                a("Data").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
+                                        ), li().withClass("nav-item").with(
+                                                a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
                                                 a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
                                         )
@@ -3139,6 +3103,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                 div().withClass("row tab-content").with(
                                         div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
                                                 div().withClass("row").with(
+                                                        buttons,br(),
                                                         div().withClass("col-12").withId("searchOptionsForm").with(
                                                                 mainOptionsRow()
                                                         )
@@ -3147,11 +3112,36 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         loaderTag(),
                                                         div().withClass("col-12").withId("filtersForm").with(
                                                                 customFormRow("filters", allFilters, userRoleFunction)
+                                                        ),buttons, br()
+                                                )
+                                        ),
+                                        div().withClass("col-12 tab-pane fade").withId("data-tab").attr("role","tabpanel").with(
+                                                div().withClass("row").with(
+                                                        buttons,br(),
+                                                        loaderTag(),
+                                                        div().withClass("col-12").withId("attributesForm").with(
+                                                                customFormRow("attributes", allAttributes, userRoleFunction)
+                                                        ),buttons, br(),
+                                                        div().withClass("col-12 content").with(
+
+                                                        )
+                                                )
+                                        ),
+                                        div().withClass("col-12 tab-pane fade").withId("chart-tab").attr("role","tabpanel").with(
+                                                div().withClass("row").with(
+                                                        buttons,br(),
+                                                        loaderTag(),
+                                                        div().withClass("col-12").withId("chartsForm").with(
+                                                                customFormRow("charts",allCharts, userRoleFunction)
+                                                        ),buttons, br(),
+                                                        div().withClass("col-12 content").with(
+
                                                         )
                                                 )
                                         ),
                                         div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
                                                 div().withClass("collapsible-form row").withId("highlightForm").with(
+                                                        buttons,br(),
                                                         loaderTag(),
                                                         h5("Settings"),
                                                         div().withClass("col-12 attributeElement").with(
@@ -3166,12 +3156,11 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                 label("List Item Separator").attr("style","width: 100%;").with(
                                                                         input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder("; ").withName(LIST_ITEM_SEPARATOR_FIELD)
                                                                 )
-                                                        )
+                                                        ),buttons,br()
                                                 )
                                         )
                                 )
-                        ),
-                        buttons
+                        )
                 )
         );
     }
@@ -3191,14 +3180,11 @@ public class BigQueryServer extends SimilarPatentServer {
                         div().withText("Download to CSV").withClass("btn btn-outline-secondary div-button download-to-excel-button")
                 )
         );
-        return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
+        return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px; position: fixed; width: 75%; top: 0px; padding-top: 75px; height: 100%;").with(
                 span().withId("main-content-id").withClass("collapse").with(
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
-                                innerFiltersAndSettings(userRoleFunction,buttons),
-                                div().withClass("col-12").attr("style","margin-top: 20px;").withId("results").with(
-                                        innerAttributesAndCharts(userRoleFunction,buttons)
-                                )
+                                innerFiltersAndSettings(userRoleFunction,buttons)
                         )
                 )
         );
