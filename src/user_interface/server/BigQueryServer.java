@@ -3085,7 +3085,7 @@ public class BigQueryServer extends SimilarPatentServer {
 
     private static Tag innerFiltersAndSettings(Function<String,Boolean> userRoleFunction, Tag buttons) {
         return div().withClass("col-12").with(
-                div().withClass("row").with(
+                div().withClass("row").withId("all_tabs_row").with(
                         div().withClass("col-12 form-top").with(
                                 ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
                                         li().withClass("nav-item").with(
@@ -3096,11 +3096,16 @@ public class BigQueryServer extends SimilarPatentServer {
                                                 a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
                                                 a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
+                                        ), li().withClass("nav-item").with(
+                                                a("Results").withClass("nav-link").attr("data-toggle","tab").withHref("#results").attr("role","tab")
                                         )
                                 )
                         ),
                         div().withClass("col-12").attr("style", "position: fixed; overflow-y: auto; width: 75%; bottom: 0px; top: 0px; margin-top: 123px; padding-top: 10px; padding-bottom: 5px;").with(
                                 div().withClass("row tab-content").with(
+                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("results").with(
+
+                                        ),
                                         div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
                                                 div().withClass("row").with(
                                                         br(),buttons,br(),
@@ -3143,7 +3148,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                                 div().withClass("collapsible-form row").withId("highlightForm").with(
                                                         br(),buttons,br(),
                                                         loaderTag(),
-                                                        div().withClass("col12").with(
+                                                        div().withClass("col-12").with(
                                                                 h5("Settings")
                                                         ),
                                                         div().withClass("col-12 attributeElement").with(

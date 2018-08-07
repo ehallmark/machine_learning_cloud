@@ -596,7 +596,7 @@ $(document).ready(function() {
                  } else if(jqxhr.status==302) {
                     alert("Must sign in again. Try refreshing page. Error code: "+jqxhr.status.toString());
                  }
-                 $('#chart-tab,#data-tab').find('.tab-pane .content').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
+                 $('#results .content').html('<div style="color: red;">Server error during ajax request:'+error+'</div>');
              }
            },
            success: function(jqXHR,status,error) {
@@ -622,7 +622,7 @@ $(document).ready(function() {
     };
 
     var successReportFrom = function(data) {
-       var $tabs = $('#data-tab,#chart-tab').find('.tab-pane .content');
+       var $tabs = $('#results .content');
        try {
            var $content = $(data.message).children();
            $tabs.each(function(i,e){
@@ -684,7 +684,7 @@ $(document).ready(function() {
            //alert("Please include some attributes in the Attributes section.");
        //}
 
-       setCollapsibleHeaders($('#chart-tab,#data-tab').find('.tab-pane .content .collapsible-header'));
+       setCollapsibleHeaders($('#results .collapsible-header'));
 
        if(data.hasOwnProperty('tableCnt')) {
             var tableCnt = data.tableCnt;
@@ -1221,7 +1221,7 @@ $(document).ready(function() {
              }
            }
          } catch (err) {
-           $('#chart-tab .tab-pane .content').html("<div style='color:red;'>JavaScript error occured while rendering charts: " + err.message + '</div>');
+           $('#results .content').html("<div style='color:red;'>JavaScript error occured while rendering charts: " + err.message + '</div>');
          }
        }
     };
@@ -1244,7 +1244,7 @@ $(document).ready(function() {
         var buttonText = "Generate Report";
         var buttonTextWhileSearching = "Generating... (Click to Cancel)";
         var formId = $(this).attr('id');
-        $('#chart-tab,#data-tab').find('.tab-pane .content').html(''); // clears results div
+        $('#results .content').html(''); // clears results div
         var $this = $(this);
         var canceledFunction = function() {
             return $this.prop('canceled');
@@ -1673,7 +1673,7 @@ var notify_error = function(text) {
 var resetSearchForm = function() {
     $('.attributeElement').not('.draggable').each(function() { $(this).find('select.nested-filter-select').filter(':first').val(null).trigger('change',[true]); });
     $('div.attribute').addClass("disabled");
-    $('#chart-tab,#data-tab').find('.tab-pane .content').html('');
+    $('#results .content').html('');
 };
 
 var findByValue = function(inputs, value) {
