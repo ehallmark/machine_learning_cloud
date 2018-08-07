@@ -3090,13 +3090,9 @@ public class BigQueryServer extends SimilarPatentServer {
                         div().withClass("col-12 form-top").with(
                                 ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
                                         li().withClass("nav-item").with(
-                                                a("Filters").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
+                                                a("Search Options").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
-                                                a("Data").withClass("nav-link").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
-                                        ), li().withClass("nav-item").with(
-                                                a("Charts").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
-                                        ), li().withClass("nav-item").with(
-                                                a("Settings").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
+                                                a("Visualizations").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
                                                 a("Results").withClass("nav-link").attr("data-toggle","tab").withHref("#results").attr("role","tab")
                                         )
@@ -3104,14 +3100,7 @@ public class BigQueryServer extends SimilarPatentServer {
                         ),
                         div().withClass("col-12").attr("style", "position: fixed; overflow-y: auto; width: 75%; bottom: 0px; top: 0px; margin-top: 172px; padding-bottom: 5px;").with(
                                 div().withClass("row tab-content").with(
-                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("results").with(
-                                                div().withClass("row").with(
-                                                        div().withClass("col-12 content").with(
-
-                                                        )
-                                                )
-                                        ),
-                                        div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
+                                        div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("data-tab").with(
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").withId("searchOptionsForm").with(
                                                                 mainOptionsRow()
@@ -3121,44 +3110,50 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         loaderTag(),
                                                         div().withClass("col-12").withId("filtersForm").with(
                                                                 customFormRow("filters", allFilters, userRoleFunction)
-                                                        ),buttons, br()
-                                                )
-                                        ),
-                                        div().withClass("col-12 tab-pane fade").withId("data-tab").attr("role","tabpanel").with(
-                                                div().withClass("row").with(
+                                                        )
+
+                                                ), div().withClass("row").with(
                                                         loaderTag(),
                                                         div().withClass("col-12").withId("attributesForm").with(
                                                                 customFormRow("attributes", allAttributes, userRoleFunction)
+                                                        )
+                                                ),
+                                                div().withClass("row").with(
+                                                        loaderTag(),
+                                                        div().withClass("col-12").withId("highlightForm").with(
+                                                                div().withClass("collapsible-form row").with(
+                                                                        loaderTag(),
+                                                                        div().withClass("col-12").with(
+                                                                                h5("Settings")
+                                                                        ),
+                                                                        div().withClass("col-12 attributeElement").with(
+                                                                                label("Highlighting").attr("style","width: 100%;").with(
+                                                                                        input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
+                                                                                )
+                                                                        ), div().withClass("col-12 attributeElement").with(
+                                                                                label("Filter Nested Attributes").attr("style","width: 100%;").with(
+                                                                                        input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
+                                                                                )
+                                                                        ), div().withClass("col-12 attributeElement").with(
+                                                                                label("List Item Separator").attr("style","width: 100%;").with(
+                                                                                        input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder("; ").withName(LIST_ITEM_SEPARATOR_FIELD)
+                                                                                )
+                                                                        ),buttons,br()
+                                                                )
                                                         ),buttons, br()
                                                 )
-                                        ),
-                                        div().withClass("col-12 tab-pane fade").withId("chart-tab").attr("role","tabpanel").with(
+                                        ), div().withClass("col-12 tab-pane fade").withId("chart-tab").attr("role","tabpanel").with(
                                                 div().withClass("row").with(
                                                         loaderTag(),
                                                         div().withClass("col-12").withId("chartsForm").with(
                                                                 customFormRow("charts",allCharts, userRoleFunction)
                                                         ),buttons, br()
                                                 )
-                                        ),
-                                        div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
-                                                div().withClass("collapsible-form row").withId("highlightForm").with(
-                                                        loaderTag(),
-                                                        div().withClass("col-12").with(
-                                                                h5("Settings")
-                                                        ),
-                                                        div().withClass("col-12 attributeElement").with(
-                                                                label("Highlighting").attr("style","width: 100%;").with(
-                                                                        input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
-                                                                )
-                                                        ), div().withClass("col-12 attributeElement").with(
-                                                                label("Filter Nested Attributes").attr("style","width: 100%;").with(
-                                                                        input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
-                                                                )
-                                                        ), div().withClass("col-12 attributeElement").with(
-                                                                label("List Item Separator").attr("style","width: 100%;").with(
-                                                                        input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder("; ").withName(LIST_ITEM_SEPARATOR_FIELD)
-                                                                )
-                                                        ),buttons,br()
+                                        ), div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("results").with(
+                                                div().withClass("row").with(
+                                                        div().withClass("col-12 content").with(
+
+                                                        )
                                                 )
                                         )
                                 )
