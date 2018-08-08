@@ -3090,9 +3090,9 @@ public class BigQueryServer extends SimilarPatentServer {
                         div().withClass("col-12 form-top").with(
                                 ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
                                         li().withClass("nav-item").with(
-                                                a("Search Options").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
+                                                a("Search Options").withId("data-tab-link").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
-                                                a("Visualizations").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
+                                                a("Visualizations").withId("charts-tab-link").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
                                                 a("Results").withId("results-link").withClass("nav-link").attr("data-toggle","tab").withHref("#results").attr("role","tab")
                                         )

@@ -288,6 +288,7 @@ var setupNavigationTabs = function() {
         e.stopPropagation()
         $(this).closest('ul').find('li').removeClass('active');
         $(this).tab('show');
+        update_expert_query_display();
     });
 };
 
@@ -1550,6 +1551,7 @@ $(document).ready(function() {
         if(node!==null){ resetSearchForm(); }
         var $loaders = $('.loader');
         $loaders.show();
+        $('#data-tab-link').click();
         if(data===null) {
             alert("Error finding template.");
             $loaders.hide();
@@ -1719,6 +1721,7 @@ var setCollapsibleHeaders = function($selector) {
 
 var showDatasetFunction = function(data,tree,node){
     // need to get data
+    $('#data-tab-link').click();
     var nodeData = node;
     var parents = [];
     while(typeof nodeData.text !== 'undefined') {
@@ -1745,6 +1748,7 @@ var showDatasetFunction = function(data,tree,node){
 
 var showMultipleDatasetFunction = function(data,tree,node){
     // need to get data
+    $('#data-tab-link').click();
     var nodeData = node;
     var parents = [];
     while(typeof nodeData.text !== 'undefined') {
@@ -1784,6 +1788,7 @@ var showMultipleDatasetFunction = function(data,tree,node){
 };
 
 var addMultipleDatasetFunction = function(data,tree,node){
+    $('#data-tab-link').click();
     var $datasetInput = $('#multiselect-multiselect-datasetNameInclude_filter');
 
     // need to get data
@@ -2676,6 +2681,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
 
     $(tree_id).bind("dblclick.jstree", function(event) {
         if( $('input:focus').length == 0 ) {
+            $('#data-tab-link').click();
             var tree = $(this).jstree(true);
             var node = tree.get_node(event.target);
             if(node.type==='file') {
