@@ -398,7 +398,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                             setTimeout(function() {
                                 $('#main-preview-data-table').parent().animate({
                                     scrollTop: 0
-                                }, 200);
+                                }, 300);
                             }, 100);
                         });
                         $paginationTable.find('li a[data-dynatable-page]').click(function(e) {
@@ -654,9 +654,9 @@ $(document).ready(function() {
                 var $paginationTable = $('#dynatable-pagination-links-main-data-table');
                 $paginationTable.click(function() {
                     setTimeout(function() {
-                        $('html,body').animate({
-                            scrollTop: $('#main-data-table').offset().top-170
-                        }, 200);
+                        $('#main-container').animate({
+                            scrollTop: 100
+                        }, 300);
                     }, 100);
                 });
                 var all_rows_checked = update_table_function('#main-data-table', selectionCache);
