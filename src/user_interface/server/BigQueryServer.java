@@ -3102,52 +3102,58 @@ public class BigQueryServer extends SimilarPatentServer {
                                 div().withClass("row tab-content").with(
                                         div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("data-tab").with(
                                                 div().withClass("row").with(
-                                                        div().withClass("col-12").withId("searchOptionsForm").with(
-                                                                mainOptionsRow()
-                                                        )
-                                                ),
-                                                div().withClass("row").with(
-                                                        loaderTag(),
-                                                        div().withClass("col-12").withId("filtersForm").with(
-                                                                customFormRow("filters", allFilters, userRoleFunction)
-                                                        )
-
-                                                ), div().withClass("row").with(
-                                                        loaderTag(),
-                                                        div().withClass("col-12").withId("attributesForm").with(
-                                                                customFormRow("attributes", allAttributes, userRoleFunction)
-                                                        )
-                                                ),
-                                                div().withClass("row").with(
-                                                        loaderTag(),
-                                                        div().withClass("col-12").withId("highlightForm").with(
-                                                                div().withClass("collapsible-form row").with(
+                                                        div().withClass("col-12 form-top").with(
+                                                                ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
+                                                                        li().withClass("nav-item").with(
+                                                                                a("Filters").withId("filters-link").withClass("nav-link active").attr("data-toggle","tab").withHref("#filtersForm").attr("role","tab")
+                                                                        ), li().withClass("nav-item").with(
+                                                                                a("Sort and Limit").withId("sort-and-limit-link").withClass("nav-link").attr("data-toggle","tab").withHref("#searchOptionsForm").attr("role","tab")
+                                                                        ), li().withClass("nav-item").with(
+                                                                                a("Attributes").withId("attributes-link").withClass("nav-link").attr("data-toggle","tab").withHref("#attributesForm").attr("role","tab")
+                                                                        ), li().withClass("nav-item").with(
+                                                                                a("Settings").withId("settings-link").withClass("nav-link").attr("data-toggle", "tab").withHref("#highlightForm").attr("role", "tab")
+                                                                        )
+                                                                )
+                                                        ), div().withClass("col-12").with(
+                                                                div().withClass("row tab-content").with(
                                                                         loaderTag(),
-                                                                        div().withClass("col-12").with(
-                                                                                h5("Settings")
+                                                                        div().withClass("col-12 tab-pane fade").withId("searchOptionsForm").attr("role","tabpanel").with(
+                                                                                mainOptionsRow()
+                                                                        ), div().withClass("col-12 tab-pane fade show active").withId("filtersForm").attr("role","tabpanel").with(
+                                                                                customFormRow("filters", allFilters, userRoleFunction)
+                                                                        ), div().withClass("col-12 tab-pane fade").withId("attributesForm").attr("role","tabpanel").with(
+                                                                                customFormRow("attributes", allAttributes, userRoleFunction)
                                                                         ),
-                                                                        div().withClass("col-12 attributeElement").with(
-                                                                                label("Highlighting").attr("style","width: 100%;").with(
-                                                                                        input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
-                                                                                )
-                                                                        ), div().withClass("col-12 attributeElement").with(
-                                                                                label("Filter Nested Attributes").attr("style","width: 100%;").with(
-                                                                                        input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
-                                                                                )
-                                                                        ), div().withClass("col-12 attributeElement").with(
-                                                                                label("List Item Separator").attr("style","width: 100%;").with(
-                                                                                        input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder("; ").withName(LIST_ITEM_SEPARATOR_FIELD)
+                                                                        div().withClass("col-12 tab-pane fade").withId("highlightForm").attr("role","tabpanel").with(
+                                                                                div().withClass("collapsible-form row").with(
+                                                                                        loaderTag(),
+                                                                                        div().withClass("col-12").with(
+                                                                                                h5("Settings")
+                                                                                        ),
+                                                                                        div().withClass("col-12 attributeElement").with(
+                                                                                                label("Highlighting").attr("style","width: 100%;").with(
+                                                                                                        input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
+                                                                                                )
+                                                                                        ), div().withClass("col-12 attributeElement").with(
+                                                                                                label("Filter Nested Attributes").attr("style","width: 100%;").with(
+                                                                                                        input().withId("main-options-"+FILTER_NESTED_OBJECTS_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(FILTER_NESTED_OBJECTS_FIELD)
+                                                                                                )
+                                                                                        ), div().withClass("col-12 attributeElement").with(
+                                                                                                label("List Item Separator").attr("style","width: 100%;").with(
+                                                                                                        input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder("; ").withName(LIST_ITEM_SEPARATOR_FIELD)
+                                                                                                )
+                                                                                        )
                                                                                 )
                                                                         )
                                                                 )
-                                                        ),buttons, br()
+                                                        ),buttons, br(), br(), br(), br()
                                                 )
                                         ), div().withClass("col-12 tab-pane fade").withId("chart-tab").attr("role","tabpanel").with(
                                                 div().withClass("row").with(
                                                         loaderTag(),
                                                         div().withClass("col-12").withId("chartsForm").with(
                                                                 customFormRow("charts",allCharts, userRoleFunction)
-                                                        ),buttons, br()
+                                                        ),buttons, br(), br(), br(), br()
                                                 )
                                         ), div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("results").with(
                                                 div().withClass("row").with(
