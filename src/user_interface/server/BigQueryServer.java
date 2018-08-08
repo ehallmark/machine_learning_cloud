@@ -3094,7 +3094,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                         li().withClass("nav-item").with(
                                                 a("Search Options").withId("data-tab-link").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
-                                                a("Visualizations").withId("charts-tab-link").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
+                                                a("Visualizations").withId("chart-tab-link").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
                                                 a("Results").withId("results-link").withClass("nav-link").attr("data-toggle","tab").withHref("#results").attr("role","tab")
                                         )
@@ -3150,14 +3150,14 @@ public class BigQueryServer extends SimilarPatentServer {
                                                         ),buttons, br(), br(), br(), br()
                                                 )
                                         ), div().withClass("col-12 tab-pane fade").withId("chart-tab").attr("role","tabpanel").with(
-                                                div().withClass("row").with(
+                                                div().withClass("row").attr("style", "padding-bottom: 250px;").with(
                                                         loaderTag(),
                                                         div().withClass("col-12").withId("chartsForm").with(
                                                                 customFormRow("charts",allCharts, userRoleFunction)
                                                         ),buttons, br(), br(), br(), br()
                                                 )
                                         ), div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("results").with(
-                                                div().withClass("row").with(
+                                                div().withClass("row").attr("style", "padding-bottom: 250px;").with(
                                                         div().withClass("col-12 content").with(
 
                                                         )
