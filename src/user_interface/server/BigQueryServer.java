@@ -2610,7 +2610,8 @@ public class BigQueryServer extends SimilarPatentServer {
                                         dataTable
                                 ), div().withClass("col-12").with(
                                         br(),
-                                        p("Charts computed from "+totalCount+" matched results. Took " + timeSeconds + " seconds."),
+                                        (abstractCharts.size()==0?br():
+                                        p("Charts computed from "+totalCount+" matched results. Took " + timeSeconds + " seconds.")),
                                         chartTag
                                 )
                         );
