@@ -2605,10 +2605,12 @@ public class BigQueryServer extends SimilarPatentServer {
                         double timeSeconds = new Double(timeEnd - timeStart) / 1000;
                         Tag results = div().with(
                                 div().withClass("col-12").with(
-                                        p("Showing "+tableData.size()+" results out of "+totalCount+" total results matched. Took " + timeSeconds + " seconds."), br(),
+                                        br(),
+                                        p("Showing "+tableData.size()+" results out of "+totalCount+" total results matched. Took " + timeSeconds + " seconds."),
                                         dataTable
                                 ), div().withClass("col-12").with(
-                                        p("Charts computed from "+totalCount+" matched results. Took " + timeSeconds + " seconds."), br(),
+                                        br(),
+                                        p("Charts computed from "+totalCount+" matched results. Took " + timeSeconds + " seconds."),
                                         chartTag
                                 )
                         );
