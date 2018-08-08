@@ -287,6 +287,30 @@ public class Attributes {
 
     ).collect(Collectors.toMap(e->e.get(0), e->e.get(1)));
 
+    private static Set<String> scoringAttrs = Collections.synchronizedSet(new HashSet<>());
+    static {
+        scoringAttrs.add("TAC");
+        scoringAttrs.add("CLM");
+        scoringAttrs.add("DCLM");
+        scoringAttrs.add("ICLM");
+        scoringAttrs.add("ACLM");
+        scoringAttrs.add("TTL");
+        scoringAttrs.add("ABST");
+        scoringAttrs.add("CPC");
+        scoringAttrs.add("SPEC");
+        scoringAttrs.add(DESCRIPTION);
+        scoringAttrs.add(ABSTRACT);
+        scoringAttrs.add(INVENTION_TITLE);
+        scoringAttrs.add(CODE);
+        scoringAttrs.add(CLAIMS);
+        scoringAttrs.add(SIMILARITY);
+        scoringAttrs.add(ENC);
+    }
+    public static boolean contributesToScore(String str) {
+        System.out.println("Contributes to score "+str+": "+scoringAttrs.contains(str));
+        return scoringAttrs.contains(str);
+    }
+
     public static final List<Pair<String,String>> acclaimAttrs = Collections.synchronizedList(new ArrayList<>());
     static {
         Map<String, String> primaryAcclaimMap = Attributes.ACCLAIM_IP_TO_ATTR_NAME_MAP;

@@ -4,6 +4,7 @@ package seeding;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 import seeding.google.elasticsearch.Attributes;
+import seeding.google.elasticsearch.attributes.*;
 import user_interface.acclaim_compatibility.USParser;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
@@ -230,7 +231,25 @@ public class Constants {
 		};
 	}
 
-	public static final List<Class> SIMILARITY_ATTRIBUTE_CLASSES = Arrays.asList(GatherTechnologyAttribute.class, CompDBTechnologyAttribute.class, WIPOTechnologyAttribute.class, CPCTitleAttribute.class, CPCAttribute.class, TechnologyAttribute.class,ClaimTextAttribute.class, InventionTitleAttribute.class, AbstractTextAttribute.class);
+	public static final List<Class> SIMILARITY_ATTRIBUTE_CLASSES = Arrays.asList(
+			GatherTechnologyAttribute.class,
+			CompDBTechnologyAttribute.class,
+			WIPOTechnologyAttribute.class,
+			CPCTitleAttribute.class,
+			CPCAttribute.class,
+			TechnologyAttribute.class,
+			ClaimTextAttribute.class,
+			InventionTitleAttribute.class,
+			AbstractTextAttribute.class,
+			Claims.class,
+			Abstract.class,
+			InventionTitle.class,
+			SimilarityAttribute.class,
+			GttTechnology.class,
+			GttTechnology2.class,
+			GttKeywords.class,
+			Description.class
+	);
 
 	public static final String[] RELATED_DOC_TYPES = new String[]{
 			"addition",
