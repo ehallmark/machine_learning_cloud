@@ -3101,7 +3101,7 @@ public class BigQueryServer extends SimilarPatentServer {
                         div().withClass("col-12").attr("style", "position: fixed; overflow-y: auto; width: 75%; bottom: 0px; top: 0px; margin-top: 172px; padding-bottom: 5px;").with(
                                 div().withClass("row tab-content").with(
                                         div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("data-tab").with(
-                                                div().withClass("row").with(
+                                                div().withClass("row").attr("style", "padding-bottom: 250px;").with(
                                                         div().withClass("col-12 form-top").with(
                                                                 ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
                                                                         li().withClass("nav-item").with(
