@@ -1,6 +1,7 @@
 var selectionCache = new Set([]);
 var previewSelectionCache = new Set([]);
 var formIDRequestedCache = new Set([]);
+var editor = null;
 
 var update_expert_query_display = function() {
     // text area
@@ -1351,7 +1352,7 @@ $(document).ready(function() {
 
 
     if(document.getElementById('acclaim_expert_filter')) {
-        var editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
+        editor = CodeMirror.fromTextArea(document.getElementById('acclaim_expert_filter'), {
             lineNumbers: false,
             matchBrackets: true,
             autoCloseBrackets: true,
