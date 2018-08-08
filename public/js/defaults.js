@@ -655,7 +655,7 @@ $(document).ready(function() {
                 $paginationTable.click(function() {
                     setTimeout(function() {
                         $('#main-container').animate({
-                            scrollTop: 100
+                            scrollTop: 110
                         }, 300);
                     }, 100);
                 });
