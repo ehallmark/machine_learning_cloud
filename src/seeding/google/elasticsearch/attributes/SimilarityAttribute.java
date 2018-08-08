@@ -83,7 +83,6 @@ public abstract class SimilarityAttribute extends AbstractScriptAttribute implem
     }
 
 
-    // WARNING THIS IS JUST AN APPROXIMATION...
     @Override
     public Script getSortScript() {
         return getScriptHelper(true,false);

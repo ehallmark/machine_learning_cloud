@@ -32,6 +32,7 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.google.elasticsearch.Attributes;
+import seeding.google.elasticsearch.attributes.SimilarityAttribute;
 import seeding.google.mongo.ingest.IngestPatents;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -121,6 +122,8 @@ public class DataSearcher {
                     return name;
                 }
             }),Stream.of(defaultAttrs)).distinct().flatMap(s->s).toArray(size->new String[size]);
+            AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
+            AtomicReference<BoolQueryBuilder> queryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
 
             // Run elasticsearch
             String comparator = getOrDefaultComparator(_comparator);
@@ -146,6 +149,10 @@ public class DataSearcher {
                         System.out.println("Sort script builder: "+sortScript);
                         if(sortScript!=null) {
                             sortBuilder = SortBuilders.scriptSort(sortScript, scriptType).order(sortOrder);
+                            if(comparatorAttr instanceof SimilarityAttribute) {
+                                filterBuilder.set(filterBuilder.get()
+                                        .filter(QueryBuilders.existsQuery(((SimilarityAttribute) comparatorAttr).getFieldName())));
+                            }
                         } else {
                             throw new RuntimeException("Unable to create sort script for attribute "+ SimilarPatentServer.humanAttributeFor(comparator));
                             //System.out.println("WARNING:: DEFAULTING TO NO SORT!");
@@ -192,9 +199,6 @@ public class DataSearcher {
                 System.out.println("Rescoring by: "+resortBuilder.toString());
                 request.set(request.get().addRescorer(RescoreBuilder.queryRescorer(resortBuilder).setScoreMode(QueryRescoreMode.Total).setQueryWeight(0f).setRescoreQueryWeight(1f)));
             }
-
-            AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
-            AtomicReference<BoolQueryBuilder> queryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
 
             //System.out.println("Looking for similarity greater than...");
             filters.forEach(filter->{
@@ -345,6 +349,11 @@ public class DataSearcher {
                 if (componentOfScore) {
                     // try adding custom sort script
                     QueryBuilder sortScript = AbstractScriptAttribute.getSortQuery(scriptAttribute.getSortScript(),FiltersFunctionScoreQuery.ScoreMode.SUM, scriptAttribute.getWeight());
+                    if(attribute instanceof SimilarityAttribute) {
+                        sortScript = QueryBuilders.boolQuery()
+                                .filter(QueryBuilders.existsQuery(((SimilarityAttribute) attribute).getFieldName()))
+                                .must(sortScript);
+                    }
                     if (sortScript != null) {
                         if (attribute.getParent() != null && !attribute.getParent().isObject()) {
                             queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), sortScript, ScoreMode.Max)));

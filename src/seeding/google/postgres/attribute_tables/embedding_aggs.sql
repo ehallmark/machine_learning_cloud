@@ -6,6 +6,7 @@ delete from big_query_embedding_by_fam where family_id in (
     where e.family_id!='-1' and (kind_code like 'S%' or kind_code like 'P%')
 );
 
+delete from big_query_embedding_by_fam where family_id = '-1';
 
 drop table big_query_embedding_by_pub;
 create table big_query_embedding_by_pub (
