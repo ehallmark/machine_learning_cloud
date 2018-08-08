@@ -2683,10 +2683,10 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
 
     $(tree_id).bind("dblclick.jstree", function(event) {
         if( $('input:focus').length == 0 ) {
-            $('#data-tab-link').click();
             var tree = $(this).jstree(true);
             var node = tree.get_node(event.target);
             if(node.type==='file') {
+                $('#data-tab-link').click();
                 event.preventDefault();
                 event.stopPropagation();
                 dblclickFunction(node.data,tree,node);
