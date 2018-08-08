@@ -3126,7 +3126,6 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                         ),
                                                                         div().withClass("col-12 tab-pane fade").withId("highlightForm").attr("role","tabpanel").with(
                                                                                 div().withClass("collapsible-form row").with(
-                                                                                        loaderTag(),
                                                                                         div().withClass("col-12").with(
                                                                                                 h5("Settings")
                                                                                         ),
