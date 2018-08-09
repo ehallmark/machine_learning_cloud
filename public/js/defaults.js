@@ -168,7 +168,7 @@ var createTooltips = function($elems) {
             }
         }, 300);
     }).on("shown.bs.tooltip", function() {
-        $('.tooltip').removeClass('fade');
+        $('.tooltip').addClass('fade');
     })
 
 };
