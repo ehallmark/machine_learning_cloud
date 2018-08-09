@@ -146,21 +146,28 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
 
 var createTooltips = function($elems) {
     $elems.tooltip({
-        trigger: 'hover',
+        trigger: 'manual',
         container: 'body',
         delay: {
             "show": 400,
             "hide": 200
         },
         html: true
-    }).on("shown.bs.tooltip", function () {
+    })
+    .on("mouseenter", function () {
         var _this = this;
-        $(_this).on("mouseleave hover", function(e) {
-            if($('.tooltip:hover').length) {
-                e.stopPropagation();
-                e.preventDefault();
-            }
+        $('.tooltip').trigger('click');
+        $(_this).tooltip("show");
+        $(".tooltip").on("mouseleave", function () {
+            $(_this).tooltip('hide');
         });
+    }).on("mouseleave", function () {
+        var _this = this;
+        setTimeout(function () {
+            if (!$(".tooltip:hover").length) {
+                $(_this).tooltip("hide");
+            }
+        }, 300);
     });
 
 };
