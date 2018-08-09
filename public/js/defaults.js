@@ -194,6 +194,11 @@ var createTooltips = function($elems, placement) {
     }).on("shown.bs.tooltip", function() {
         var $tip = $('.tooltip');
         $tip.addClass('fade');
+        var left = 0;
+        while($tip.is(":off-left")) {
+            $tip.css('left', left)
+            left += 20;
+        }
     });
 
 };
@@ -1678,8 +1683,7 @@ $(document).ready(function() {
     setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
     setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[selectionDatasetDataFunction,lastGeneratedDatasetDataFunction,assetListDatasetDataFunction,emptyDatasetDataFunction],["From Selection", "From Last Generated Report", "From Asset List", "Empty Dataset"]);
 
-    createTooltips($('#sidebar [title]'), 'right');
-    createTooltips($('#main-content-id [title]'), 'top');
+    createTooltips($('[title]'), 'top');
 
     // defaults
     $.notify.defaults({
@@ -1687,7 +1691,6 @@ $(document).ready(function() {
         globalPosition: 'bottom left',
         elementPosition: 'bottom left',
         autoHideDelay: 3000
-
     });
 
     setupNavigationTabs();
