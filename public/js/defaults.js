@@ -144,6 +144,24 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
      return true;
 }
 
+var createTooltips($elems) {
+    $elems.tooltip({
+        trigger: 'hover',
+        container: 'body',
+        delay: {
+            "show": 400,
+            "hide": 200
+        },
+        html: true
+    }).on("mouseenter", function () {
+        var _this = this;
+        $(".tooltip").on("mouseleave hover", function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+        });
+    });
+
+};
 
 var setupNestedFilterSelects = function($selects, $topLevelElem) {
     var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
@@ -281,31 +299,7 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
        dateFormat: 'yy-mm-dd'
     });
 
-    $topLevelElem.find('[title]').tooltip({
-        trigger: 'manual',
-        //container: 'body',
-        delay: {
-            "show": 400,
-            "hide": 200
-        },
-        html: true
-    }).on("mouseenter", function () {
-                    var _this = this;
-                    $(".tooltip").click();
-                    $(_this).tooltip("show");
-                    $(".tooltip").on("mouseleave click", function () {
-                        $(_this).tooltip('hide');
-                    });
-
-                }).on("mouseleave", function () {
-                    var _this = this;
-                    setTimeout(function () {
-                        if (!$(".tooltip:hover").length) {
-                            $(_this).tooltip("hide");
-                        }
-                    }, 300);
-            });
-
+    createTooltips($topLevelElem.find('[title]'));
 
 };
 
@@ -1649,30 +1643,7 @@ $(document).ready(function() {
     setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
     setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[selectionDatasetDataFunction,lastGeneratedDatasetDataFunction,assetListDatasetDataFunction,emptyDatasetDataFunction],["From Selection", "From Last Generated Report", "From Asset List", "Empty Dataset"]);
 
-    $('[title]').tooltip({
-        trigger: 'manual',
-        //container: 'body',
-        delay: {
-            "show": 400,
-            "hide": 200
-        },
-        html: true
-    }) .on("mouseenter", function () {
-              var _this = this;
-              $(".tooltip").click();
-              $(_this).tooltip("show");
-              $(".tooltip").on("mouseleave click", function () {
-                  $(_this).tooltip('hide');
-              });
-
-          }).on("mouseleave", function () {
-              var _this = this;
-              setTimeout(function () {
-                  if (!$(".tooltip:hover").length) {
-                      $(_this).tooltip("hide");
-                  }
-              }, 300);
-      });
+    createTooltips($('[title]'));
 
     // defaults
     $.notify.defaults({
