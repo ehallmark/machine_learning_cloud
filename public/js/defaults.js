@@ -292,7 +292,7 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
     }) .on("mouseenter", function () {
                 var _this = this;
                 $(this).tooltip("show");
-                $(".tooltip").on("mouseleave", function () {
+                $(".tooltip").on("mouseleave click", function () {
                     $(_this).tooltip('hide');
                 });
             }).on("mouseleave", function () {
@@ -1659,7 +1659,7 @@ $(document).ready(function() {
           .on("mouseenter", function () {
               var _this = this;
               $(this).tooltip("show");
-              $(".tooltip").on("mouseleave", function () {
+              $(".tooltip").on("mouseleave click", function () {
                   $(_this).tooltip('hide');
               });
           }).on("mouseleave", function () {
