@@ -292,10 +292,15 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
     }) .on("mouseenter", function () {
                 var _this = this;
                 $(".tooltip").click();
-                $(this).tooltip("show");
-                $(".tooltip").on("mouseleave click", function () {
-                    $(_this).tooltip('hide');
-                });
+                setTimeout(function() {
+                    if($(".tooltip:hover").length) {
+                        $(_this).tooltip("show");
+                        $(".tooltip").on("mouseleave click", function () {
+                            $(_this).tooltip('hide');
+                        });
+                    }
+                }, 200);
+
             }).on("mouseleave", function () {
                 var _this = this;
                 setTimeout(function () {
