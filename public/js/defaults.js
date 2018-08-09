@@ -196,7 +196,7 @@ var createTooltips = function($elems, placement) {
         $tip.addClass('fade');
         var left = 0;
         while($tip.is(":off-left")) {
-            $tip.css('left', left)
+            $tip.css('left', left);
             left += 20;
         }
     });
