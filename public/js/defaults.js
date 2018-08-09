@@ -193,11 +193,15 @@ var createTooltips = function($elems, placement) {
         }, 300);
     }).on("shown.bs.tooltip", function() {
         var $tip = $('.tooltip');
+        var $arrow = $tip.find('arrow');
         $tip.addClass('fade');
         var left = 0;
-        while($tip.is(":off-left")) {
+        var arrowLeft = $arrow.css('left');
+        if($tip.is(":off-left")) {
+            var width = $tip.width * 0.33;
             $tip.css('left', left);
-            left += 20;
+            $tip.find('arrow').css('left', arrowLeft-width);
+            left += arrowLeft;
         }
     });
 
