@@ -1665,7 +1665,7 @@ $(document).ready(function() {
               var _this = this;
               $(".tooltip").click();
               setTimeout(function() {
-                  if($(".tooltip:hover").length) {
+                  if($(_this).is(":hover")) {
                       $(_this).tooltip("show");
                       $(".tooltip").on("mouseleave click", function () {
                           $(_this).tooltip('hide');
