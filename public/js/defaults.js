@@ -153,7 +153,7 @@ var createTooltips = function($elems) {
             "hide": 200
         },
         html: true
-    }).on("mouseenter", function () {
+    }).on("tooltip.bs.show", function () {
         var _this = this;
         $(".tooltip").on("mouseleave hover", function(e) {
             e.stopPropagation();
