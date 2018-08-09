@@ -206,6 +206,10 @@ label {
     border-bottom: 1px solid #ddd;
 }
 
+.tooltip-inner {
+    max-width: 400px;
+}
+
 .header-main {
     color: black;
     background-color: #ccc;
