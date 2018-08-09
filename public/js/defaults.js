@@ -155,11 +155,12 @@ var createTooltips = function($elems) {
         html: true
     }).on("mouseenter", function () {
         var _this = this;
-        $('.tooltip').trigger('click');
-        $(_this).tooltip("show");
-        $(".tooltip").on("mouseleave click", function () {
-            $(_this).tooltip('hide');
-        });
+        if(!$('.tooltip:visible').length) {
+            $(_this).tooltip("show");
+            $(".tooltip").on("mouseleave click", function () {
+                $(_this).tooltip('hide');
+            });
+        }
     }).on("mouseleave", function () {
         var _this = this;
         setTimeout(function () {
@@ -169,7 +170,7 @@ var createTooltips = function($elems) {
         }, 300);
     }).on("shown.bs.tooltip", function() {
         $('.tooltip').addClass('fade');
-    })
+    });
 
 };
 
