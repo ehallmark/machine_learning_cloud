@@ -144,7 +144,7 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
      return true;
 }
 
-var createTooltips($elems) {
+var createTooltips = function($elems) {
     $elems.tooltip({
         trigger: 'hover',
         container: 'body',
