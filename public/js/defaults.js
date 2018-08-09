@@ -170,6 +170,7 @@ var createTooltips = function($elems) {
     $elems.tooltip({
         trigger: 'manual',
         container: 'body',
+        placement: 'auto',
         delay: {
             "show": 400,
             "hide": 200
