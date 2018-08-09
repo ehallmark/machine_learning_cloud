@@ -283,7 +283,7 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
 
     $topLevelElem.find('[title]').tooltip({
         trigger: 'manual',
-        container: 'body',
+        //container: 'body',
         delay: {
             "show": 400,
             "hide": 200
@@ -1651,7 +1651,7 @@ $(document).ready(function() {
 
     $('[title]').tooltip({
         trigger: 'manual',
-        container: 'body',
+        //container: 'body',
         delay: {
             "show": 400,
             "hide": 200
