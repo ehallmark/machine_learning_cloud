@@ -195,11 +195,10 @@ var createTooltips = function($elems, placement) {
         var $tip = $('.tooltip');
         var $arrow = $tip.find('.arrow');
         $tip.addClass('fade');
-        var arrowLeft = $arrow.position().left;
         if($tip.is(":off-left")) {
             var width = $tip.width() * 0.33;
             $tip.css('left', width);
-            $arrow.css('left', arrowLeft-2*width);
+            $arrow.css('left', $tip.width()/2.0);
         }
     });
 
