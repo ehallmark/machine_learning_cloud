@@ -193,7 +193,7 @@ var createTooltips = function($elems, placement) {
         }, 300);
     }).on("shown.bs.tooltip", function() {
         var $tip = $('.tooltip');
-        var $arrow = $tip.find('arrow');
+        var $arrow = $tip.find('.arrow');
         $tip.addClass('fade');
         var left = 0;
         var arrowLeft = $arrow.position().left;
