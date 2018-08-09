@@ -178,12 +178,11 @@ var createTooltips = function($elems, placement) {
         html: true
     }).on("mouseenter", function () {
         var _this = this;
-        if(!$('.tooltip:visible').length) {
-            $(_this).tooltip("show");
-            $(".tooltip").on("mouseleave click", function () {
-                $(_this).tooltip('hide');
-            });
-        }
+        $('.tooltip').remove();
+        $(_this).tooltip("show");
+        $(".tooltip").on("mouseleave click", function () {
+            $(_this).tooltip('hide');
+        });
     }).on("mouseleave", function () {
         var _this = this;
         setTimeout(function () {
