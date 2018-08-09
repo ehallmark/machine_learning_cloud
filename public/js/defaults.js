@@ -289,26 +289,22 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
             "hide": 200
         },
         html: true
-    }) .on("mouseenter", function () {
-                var _this = this;
-                $(".tooltip").click();
-                setTimeout(function() {
-                    if($(".tooltip:hover").length) {
-                        $(_this).tooltip("show");
-                        $(".tooltip").on("mouseleave click", function () {
-                            $(_this).tooltip('hide');
-                        });
-                    }
-                }, 200);
+    }).on("mouseenter", function () {
+                    var _this = this;
+                    $(".tooltip").click();
+                    $(_this).tooltip("show");
+                    $(".tooltip").on("mouseleave click", function () {
+                        $(_this).tooltip('hide');
+                    });
 
-            }).on("mouseleave", function () {
-                var _this = this;
-                setTimeout(function () {
-                    if (!$(".tooltip:hover").length) {
-                        $(_this).tooltip("hide");
-                    }
-                }, 300);
-        });
+                }).on("mouseleave", function () {
+                    var _this = this;
+                    setTimeout(function () {
+                        if (!$(".tooltip:hover").length) {
+                            $(_this).tooltip("hide");
+                        }
+                    }, 300);
+            });
 
 
 };
@@ -1664,14 +1660,10 @@ $(document).ready(function() {
     }) .on("mouseenter", function () {
               var _this = this;
               $(".tooltip").click();
-              setTimeout(function() {
-                  if($(_this).is(":hover")) {
-                      $(_this).tooltip("show");
-                      $(".tooltip").on("mouseleave click", function () {
-                          $(_this).tooltip('hide');
-                      });
-                  }
-              }, 200);
+              $(_this).tooltip("show");
+              $(".tooltip").on("mouseleave click", function () {
+                  $(_this).tooltip('hide');
+              });
 
           }).on("mouseleave", function () {
               var _this = this;
