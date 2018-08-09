@@ -153,8 +153,7 @@ var createTooltips = function($elems) {
             "hide": 200
         },
         html: true
-    })
-    .on("mouseenter", function () {
+    }).on("mouseenter", function () {
         var _this = this;
         $('.tooltip').trigger('click');
         $(_this).tooltip("show");
