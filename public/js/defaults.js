@@ -166,11 +166,11 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
      return true;
 }
 
-var createTooltips = function($elems) {
+var createTooltips = function($elems, placement) {
     $elems.tooltip({
         trigger: 'manual',
         container: 'body',
-        placement: 'auto',
+        placement: placement,
         delay: {
             "show": 400,
             "hide": 200
@@ -194,11 +194,6 @@ var createTooltips = function($elems) {
     }).on("shown.bs.tooltip", function() {
         var $tip = $('.tooltip');
         $tip.addClass('fade');
-        if($tip.is(':off-right')) {
-            $tip.toggleClass('bs-tooltip-top bs-tooltip-left');
-        } else if($tip.is(':off-left')) {
-            $tip.toggleClass('bs-tooltip-top bs-tooltip-right');
-        }
     });
 
 };
@@ -339,7 +334,7 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
        dateFormat: 'yy-mm-dd'
     });
 
-    createTooltips($topLevelElem.find('[title]'));
+    createTooltips($topLevelElem.find('[title]'), 'top');
 
 };
 
@@ -1683,7 +1678,8 @@ $(document).ready(function() {
     setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
     setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[selectionDatasetDataFunction,lastGeneratedDatasetDataFunction,assetListDatasetDataFunction,emptyDatasetDataFunction],["From Selection", "From Last Generated Report", "From Asset List", "Empty Dataset"]);
 
-    createTooltips($('[title]'));
+    createTooltips($('#sidebar [title]'), 'right');
+    createTooltips($('#main-content-id [title]'), 'top');
 
     // defaults
     $.notify.defaults({
