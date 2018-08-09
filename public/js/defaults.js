@@ -161,6 +161,7 @@ var createTooltips = function($elems) {
             if($(this).is(':visible')) {
                 $(_this).tooltip('hide');
             }
+            $(this).off('mouseleave click');
         });
     }).on("mouseleave", function () {
         var _this = this;
