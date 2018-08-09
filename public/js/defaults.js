@@ -199,7 +199,7 @@ var createTooltips = function($elems, placement) {
         if($tip.is(":off-left")) {
             var width = $tip.width() * 0.33;
             $tip.css('left', width);
-            //$tip.find('arrow').css('left', arrowLeft-width);
+            $arrow.css('left', arrowLeft-2*width);
         }
     });
 
