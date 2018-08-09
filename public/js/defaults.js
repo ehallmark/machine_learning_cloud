@@ -282,13 +282,27 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
     });
 
     $topLevelElem.find('[title]').tooltip({
-        trigger: 'hover',
+        trigger: 'manual',
+        container: 'body',
         delay: {
             "show": 400,
             "hide": 200
         },
         html: true
-    });
+    }) .on("mouseenter", function () {
+                var _this = this;
+                $(this).tooltip("show");
+                $(".tooltip").on("mouseleave", function () {
+                    $(_this).tooltip('hide');
+                });
+            }).on("mouseleave", function () {
+                var _this = this;
+                setTimeout(function () {
+                    if (!$(".tooltip:hover").length) {
+                        $(_this).tooltip("hide");
+                    }
+                }, 300);
+        });
 
 
 };
@@ -1634,13 +1648,28 @@ $(document).ready(function() {
     setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[selectionDatasetDataFunction,lastGeneratedDatasetDataFunction,assetListDatasetDataFunction,emptyDatasetDataFunction],["From Selection", "From Last Generated Report", "From Asset List", "Empty Dataset"]);
 
     $('[title]').tooltip({
-        trigger: 'hover',
+        trigger: 'manual',
+        container: 'body',
         delay: {
             "show": 400,
             "hide": 200
         },
         html: true
-    });
+    })
+          .on("mouseenter", function () {
+              var _this = this;
+              $(this).tooltip("show");
+              $(".tooltip").on("mouseleave", function () {
+                  $(_this).tooltip('hide');
+              });
+          }).on("mouseleave", function () {
+              var _this = this;
+              setTimeout(function () {
+                  if (!$(".tooltip:hover").length) {
+                      $(_this).tooltip("hide");
+                  }
+              }, 300);
+      });
 
     // defaults
     $.notify.defaults({
