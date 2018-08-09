@@ -155,9 +155,11 @@ var createTooltips = function($elems) {
         html: true
     }).on("shown.bs.tooltip", function () {
         var _this = this;
-        $(".tooltip").on("mouseleave hover", function(e) {
-            e.stopPropagation();
-            e.preventDefault();
+        $(_this).on("mouseleave hover", function(e) {
+            if($('.tooltip:hover').length) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
         });
     });
 
