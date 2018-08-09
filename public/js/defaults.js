@@ -291,6 +291,7 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
         html: true
     }) .on("mouseenter", function () {
                 var _this = this;
+                $(".tooltip").click();
                 $(this).tooltip("show");
                 $(".tooltip").on("mouseleave click", function () {
                     $(_this).tooltip('hide');
@@ -1658,6 +1659,7 @@ $(document).ready(function() {
     })
           .on("mouseenter", function () {
               var _this = this;
+              $(".tooltip").click();
               $(this).tooltip("show");
               $(".tooltip").on("mouseleave click", function () {
                   $(_this).tooltip('hide');
