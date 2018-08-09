@@ -1,3 +1,25 @@
+
+(function($) {
+  $.extend($.expr[':'], {
+    'off-top': function(el) {
+      return $(el).offset().top < $(window).scrollTop();
+    },
+    'off-right': function(el) {
+      return $(el).offset().left + $(el).outerWidth() - $(window).scrollLeft() > $(window).width();
+    },
+    'off-bottom': function(el) {
+      return $(el).offset().top + $(el).outerHeight() - $(window).scrollTop() > $(window).height();
+    },
+    'off-left': function(el) {
+      return $(el).offset().left < $(window).scrollLeft();
+    },
+    'off-screen': function(el) {
+      return $(el).is(':off-top, :off-right, :off-bottom, :off-left');
+    }
+  });
+})(jQuery);
+
+
 var selectionCache = new Set([]);
 var previewSelectionCache = new Set([]);
 var formIDRequestedCache = new Set([]);
@@ -169,7 +191,13 @@ var createTooltips = function($elems) {
             }
         }, 300);
     }).on("shown.bs.tooltip", function() {
-        $('.tooltip').addClass('fade');
+        var $tip = $('.tooltip');
+        $tip.addClass('fade');
+        if($tip.is(':off-right')) {
+            $tip.toggleClass('bs-tooltip-top bs-tooltip-left');
+        } else if($tip.is(':off-left')) {
+            $tip.toggleClass('bs-tooltip-top bs-tooltip-right');
+        }
     });
 
 };
