@@ -171,10 +171,8 @@ var createTooltips = function($elems) {
             }
         }, 300);
     }).on("shown.bs.tooltip", function() {
-        $('.tooltip').addClass('show').removeClass('hide').removeClass('fade');
-    }).on('show.bs.tooltip inserted.bs.tooltip hide.bs.tooltip', function(e) {
-        $('.tooltip').removeClass('show').addClass('hide');
-    });
+        $('.tooltip').removeClass('fade');
+    })
 
 };
 
