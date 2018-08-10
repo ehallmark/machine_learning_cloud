@@ -702,6 +702,7 @@ $(document).ready(function() {
 
            $('#main-data-table')
            .bind('dynatable:afterUpdate', function() {
+                $('#main-data-table').unwrap('.table-wrapper');
                 var $paginationTable = $('#dynatable-pagination-links-main-data-table');
                 $paginationTable.click(function() {
                     setTimeout(function() {
@@ -728,6 +729,7 @@ $(document).ready(function() {
                         $link.click();
                     });
                 });
+                $('#main-data-table').wrap('<div class="col-12 table-wrapper" style="overflow-x: auto; max-width:100%;"></div>');
                 return true;
            })
            .dynatable({
