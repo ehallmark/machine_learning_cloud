@@ -443,6 +443,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 if($table.find('thead th').length > 0) {
                    $table
                    .bind('dynatable:afterUpdate', function() {
+                        $table.unwrap('.table-wrapper');
                         var $paginationTable = $('#dynatable-pagination-links-main-preview-data-table');
                         $paginationTable.click(function() {
                             setTimeout(function() {
@@ -477,7 +478,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                                 $link.click();
                             });
                         });
-
+                        $table.wrap('<div class="col-12 table-wrapper" style="overflow-x: auto; max-width:100%;"></div>');
                         return true;
                    }).dynatable({
                      dataset: {
