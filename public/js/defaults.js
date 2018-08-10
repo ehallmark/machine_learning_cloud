@@ -2738,6 +2738,10 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
         return true;
     });
 
+    $(tree_id).bind('loaded.jstree', function() {
+        $(tree_id).find('li:first i.jstree-icon').trigger('click');
+    });
+
 /*    if(node_type==='dataset') {
         var addAssetCountFunc = function(e, data) {
             if(data.hasOwnProperty('node')) {
