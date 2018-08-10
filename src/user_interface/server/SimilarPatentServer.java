@@ -1809,7 +1809,9 @@ public class SimilarPatentServer {
                             )
                         )
                 ),
-                dataTableFromHeadersAndData(attributes, preview)
+                div().withClass("col-12").attr("style", "overflow-x: auto; max-width: 100%").with(
+                        dataTableFromHeadersAndData(attributes, preview)
+                )
         );
     }
 
