@@ -2267,7 +2267,11 @@ function cleanArray(actual) {
 }
 
 var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunctions, newItemSubLabels) {
-    $(tree_id).jstree({
+    $(tree_id)
+    .bind('loaded.jstree', function() {
+        $(tree_id).find('li:first i.jstree-icon').first().trigger('click');
+    })
+    .jstree({
         "core" : {
             "multiple" : false,
             "check_callback": true
@@ -2736,10 +2740,6 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
             }
         }
         return true;
-    });
-
-    $(tree_id).bind('loaded.jstree', function() {
-        $(tree_id).find('li:first i.jstree-icon').trigger('click');
     });
 
 /*    if(node_type==='dataset') {
