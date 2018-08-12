@@ -427,12 +427,15 @@ public class GlobalParser {
                         boolQueryBuilder = boolQueryBuilder
                                 .should(builder.apply(fullAttr, dataset+"_"+userGroup, user));
                     }
-                    strQuery = boolQueryBuilder;
+                    strQuery = QueryBuilders.boolQuery().filter(boolQueryBuilder);
                 } else {
                     throw new RuntimeException("Error in expert search query. Unable to find dataset: "+val);
                 }
             } else {
                 strQuery = builder.apply(fullAttr, val, user);
+                if(!Attributes.contributesToScore(fullAttr)) {
+                    strQuery = QueryBuilders.boolQuery().filter(strQuery);
+                }
             }
         } else {
             strQuery = defaultTransformation.apply(null,val,user);

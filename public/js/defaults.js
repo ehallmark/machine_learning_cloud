@@ -1,3 +1,25 @@
+
+(function($) {
+  $.extend($.expr[':'], {
+    'off-top': function(el) {
+      return $(el).offset().top < $(window).scrollTop();
+    },
+    'off-right': function(el) {
+      return $(el).offset().left + $(el).outerWidth() - $(window).scrollLeft() > $(window).width();
+    },
+    'off-bottom': function(el) {
+      return $(el).offset().top + $(el).outerHeight() - $(window).scrollTop() > $(window).height();
+    },
+    'off-left': function(el) {
+      return $(el).offset().left < $(window).scrollLeft();
+    },
+    'off-screen': function(el) {
+      return $(el).is(':off-top, :off-right, :off-bottom, :off-left');
+    }
+  });
+})(jQuery);
+
+
 var selectionCache = new Set([]);
 var previewSelectionCache = new Set([]);
 var formIDRequestedCache = new Set([]);
@@ -144,6 +166,42 @@ var nestedFilterSelectFunction = function(e,preventHighlight) {
      return true;
 }
 
+var createTooltips = function($elems, placement) {
+    $elems.tooltip({
+        trigger: 'manual',
+        container: 'body',
+        placement: placement,
+        delay: {
+            "show": 400,
+            "hide": 200
+        },
+        html: true
+    }).on("mouseenter", function () {
+        var _this = this;
+        $('.tooltip').remove();
+        $(_this).tooltip("show");
+        $(".tooltip").on("mouseleave click", function () {
+            $(_this).tooltip('hide');
+        });
+    }).on("mouseleave", function () {
+        var _this = this;
+        setTimeout(function () {
+            if (!$(".tooltip:hover").length) {
+                $(_this).tooltip("hide");
+            }
+        }, 300);
+    }).on("shown.bs.tooltip", function() {
+        var $tip = $('.tooltip');
+        var $arrow = $tip.find('.arrow');
+        $tip.addClass('fade');
+        if($tip.is(":off-left")) {
+            var width = $tip.width() * 0.33;
+            $tip.css('left', width);
+            $arrow.css('left', $tip.width()/2.0);
+        }
+    });
+
+};
 
 var setupNestedFilterSelects = function($selects, $topLevelElem) {
     var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
@@ -281,15 +339,7 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
        dateFormat: 'yy-mm-dd'
     });
 
-    $topLevelElem.find('[title]').tooltip({
-        trigger: 'hover',
-        delay: {
-            "show": 400,
-            "hide": 200
-        },
-        html: true
-    });
-
+    createTooltips($topLevelElem.find('[title]'), 'top');
 
 };
 
@@ -393,6 +443,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 if($table.find('thead th').length > 0) {
                    $table
                    .bind('dynatable:afterUpdate', function() {
+                        $table.unwrap('.table-wrapper');
                         var $paginationTable = $('#dynatable-pagination-links-main-preview-data-table');
                         $paginationTable.click(function() {
                             setTimeout(function() {
@@ -427,7 +478,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                                 $link.click();
                             });
                         });
-
+                        $table.wrap('<div class="col-12 table-wrapper" style="overflow-x: auto; max-width:100%;"></div>');
                         return true;
                    }).dynatable({
                      dataset: {
@@ -651,6 +702,7 @@ $(document).ready(function() {
 
            $('#main-data-table')
            .bind('dynatable:afterUpdate', function() {
+                $('#main-data-table').unwrap('.table-wrapper');
                 var $paginationTable = $('#dynatable-pagination-links-main-data-table');
                 $paginationTable.click(function() {
                     setTimeout(function() {
@@ -677,6 +729,7 @@ $(document).ready(function() {
                         $link.click();
                     });
                 });
+                $('#main-data-table').wrap('<div class="col-12 table-wrapper" style="overflow-x: auto; max-width:100%;"></div>');
                 return true;
            })
            .dynatable({
@@ -1633,14 +1686,7 @@ $(document).ready(function() {
     setupJSTree("#templates-tree",showTemplateFunction,"template",[templateDataFunction],["From Current Form"]);
     setupJSTree("#datasets-tree",showDatasetFunction,"dataset",[selectionDatasetDataFunction,lastGeneratedDatasetDataFunction,assetListDatasetDataFunction,emptyDatasetDataFunction],["From Selection", "From Last Generated Report", "From Asset List", "Empty Dataset"]);
 
-    $('[title]').tooltip({
-        trigger: 'hover',
-        delay: {
-            "show": 400,
-            "hide": 200
-        },
-        html: true
-    });
+    createTooltips($('[title]'), 'top');
 
     // defaults
     $.notify.defaults({
@@ -1648,7 +1694,6 @@ $(document).ready(function() {
         globalPosition: 'bottom left',
         elementPosition: 'bottom left',
         autoHideDelay: 3000
-
     });
 
     setupNavigationTabs();
@@ -2225,7 +2270,11 @@ function cleanArray(actual) {
 }
 
 var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunctions, newItemSubLabels) {
-    $(tree_id).jstree({
+    $(tree_id)
+    .bind('loaded.jstree', function() {
+        $(tree_id).find('li:first i.jstree-icon').first().trigger('click');
+    })
+    .jstree({
         "core" : {
             "multiple" : false,
             "check_callback": true

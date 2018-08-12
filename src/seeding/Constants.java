@@ -4,6 +4,7 @@ package seeding;
 import org.nd4j.linalg.primitives.Pair;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 import seeding.google.elasticsearch.Attributes;
+import seeding.google.elasticsearch.attributes.*;
 import user_interface.acclaim_compatibility.USParser;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.*;
@@ -230,7 +231,25 @@ public class Constants {
 		};
 	}
 
-	public static final List<Class> SIMILARITY_ATTRIBUTE_CLASSES = Arrays.asList(GatherTechnologyAttribute.class, CompDBTechnologyAttribute.class, WIPOTechnologyAttribute.class, CPCTitleAttribute.class, CPCAttribute.class, TechnologyAttribute.class,ClaimTextAttribute.class, InventionTitleAttribute.class, AbstractTextAttribute.class);
+	public static final List<Class> SIMILARITY_ATTRIBUTE_CLASSES = Arrays.asList(
+			GatherTechnologyAttribute.class,
+			CompDBTechnologyAttribute.class,
+			WIPOTechnologyAttribute.class,
+			CPCTitleAttribute.class,
+			CPCAttribute.class,
+			TechnologyAttribute.class,
+			ClaimTextAttribute.class,
+			InventionTitleAttribute.class,
+			AbstractTextAttribute.class,
+			Claims.class,
+			Abstract.class,
+			InventionTitle.class,
+			SimilarityAttribute.class,
+			GttTechnology.class,
+			GttTechnology2.class,
+			GttKeywords.class,
+			Description.class
+	);
 
 	public static final String[] RELATED_DOC_TYPES = new String[]{
 			"addition",
@@ -298,6 +317,10 @@ public class Constants {
 		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.PRIORITY_DATE_ESTIMATED, "priority date computed from the original priority date and any available term adjustment information.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.TREE, "cpc code (includes child classes)");
 		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.AI_VALUE, "AI Value of the document. Ranges from 0-1. Developed by GTT Group.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.CITATIONS+"."+Attributes.CITED_CATEGORY, "category of the citation. Available categories: (CH2 = Chapter 2; SUP = Supplementary search report; ISR = International search report; SEA = Search report; APP = Applicant; EXA = Examiner; OPP = Opposition; 115 = article 115; PRS = Pre-grant pre-search; APL = Appealed; FOP = Filed opposition)");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.RCITATIONS+"."+Attributes.RCITE_CATEGORY, "category of the citation. Available categories: (CH2 = Chapter 2; SUP = Supplementary search report; ISR = International search report; SEA = Search report; APP = Applicant; EXA = Examiner; OPP = Opposition; 115 = article 115; PRS = Pre-grant pre-search; APL = Appealed; FOP = Filed opposition)");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.RCITATIONS+"."+Attributes.RCITE_TYPE, "type of the citation. Available types: (A = technological background; D = document cited in application; E = earlier patent document; 1 = document cited for other reasons; O = Non-written disclosure; P = Intermediate document; T = theory or principle; X = relevant if taken alone; Y = relevant if combined with other documents)");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.CITATIONS+"."+Attributes.CITED_TYPE, "type of the citation. Available types: (A = technological background; D = document cited in application; E = earlier patent document; 1 = document cited for other reasons; O = Non-written disclosure; P = Intermediate document; T = theory or principle; X = relevant if taken alone; Y = relevant if combined with other documents)");
 		ATTRIBUTE_DESCRIPTION_MAP.put("pie", "Create a pie chart.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("heatmap", "Create a heat map chart.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("wordcloud", "Create a word cloud chart.");
