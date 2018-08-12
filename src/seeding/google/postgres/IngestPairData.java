@@ -112,11 +112,6 @@ public class IngestPairData {
         queryStream.close();
 
         downloader.cleanUp();
-        try {
-            conn.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public static void main(String[] args) throws Exception {

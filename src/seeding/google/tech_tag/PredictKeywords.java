@@ -56,8 +56,6 @@ public class PredictKeywords {
         }
 
         ingestConn.commit();
-        seedConn.close();
-        ingestConn.close();
     }
 
     private static final Set<String> stopWords = new HashSet<>();

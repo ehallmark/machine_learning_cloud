@@ -167,7 +167,6 @@ public class IngestPTABData {
         handler.init();
         iterator.applyHandlers(handler);
         queryStream.close();
-        conn.close();
     }
 
     public static void main(String[] args) throws Exception {

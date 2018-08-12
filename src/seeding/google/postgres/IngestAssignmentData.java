@@ -166,7 +166,6 @@ public class IngestAssignmentData {
         iterator.applyHandlers(handler);
         queryStreamAssignments.close();
         queryStreamDocumentId.close();
-        conn.close();
     }
 
     public static void main(String[] args) throws Exception {

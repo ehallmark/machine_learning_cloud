@@ -11,11 +11,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class IngestWord2VecToText {
-
+    static final File indexFile = new File("/home/ehallmark/Downloads/word2vec256_index.txt");
     public static void main(String[] args) throws Exception {
         Word2Vec word2Vec = Word2VecManager.getOrLoadManager();
         {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(new File("/home/ehallmark/Downloads/word2vec256_index.txt")));
+            BufferedWriter bw = new BufferedWriter(new FileWriter(indexFile));
             Set<String> words = new HashSet<>();
             Set<Integer> indices = new HashSet<>();
             word2Vec.vocab().vocabWords().forEach(word -> {

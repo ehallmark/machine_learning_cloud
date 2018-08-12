@@ -76,7 +76,6 @@ public class IngestCPCDefinitionFromJson extends IngestPatentsFromJson {
         });
 
         queryStream.close();
-        conn.close();
     }
 
 }

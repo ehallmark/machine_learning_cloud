@@ -230,7 +230,6 @@ public class ScrapeEPO {
             fullDocumentScraper.scrapeFamilyMembersForAssets(assets, 10, writer, timeoutMillisBetweenRequests, proxyHandler);
             writer.close();
 
-            conn.close();
         } catch(Exception e) {
             e.printStackTrace();
         } finally {

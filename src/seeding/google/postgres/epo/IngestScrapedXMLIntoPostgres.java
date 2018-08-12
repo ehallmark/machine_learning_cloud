@@ -58,6 +58,5 @@ public class IngestScrapedXMLIntoPostgres {
         }
 
         Database.commit();
-        conn.close();
     }
 }

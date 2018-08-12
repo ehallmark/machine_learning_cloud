@@ -53,7 +53,6 @@ public class UpdateClassificationHash {
         System.out.println("Found apps: "+appCPCMap.size());
         ingestResults(patentCPCMap, conn);
         ingestResults(appCPCMap, conn);
-        conn.close();
     }
 
     private static void ingestResults(Map<String,Set<String>> map, Connection conn) throws SQLException {

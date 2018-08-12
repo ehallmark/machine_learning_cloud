@@ -80,7 +80,6 @@ public class IngestSEPFromJson extends IngestPatentsFromJson {
         });
 
         queryStream.close();
-        conn.close();
     }
 
 }

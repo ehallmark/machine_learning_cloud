@@ -72,8 +72,6 @@ public class FilterKeywordsByTFIDF {
         }
 
         insertConn.commit();
-        insertConn.close();
-        conn.close();
     }
 
 

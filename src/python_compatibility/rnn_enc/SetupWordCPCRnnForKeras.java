@@ -20,8 +20,13 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class SetupWordCPCRnnForKeras {
-
+    // Run this file to set up data to train Keras similarity neural network
+    // No need to rerun in between new updates
     public static void main(String[] args) throws Exception {
+        if(!IngestWord2VecToText.indexFile.exists()) {
+            System.out.println("No index file found... rerunning IngestWord2VecToText.");
+            IngestWord2VecToText.main(args);
+        }
         final File x1File = new File("/home/ehallmark/Downloads/word_cpc_rnn_keras_x1.csv");
         final File x2File = new File("/home/ehallmark/Downloads/word_cpc_rnn_keras_x2.csv");
         final File cpcFile = new File("/home/ehallmark/Downloads/word_cpc_rnn_keras_cpc.csv");

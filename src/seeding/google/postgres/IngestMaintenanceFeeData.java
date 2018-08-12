@@ -116,7 +116,6 @@ public class IngestMaintenanceFeeData {
 
         maintenanceCodeQueryStream.close();
         maintenanceQueryStream.close();
-        conn.close();
     }
 
     public static void ingestMaintenanceFeeData(File destinationFile, MaintenanceEventHandler handler) throws Exception {

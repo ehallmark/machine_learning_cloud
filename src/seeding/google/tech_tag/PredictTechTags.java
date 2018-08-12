@@ -409,7 +409,6 @@ public class PredictTechTags {
 
         Database.commit();
         seedConn.commit();
-        Database.close();
     }
 
     private static INDArray createMatrixView(INDArray full, List<String> elements, Map<String,Integer> indexMap, boolean columnwise) {

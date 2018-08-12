@@ -24,6 +24,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class SetupCPCSimForKeras {
+    // Run this file to setup data for Keras CPC Similarity model
+    // No need to rerun
     private static final Random rand = new Random(1235018);
     public static void main(String[] args) throws Exception {
         // this file sets up the data table in SQL so that CPCSim.py can run smoothly

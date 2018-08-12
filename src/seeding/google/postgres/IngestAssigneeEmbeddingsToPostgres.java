@@ -84,7 +84,5 @@ public class IngestAssigneeEmbeddingsToPostgres {
         }
 
         Database.commit();
-        insert.close();
-        conn.close();
     }
 }

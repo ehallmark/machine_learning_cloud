@@ -15,11 +15,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.sql.Connection;
+import java.time.LocalDate;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class UpdateAll {
     public static void main(String[] args) {
         boolean updateGoogleJsons = false;
-        if(updateGoogleJsons) {
+        boolean monthUpdate = false;
+
+        if (updateGoogleJsons) {
             /*
                 QUARTERLY UPDATES
              */
@@ -48,7 +54,7 @@ public class UpdateAll {
 
             try {
                 CPCHierarchy.updateAndGetLatest();
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Exited during stage CPCHierarchy...");
                 System.exit(1);
@@ -57,7 +63,7 @@ public class UpdateAll {
             // sep
             try {
                 IngestSEPFromJson.main(args);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Exited during stage IngestSEPFromJson...");
                 System.exit(1);
@@ -72,172 +78,223 @@ public class UpdateAll {
         // ingest latest us assets
         try {
             UpdateBasePatentData.main(args);
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Exited during stage UpdateBasePatentData...");
             System.exit(1);
         }
-        // scrape missing family ids
-        try {
-            IngestScrapedXMLIntoPostgres.main(args); // get pre
-            System.out.println("Finished loading pre scraped xmls...");
-            ScrapeEPO.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Exited during stage ScrapeEPO...");
-            System.exit(1);
+
+        {
+            ExecutorService service = Executors.newFixedThreadPool(3);
+
+            service.execute(() -> {
+                // scrape missing family ids
+                try {
+                    IngestScrapedXMLIntoPostgres.main(args); // get pre
+                    System.out.println("Finished loading pre scraped xmls...");
+                    ScrapeEPO.main(args);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Exited during stage ScrapeEPO...");
+                    System.exit(1);
+                }
+
+                try {
+                    IngestScrapedXMLIntoPostgres.main(args);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Exited during stage IngestScrapedXMLIntoPostgres...");
+                    System.exit(1);
+                }
+            });
+
+            service.execute(() -> {
+                // update assignments
+                try {
+                    IngestAssignmentData.main(args);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Exited during stage IngestAssignmentData...");
+                    System.exit(1);
+                }
+            });
+
+
+            service.execute(() -> {
+                // maintenance data
+                try {
+                    IngestMaintenanceFeeData.main(args);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Exited during stage IngestMaintenanceFeeData...");
+                    System.exit(1);
+                }
+            });
+
+            service.execute(() -> {
+                // pair data
+                try {
+                    if (monthUpdate) {
+                        DownloadLatestPAIR.main(args);
+                    }
+                    IngestPairData.main(args);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Exited during stage IngestPairData...");
+                    System.exit(1);
+                }
+            });
+
+            service.execute(() -> {
+                // ptab data
+                try {
+                    IngestPTABData.main(args);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Exited during stage IngestPTABData...");
+                    System.exit(1);
+                }
+            });
+
+            service.execute(() -> {
+                // wipo
+                try {
+                    IngestWIPOTechnologies.main(args);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Exited during stage IngestWIPOTechnologies...");
+                    System.exit(1);
+                }
+            });
+
+
+            // cpc backup datasource
+            service.execute(() -> {
+                try {
+                    UpdateClassificationHash.main(args);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Exited during stage UpdateClassificationHash...");
+                    System.exit(1);
+                }
+            });
+            service.shutdown();
+            try {
+                service.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
-
-        try {
-            IngestScrapedXMLIntoPostgres.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Exited during stage IngestScrapedXMLIntoPostgres...");
-            System.exit(1);
-        }
-
-        // update assignments
-        try {
-            IngestAssignmentData.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Exited during stage IngestAssignmentData...");
-            System.exit(1);
-        }
-
-        // maintenance data
-        try {
-            IngestMaintenanceFeeData.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Exited during stage IngestMaintenanceFeeData...");
-            System.exit(1);
-        }
-
-        // pair data
-        try {
-            DownloadLatestPAIR.main(args);
-            IngestPairData.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Exited during stage IngestPairData...");
-            System.exit(1);
-        }
-
-        // ptab data
-        try {
-            IngestPTABData.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Exited during stage IngestPTABData...");
-            System.exit(1);
-        }
-
-        // wipo
-        try {
-            IngestWIPOTechnologies.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Exited during stage IngestWIPOTechnologies...");
-            System.exit(1);
-        }
-
-        // cpc backup datasource
-        try {
-            UpdateClassificationHash.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Exited during stage UpdateClassificationHash...");
-            System.exit(1);
-        }
-
-
         // AGGREGATIONS (do family id idx first)
 
         // run helper sql commands to build dependent tables
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/family_id_idx.sql"));
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute family_id_idx...");
             System.exit(1);
         }
 
+        {
+            ExecutorService service = Executors.newFixedThreadPool(4);
+            service.execute(() -> {
+                // cpc trees
+                try {
+                    runSqlTable(new File("src/seeding/google/postgres/attribute_tables/cpc_tree.sql"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Failed to execute cpc_tree...");
+                    System.exit(1);
+                }
+            });
 
-        // cpc trees
-        try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/cpc_tree.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute cpc_tree...");
-            System.exit(1);
+            service.execute(() -> {
+                // citations_and_pclaims
+                try {
+                    runSqlTable(new File("src/seeding/google/postgres/attribute_tables/citations_and_pclaims.sql"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Failed to execute citations_and_pclaims...");
+                    System.exit(1);
+                }
+
+                try {
+                    // NOTE: Must be run after priority claim aggregations...
+                    runSqlTable(new File("src/seeding/google/postgres/attribute_tables/reissue.sql"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Failed to execute reissue...");
+                    System.exit(1);
+                }
+            });
+
+            service.execute(() -> {
+                try {
+                    runSqlTable(new File("src/seeding/google/postgres/attribute_tables/maintenance_codes_aggs.sql"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Failed to execute maintenance_codes_aggs...");
+                    System.exit(1);
+                }
+            });
+
+
+            service.execute(() -> {
+                try {
+                    runSqlTable(new File("src/seeding/google/postgres/attribute_tables/pair_aggs.sql"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Failed to execute pair_aggs...");
+                    System.exit(1);
+                }
+            });
+
+
+            service.execute(() -> {
+                try {
+                    runSqlTable(new File("src/seeding/google/postgres/attribute_tables/wipo_aggs.sql"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Failed to execute wipo_aggs...");
+                    System.exit(1);
+                }
+            });
+
+            service.execute(() -> {
+                try {
+                    runSqlTable(new File("src/seeding/google/postgres/attribute_tables/ptab_aggs.sql"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Failed to execute ptab_aggs...");
+                    System.exit(1);
+                }
+            });
+
+
+            service.execute(() -> {
+                try {
+                    runSqlTable(new File("src/seeding/google/postgres/attribute_tables/patent_text_aggs.sql"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Failed to execute patent_text_aggs...");
+                    System.exit(1);
+                }
+            });
+
+            service.shutdown();
+            try {
+                service.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
 
 
-        // citations_and_pclaims
         try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/citations_and_pclaims.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute citations_and_pclaims...");
-            System.exit(1);
-        }
-
-
-        try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/maintenance_codes_aggs.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute maintenance_codes_aggs...");
-            System.exit(1);
-        }
-
-        try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/pair_aggs.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute pair_aggs...");
-            System.exit(1);
-        }
-
-        try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/wipo_aggs.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute wipo_aggs...");
-            System.exit(1);
-        }
-
-
-        try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/ptab_aggs.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute ptab_aggs...");
-            System.exit(1);
-        }
-
-
-
-        try {
-            // NOTE: Must be run after priority claim aggregations...
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/reissue.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute reissue...");
-            System.exit(1);
-        }
-
-
-        try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/patent_text_aggs.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute patent_text_aggs...");
-            System.exit(1);
-        }
-
-        try {
+            System.out.println("Predicting keywords...");
             PredictKeywords.main(args);
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/patent_keyword_aggs.sql"));
             FilterKeywordsByTFIDF.main(args);
@@ -247,40 +304,53 @@ public class UpdateAll {
             System.exit(1);
         }
 
+        ExecutorService service = Executors.newFixedThreadPool(4);
+        service.execute(() -> {
+            try {
+                runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignee_table.sql"));
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println("Failed to execute assignee_table...");
+                System.exit(1);
+            }
+        });
 
+        service.execute(() -> {
+            try {
+                runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignment_aggs.sql"));
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println("Failed to execute assignment_aggs...");
+                System.exit(1);
+            }
+
+            try {
+                runSqlTable(new File("src/seeding/google/postgres/attribute_tables/latest_assignees.sql"));
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println("Failed to execute latest_assignees...");
+                System.exit(1);
+            }
+
+            try {
+                runSqlTable(new File("src/seeding/google/postgres/attribute_tables/granted.sql"));
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println("Failed to execute granted...");
+                System.exit(1);
+            }
+        });
+
+        service.shutdown();
         try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignment_aggs.sql"));
+            service.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
         } catch(Exception e) {
             e.printStackTrace();
-            System.out.println("Failed to execute assignment_aggs...");
             System.exit(1);
         }
 
         try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignee_table.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute assignee_table...");
-            System.exit(1);
-        }
-
-        try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/latest_assignees.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute latest_assignees...");
-            System.exit(1);
-        }
-
-        try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/granted.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute granted...");
-            System.exit(1);
-        }
-
-        try {
+            System.out.println("Predicting AI values...");
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/ai_value.sql"));
         } catch(Exception e) {
             e.printStackTrace();
@@ -290,14 +360,13 @@ public class UpdateAll {
 
         // SIMILARITY
         try {
-            // run python code under gtt_models/src/java_compatibility/BuildPatentEncodings.py
-            // cd ~/repos/gtt_models/
-            // git pull origin master
-            // . ~/environments/tfenv/bin/activate
-            // python3 BuildPatentEncodings.py
-            // cd ~/repos/machine_learning_cloud/
+            System.out.println("Predicting similarity vectors...");
+            runProcess(". "+new File("scripts/production/update_similarity.sh"));
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/embedding_aggs.sql"));
-            IngestAssigneeEmbeddingsToPostgres.main(args);
+            if(monthUpdate) {
+                runProcess(". "+new File("scripts/production/update_cpc_similarity.sh"));
+                IngestAssigneeEmbeddingsToPostgres.main(args);
+            }
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -307,6 +376,7 @@ public class UpdateAll {
 
         // must run tech tagger after similarity model
         try {
+            System.out.println("Predicting tech tags...");
             PredictTechTags.main(args);
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/tech_tags_aggs.sql"));
         } catch(Exception e) {
@@ -315,12 +385,11 @@ public class UpdateAll {
             System.exit(1);
         }
 
-
-
         Database.close();
 
         // MERGE RESULTS
         try {
+            System.out.println("Merging final results...");
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/merge_patents_for_es.sql"));
         } catch(Exception e) {
             e.printStackTrace();
@@ -340,7 +409,11 @@ public class UpdateAll {
 
     private static void runSqlTable(File file) throws Exception {
         System.out.println("Starting sql file: "+file.getName());
-        ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", "psql patentdb < "+file.getAbsolutePath());
+        runProcess("psql patentdb < "+file.getAbsolutePath());
+    }
+
+    private static void runProcess(String proc) throws Exception {
+        ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", proc);
         Process process = ps.start();
         BufferedReader output = getOutput(process);
         BufferedReader error = getError(process);
@@ -353,5 +426,4 @@ public class UpdateAll {
         }
         process.waitFor();
     }
-
 }
