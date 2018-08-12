@@ -25,18 +25,15 @@ insert into big_query_family_id2 (publication_number_full,publication_number_wit
     from patents_global
 );
 
-
-create index big_query_family_id_fam_id2 on big_query_family_id2 (family_id);
-create index big_query_family_id_pub_num_with_country2 on big_query_family_id2 (publication_number_with_country);
-create index big_query_family_id_pub_num2 on big_query_family_id2 (publication_number);
-create index big_query_family_id_app_num_full2 on big_query_family_id2 (application_number_full);
-create index big_query_family_id_app_num_with_country2 on big_query_family_id2 (application_number_formatted_with_country);
-create index big_query_family_id_app_num2 on big_query_family_id2 (application_number);
-create index big_query_family_id_app_num_f2 on big_query_family_id2 (application_number_formatted);
-create index big_query_family_id_app_num_f_with_country2 on big_query_family_id2 (application_number_formatted_with_country);
-
-
 -- update table name
 drop table big_query_family_id;
 alter table big_query_family_id2 rename to big_query_family_id;
 
+create index big_query_family_id_fam_id2 on big_query_family_id (family_id);
+create index big_query_family_id_pub_num_with_country2 on big_query_family_id (publication_number_with_country);
+create index big_query_family_id_pub_num2 on big_query_family_id (publication_number);
+create index big_query_family_id_app_num_full2 on big_query_family_id (application_number_full);
+create index big_query_family_id_app_num_with_country2 on big_query_family_id (application_number_formatted_with_country);
+create index big_query_family_id_app_num2 on big_query_family_id (application_number);
+create index big_query_family_id_app_num_f2 on big_query_family_id (application_number_formatted);
+create index big_query_family_id_app_num_f_with_country2 on big_query_family_id (application_number_formatted_with_country);
