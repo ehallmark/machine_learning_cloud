@@ -1,6 +1,7 @@
 package seeding.google.tech_tag;
 
 import graphical_modeling.util.Pair;
+import seeding.Constants;
 import seeding.Database;
 
 import java.sql.Connection;
@@ -40,7 +41,10 @@ public class FilterKeywordsByTFIDF {
             ps.setFetchSize(100);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                wordData.put(rs.getString(1), new Pair<>(rs.getInt(2), rs.getInt(3)));
+                String word = rs.getString(1);
+                if (!Constants.CLAIM_STOP_WORD_SET.contains(word)) {
+                    wordData.put(rs.getString(1), new Pair<>(rs.getInt(2), rs.getInt(3)));
+                }
             }
             rs.close();
             ps.close();
@@ -76,7 +80,7 @@ public class FilterKeywordsByTFIDF {
 
 
     private static String[] handleTfidf(double numDocuments, Map<String,Long> countMap, Map<String,Pair<Integer,Integer>> wordData) {
-        final int tfidfLimit = Math.min(10, countMap.size()/2);
+        final int tfidfLimit = Math.min(10, countMap.size()/4);
         return countMap.entrySet().stream().filter(e->wordData.containsKey(e.getKey())).map(e->{
             Pair<Integer,Integer> p = wordData.get(e.getKey());
             double tfidf = e.getValue().doubleValue() * Math.log(p._1) * Math.log(numDocuments/p._2);
