@@ -51,7 +51,7 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
     private ContainerTag getAdditionalTagPerAttr(String attrName) {
         return div().withClass("row").with(
                 div().withClass("col-6").with(
-                        label("Max Rows").attr("title", "The maximum number of rows for this heat map chart.").attr("style","width: 100%;").with(
+                        label("Max Columns").attr("title", "The maximum number of columns for this heat map chart (defaults to 25).").attr("style","width: 100%;").with(
                                 br(),
                                 input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).withType("number").withClass("form-control").withValue("20")
                         )
