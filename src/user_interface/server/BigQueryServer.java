@@ -34,6 +34,7 @@ import seeding.Database;
 import seeding.google.elasticsearch.Attributes;
 import seeding.google.elasticsearch.attributes.DateRangeAttribute;
 import seeding.google.mongo.ingest.IngestPatents;
+import seeding.google.word2vec.Word2VecManager;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
@@ -66,10 +67,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.RecursiveTask;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -3395,5 +3393,12 @@ public class BigQueryServer extends SimilarPatentServer {
     public static void main(String[] args) throws Exception {
         loadStuff();
         HelpPage.helpPage(false);
+        (new RecursiveAction() {
+            @Override
+            protected void compute() {
+                System.out.println("Starting to load word2vec...");
+                Word2VecManager.getOrLoadManager();
+            }
+        }).fork();
     }
 }
