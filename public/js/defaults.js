@@ -352,7 +352,6 @@ var setupNavigationTabs = function() {
         e.stopPropagation()
         $(this).closest('ul').find('li').removeClass('active');
         $(this).tab('show');
-        update_expert_query_display();
     });
 };
 
@@ -392,7 +391,7 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                      $box.remove();
                      previewSelectionCache.clear();
                      setupNavigationTabs();
-                     $('#data-charts,#data-table').find('table.table').each(function() {
+                     $('#results').find('table.table').each(function() {
                          var $this = $(this);
                          var $t = $this.data('dynatable');
                          $t.process();
@@ -1611,6 +1610,7 @@ $(document).ready(function() {
         var $loaders = $('.loader');
         $loaders.show();
         $('#data-tab-link').click();
+        $('#filters-link').click();
         if(data===null) {
             alert("Error finding template.");
             $loaders.hide();
@@ -1773,6 +1773,7 @@ var setCollapsibleHeaders = function($selector) {
 var showDatasetFunction = function(data,tree,node){
     // need to get data
     $('#data-tab-link').click();
+    $('#filters-link').click();
     var nodeData = node;
     var parents = [];
     while(typeof nodeData.text !== 'undefined') {
@@ -1800,6 +1801,7 @@ var showDatasetFunction = function(data,tree,node){
 var showMultipleDatasetFunction = function(data,tree,node){
     // need to get data
     $('#data-tab-link').click();
+    $('#filters-link').click();
     var nodeData = node;
     var parents = [];
     while(typeof nodeData.text !== 'undefined') {
@@ -1840,6 +1842,7 @@ var showMultipleDatasetFunction = function(data,tree,node){
 
 var addMultipleDatasetFunction = function(data,tree,node){
     $('#data-tab-link').click();
+    $('#filters-link').click();
     var $datasetInput = $('#multiselect-multiselect-datasetNameInclude_filter');
 
     // need to get data
@@ -2740,6 +2743,7 @@ var setupJSTree = function(tree_id, dblclickFunction, node_type, jsNodeDataFunct
             var node = tree.get_node(event.target);
             if(node.type==='file') {
                 $('#data-tab-link').click();
+                $('#filters-link').click();
                 event.preventDefault();
                 event.stopPropagation();
                 dblclickFunction(node.data,tree,node);
