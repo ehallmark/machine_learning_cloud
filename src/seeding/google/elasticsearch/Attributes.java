@@ -334,4 +334,12 @@ public class Attributes {
             PTAB
     );
 
+
+    public static final Collection<String> ATTRIBUTES_WITH_SYNONYMS = Collections.synchronizedSet(new HashSet<>(Arrays.asList(
+            INVENTION_TITLE,
+            ABSTRACT,
+            DESCRIPTION,
+            CLAIMS
+    )));
+
 }

@@ -71,7 +71,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     public boolean contributesToScore() { return false; }
 
     public String getFullPrerequisite() {
-         return (parent==null?"":parent.getFullPrerequisite()+".")+getPrerequisite();
+         return (parent==null?"":(parent.getFullPrerequisite()+"."))+getPrerequisite();
     }
 
     @Override
