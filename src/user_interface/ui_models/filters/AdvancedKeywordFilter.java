@@ -158,7 +158,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
         if(allowSynonyms) {
             tag = tag.with(br(),
                     label("Synonym Search? ").attr("title", "Allow synonyms of keywords will also be included in the filter.").with(
-                            input().withType("checkbox").withId(getUseSynonymsId()).withValue("on")
+                            input().withType("checkbox").withId(getUseSynonymsId()).withName(getUseSynonymsId()).withValue("on")
                     )
             );
         }
