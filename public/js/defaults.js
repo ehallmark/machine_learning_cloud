@@ -478,6 +478,10 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                                 $link.click();
                             });
                         });
+                        var $recordCountHolder = $('#dynatable-record-count-main-preview-data-table');
+                        if($recordCountHolder && $recordCountHolder.attr('data-total')) {
+                            $recordCountHolder.text($recordCountHolder.text() + ' (Previewed from ' + $table.attr('data-total').toString() + ' records)');
+                        }
                         $table.wrap('<div class="col-12 table-wrapper" style="overflow-x: auto; max-width:100%;"></div>');
                         return true;
                    }).dynatable({

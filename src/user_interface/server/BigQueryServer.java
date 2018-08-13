@@ -2330,6 +2330,7 @@ public class BigQueryServer extends SimilarPatentServer {
                 itemSeparator = "; ";
             }
             SearchResponse response = requestBuilder.setSize(limit).setFrom(0).setQuery(queryBuilder).get();
+            long totalHits = response.getHits().totalHits;
             List<Item> items = DataSearcher.getItemsFromSearchResponse(response, Attributes.getNestedAttrMap(), isOverallScore, filterNestedObjects, limit, true, false);
             List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(items, tableHeaders, false, itemSeparator));
             List<Map<String, String>> tableDataHighlighted;
@@ -2344,6 +2345,7 @@ public class BigQueryServer extends SimilarPatentServer {
             excelRequestMap.put("rows", tableData);
             excelRequestMap.put("rows-highlighted", tableDataHighlighted);
             excelRequestMap.put("numericAttrNames", getNumericAttributes());
+            excelRequestMap.put("totalHits", totalHits);
             excelRequestMap.put("lock", new ReentrantLock());
             req.session(false).attribute("table-preview", excelRequestMap);
             req.session(false).attribute("preview_assets", items.stream().map(Item::getName).collect(Collectors.toList()));
@@ -2352,7 +2354,7 @@ public class BigQueryServer extends SimilarPatentServer {
                 tableHeaders.remove("selection");
             }
             Tag dataTable = div().withClass("row").attr("style", "margin-top: 10px;").with(
-                    tableFromPatentList(tableHeaders, true)
+                    tableFromPatentList(tableHeaders, true, totalHits)
             );
             results.put("html", dataTable.render());
             System.out.println("Table: "+dataTable.render());
@@ -2599,7 +2601,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                 )
                         );
                         Tag dataTable = div().withClass("row").attr("style", "margin-top: 10px;").with(
-                                tableFromPatentList(tableHeaders, false)
+                                tableFromPatentList(tableHeaders, false, 0l)
                         );
                         long timeEnd = System.currentTimeMillis();
                         double timeSeconds = new Double(timeEnd - timeStart) / 1000;

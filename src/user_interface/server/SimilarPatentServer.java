@@ -1791,7 +1791,7 @@ public class SimilarPatentServer {
     }
 
 
-    static Tag tableFromPatentList(List<String> attributes, boolean preview) {
+    static Tag tableFromPatentList(List<String> attributes, boolean preview, long total) {
         return span().withClass("collapse show").withId(preview? "data-table-preview":"data-table").with(
                 form().withMethod("post").attr("style", "text-align: center;").withTarget("_blank").withAction(preview?PREVIEW_DOWNLOAD_URL:DOWNLOAD_URL).with(
                         button("Download to CSV").withType("submit").withClass("btn btn-outline-secondary div-button").attr("style","width: 40%; margin-bottom: 20px;")
@@ -1809,12 +1809,12 @@ public class SimilarPatentServer {
                             )
                         )
                 ),
-                dataTableFromHeadersAndData(attributes, preview)
+                dataTableFromHeadersAndData(attributes, preview, total)
         );
     }
 
-    static Tag dataTableFromHeadersAndData(List<String> attributes, boolean preview) {
-        return table().withClass("table table-striped").withId(preview?"main-preview-data-table":"main-data-table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
+    static Tag dataTableFromHeadersAndData(List<String> attributes, boolean preview, long totalHits) {
+        return table().withClass("table table-striped").attr("data-total", String.valueOf(totalHits)).withId(preview?"main-preview-data-table":"main-data-table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                 thead().with(
                         tr().with(
                                 th().attr("data-dynatable-no-sort", "true").attr("data-dynatable-column", "selection").with(
