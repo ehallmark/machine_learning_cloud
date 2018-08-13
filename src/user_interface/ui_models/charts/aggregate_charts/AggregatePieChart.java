@@ -93,7 +93,7 @@ public class AggregatePieChart extends AggregationChart<PieChart> {
     private ContainerTag getAdditionalTagPerAttr(String attrName) {
         return div().withClass("row").with(
                 div().withClass("col-4").with(
-                        label("Max Slices").attr("title", "The maximum number of slices for this pie chart.").attr("style","width: 100%;").with(
+                        label("Max Slices").attr("title", "The maximum number of slices for this pie chart (defaults to 25).").attr("style","width: 100%;").with(
                                 br(),
                                 input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).withType("number").withClass("form-control").withValue("20")
                         )

@@ -27,7 +27,7 @@ import static j2html.TagCreator.*;
 public abstract class AbstractChartAttribute extends NestedAttribute implements DependentAttribute<AbstractChartAttribute> {
     public static final String MAX_GROUP_FIELD = "maxGroupSizeField";
     public static final String INCLUDE_BLANK_FIELD = "includeBlanks";
-    public static final int DEFAULT_MAX_SLICES = 30;
+    public static final int DEFAULT_MAX_SLICES = 25;
     protected static final Function2<ContainerTag,ContainerTag,ContainerTag> DEFAULT_COMBINE_BY_FUNCTION = (tag1,tag2) -> {
         return div().with(tag1,tag2);
     };

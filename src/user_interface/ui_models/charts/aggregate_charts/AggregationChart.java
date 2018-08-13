@@ -381,10 +381,10 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
 
     public List<AbstractAggregation> getAggregations(Request req, AbstractAttribute attribute, String attrName) {
         Integer maxSlices = null;
-        if (this instanceof AggregatePieChart) {
+        if (this instanceof AggregatePieChart || this instanceof AggregateHeatMapChart) {
             // check for max slices
-            maxSlices = ((AggregatePieChart) this).attrToLimitMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
-            boolean includeRemaining = ((AggregatePieChart) this).attrToIncludeRemainingMap.getOrDefault(attrName, false);
+            maxSlices = attrToLimitMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
+            boolean includeRemaining = attrToIncludeRemainingMap.getOrDefault(attrName, false);
             if(maxSlices > AggregatePieChart.MAXIMUM_AGGREGATION_SIZE) maxSlices = AggregatePieChart.MAXIMUM_AGGREGATION_SIZE;
             if (includeRemaining) {
                 maxSlices = AggregatePieChart.MAXIMUM_AGGREGATION_SIZE;
@@ -397,7 +397,7 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             System.out.println("Max slices: " + maxSlices);
         }
         if (maxSlices == null) {
-            maxSlices = AggregatePieChart.MAXIMUM_AGGREGATION_SIZE;
+            maxSlices = AggregatePieChart.DEFAULT_MAX_SLICES;
         }
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
