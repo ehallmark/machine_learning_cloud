@@ -1687,10 +1687,10 @@ $(document).ready(function() {
     $('#synonym-finder-button').click(function(e) {
         e.preventDefault();
         var $button = $(this);
-        if($button.prop('disabled')) {
+        if($button.hasClass('disabled')) {
             return false;
         }
-        $button.prop('disabled', true);
+        $button.addClass('disabled');
         var $text = $button.text();
         $button.text('Finding...');
         var $container = $('#synonymForm');
@@ -1714,7 +1714,7 @@ $(document).ready(function() {
                 $('#synonym-test-results').html('An unknown error occurred.');
             },
             complete: function() {
-                $button.prop('disabled', false);
+                $button.removeClass('disabled');
                 $button.text($text);
             }
         });
