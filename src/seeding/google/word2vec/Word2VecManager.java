@@ -3,6 +3,7 @@ package seeding.google.word2vec;
 import com.google.gson.Gson;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.word2vec.Word2Vec;
+import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
@@ -49,7 +50,10 @@ public class Word2VecManager {
                 PreparedStatement ps = conn.prepareStatement("select keyword, doc_count from big_query_keyword_count_helper where num_words=1");
                 ResultSet rs = ps.executeQuery();
                 while(rs.next()) {
-                    wordToCountMap.put(rs.getString(1), rs.getInt(2));
+                    String word = rs.getString(1);
+                    if (!Constants.CLAIM_STOP_WORD_SET.contains(word)) {
+                        wordToCountMap.put(word, rs.getInt(2));
+                    }
                 }
                 rs.close();
                 ps.close();
