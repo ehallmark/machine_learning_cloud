@@ -63,12 +63,12 @@ public class AdvancedKeywordFilter extends AbstractFilter {
                 } else if(clause.isRequired()) {
                     innerBuilder = innerBuilder.must(innerQuery);
                 } else {
-                    innerBuilder = innerBuilder.should(innerBuilder);
+                    innerBuilder = innerBuilder.should(innerQuery);
                 }
             }
             builder = builder.must(innerBuilder);
         } else {
-            builder.must(leafFunction.apply(query));
+            builder = builder.must(leafFunction.apply(query));
         }
         return builder;
     }
