@@ -28,7 +28,7 @@ public class Word2VecManager {
         for (String word : words) {
             Collection<String> similar = word2Vec.wordsNearest(word, n*2).stream().filter(sim->{
                 return getWordToCountMap().containsKey(sim) && word2Vec.similarity(word,sim) >= minSimilarity;
-            }).collect(Collectors.toList());
+            }).limit(n).collect(Collectors.toList());
             System.out.println("Similar to: "+word);
 
             for(String sim : similar) {
