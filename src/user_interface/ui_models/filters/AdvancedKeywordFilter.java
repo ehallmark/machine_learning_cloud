@@ -55,8 +55,8 @@ public class AdvancedKeywordFilter extends AbstractFilter {
 
     protected static QueryBuilder handleQuery(Query query, Function<Query,QueryBuilder> leafFunction, BoolQueryBuilder builder) {
         if(query instanceof BooleanQuery) {
-            BoolQueryBuilder innerBuilder = QueryBuilders.boolQuery();
             for(BooleanClause clause : ((BooleanQuery) query).clauses()) {
+                BoolQueryBuilder innerBuilder = QueryBuilders.boolQuery();
                 QueryBuilder innerQuery = handleQuery(clause.getQuery(), leafFunction, innerBuilder);
                 if(clause.isProhibited()) {
                     builder = builder.mustNot(innerQuery);

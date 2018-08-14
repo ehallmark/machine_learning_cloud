@@ -23,6 +23,10 @@ public class Word2VecManager {
         Map<String, Collection<String>> similarityMap = new HashMap<>();
         for (String word : words) {
             Collection<String> similar = word2Vec.wordsNearest(word, n);
+            System.out.println("Similar to: "+word);
+            for(String sim : similar) {
+                System.out.println("  "+sim+": "+word2Vec.similarity(word, sim));
+            }
             similar = similar.stream().filter(sim->word2Vec.similarity(word, sim) >= minSimilarity).collect(Collectors.toList());
             similarityMap.put(word, similar);
         }
@@ -32,7 +36,7 @@ public class Word2VecManager {
 
     public static final void main(String[] args) {
         // testing
-        Map<String, Collection<String>> results = synonymsFor(Arrays.asList("semiconductor", "medecine", "automotive"), 10, 0.0);
+        Map<String, Collection<String>> results = synonymsFor(Arrays.asList("semiconductor", "medicine", "medecine", "automotive", "virtual", "reality", "artificial", "semiconductor", "patent", "gsm", "aircraft", "uav", "drone", "speech", "database", "neural", "aquatic"), 10, 0.0);
         System.out.println("Results: "+new Gson().toJson(results));
     }
 }
