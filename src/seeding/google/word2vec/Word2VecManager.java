@@ -32,7 +32,7 @@ public class Word2VecManager {
 
     public static final void main(String[] args) {
         // testing
-        Map<String, Collection<String>> results = synonymsFor(Arrays.asList("semiconductor", "medecine", "automotive"), 10, 0.75);
+        Map<String, Collection<String>> results = synonymsFor(Arrays.asList("semiconductor", "medecine", "automotive"), 10, 0.0);
         System.out.println("Results: "+new Gson().toJson(results));
     }
 }
