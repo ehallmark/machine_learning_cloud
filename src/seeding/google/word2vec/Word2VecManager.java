@@ -18,6 +18,7 @@ public class Word2VecManager {
         if(MODEL==null) {
             String word2VecPath = new File("data/word2vec_model_large.nn256").getAbsolutePath();
             MODEL = WordVectorSerializer.readWord2VecModel(word2VecPath);
+            getWordToCountMap();
         }
         return MODEL;
     }
