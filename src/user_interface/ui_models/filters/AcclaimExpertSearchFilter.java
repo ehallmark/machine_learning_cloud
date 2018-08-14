@@ -80,6 +80,7 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
             String userGroup = BigQueryServer.getUserGroupFor(req.session());
             GlobalParser parser = new GlobalParser(user, userGroup, includeSynonyms, maxSynonyms, minSimilarity);
             query = parser.parseAcclaimQuery(queryStr);
+            this.synonymMap = parser.getSynonymMap();
         }
     }
 

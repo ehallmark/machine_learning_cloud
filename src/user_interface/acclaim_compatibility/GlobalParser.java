@@ -2,6 +2,7 @@ package user_interface.acclaim_compatibility;
 
 import com.google.gson.Gson;
 import data_pipeline.helpers.Function3;
+import lombok.Getter;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -286,8 +287,11 @@ public class GlobalParser {
     private boolean useSynonyms;
     private int maxSynonyms;
     private double minSimilarity;
+    @Getter
+    private Map<String,Collection<String>> synonymMap;
     public GlobalParser(String user, String userGroup, boolean useSynonyms, int maxSynonyms, double minSimilarity) {
         this.user=user;
+        this.synonymMap = new HashMap<>();
         this.maxSynonyms=maxSynonyms;
         this.minSimilarity=minSimilarity;
         this.useSynonyms = useSynonyms;
@@ -336,7 +340,7 @@ public class GlobalParser {
         return val;
     }
 
-    private static QueryBuilder replaceAcclaimName(String queryStr, Query query, String user, String userGroup, boolean useSynonyms, int maxSynonyms, double minSimilarity) {
+    private static QueryBuilder replaceAcclaimName(String queryStr, Query query, String user, String userGroup, boolean useSynonyms, int maxSynonyms, double minSimilarity, Map<String,Collection<String>> synonymHolder) {
         String nestedPath = null;
         String fullAttr = null;
         String val = null;
@@ -421,6 +425,7 @@ public class GlobalParser {
                 System.out.println("Using synonyms in expert query...");
                 String word = val.toLowerCase().trim();
                 Map<String, Collection<String>> synonymMap = Word2VecManager.synonymsFor(Collections.singletonList(word), maxSynonyms, minSimilarity);
+                synonymHolder.putAll(synonymMap);
                 System.out.println("Synonyms for "+word+": "+new Gson().toJson(synonymMap));
                 List<String> valid = new ArrayList<>();
                 valid.add(word);
@@ -509,7 +514,7 @@ public class GlobalParser {
             booleanQuery = (BooleanQuery)query;
             return parseAcclaimQueryHelper(booleanQuery);
         } else {
-            return replaceAcclaimName(query.toString(),query,user, userGroup, useSynonyms, maxSynonyms, minSimilarity);
+            return replaceAcclaimName(query.toString(),query,user, userGroup, useSynonyms, maxSynonyms, minSimilarity, synonymMap);
         }
     }
 
@@ -682,7 +687,7 @@ public class GlobalParser {
                     }
 
                 } else {
-                    builder = replaceAcclaimName(queryStr,subQuery,user,userGroup, useSynonyms, maxSynonyms, minSimilarity);
+                    builder = replaceAcclaimName(queryStr,subQuery,user,userGroup, useSynonyms, maxSynonyms, minSimilarity, synonymMap);
                 }
                 if(builder!=null) {
                     if(isProximityQuery||c.isRequired()) {

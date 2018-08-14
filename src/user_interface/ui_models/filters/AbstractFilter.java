@@ -44,6 +44,8 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     @Setter @Getter
     protected AbstractFilter parent;
     protected boolean isScriptFilter;
+    @Getter
+    protected Map<String,Collection<String>> synonymMap;
     public AbstractFilter(AbstractAttribute attribute, FilterType filterType) {
         super(Collections.singleton(filterType));
         this.attribute=attribute!=null && attribute instanceof DependentAttribute ? ((DependentAttribute) attribute).dup() : attribute;

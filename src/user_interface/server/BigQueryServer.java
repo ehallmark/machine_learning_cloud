@@ -2603,7 +2603,22 @@ public class BigQueryServer extends SimilarPatentServer {
                         );
                         long timeEnd = System.currentTimeMillis();
                         double timeSeconds = new Double(timeEnd - timeStart) / 1000;
-                        Tag results = div().with(
+
+                        Map<String,Collection<String>> synonymMap = engine.getSynonymMap();
+                        ContainerTag results = div();
+                        if(synonymMap.size()>0) {
+                            results = results.with(
+                                    div().withClass("col-12").with(
+                                            br(),
+                                            p("Synonyms Used")
+                                    ).with(
+                                            synonymMap.entrySet().stream().map(e->{
+                                                return div().withText(e.getKey()+": " + String.join("; ", e.getValue()));
+                                            }).collect(Collectors.toList())
+                                    )
+                            );
+                        }
+                        results = results.with(
                                 div().withClass("col-12").with(
                                         br(),
                                         p("Showing "+tableData.size()+" results out of "+totalCount+" total results matched. Took " + timeSeconds + " seconds."),

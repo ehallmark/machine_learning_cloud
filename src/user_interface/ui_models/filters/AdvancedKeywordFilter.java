@@ -86,6 +86,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
                 SimpleQueryParser query = new SimpleQueryParser(new KeywordAnalyzer(), "");
                 query.setDefaultOperator(BooleanClause.Occur.MUST);
                 Query lucene = query.parse(queryStr);
+                synonymMap = new HashMap<>();
                 Function<Query, QueryBuilder> leafFunction = q -> {
                     String qStr = q.toString();
                     System.out.println("qStr: "+qStr);
@@ -98,6 +99,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
                             System.out.println("Searching for synonyms...");
                             String word = qStr.toLowerCase().trim();
                             Map<String, Collection<String>> synonymMap = Word2VecManager.synonymsFor(Collections.singletonList(word), maxSynonyms, minSimilarity);
+                            AdvancedKeywordFilter.this.synonymMap.putAll(synonymMap);
                             System.out.println("Synonyms for "+word+": "+new Gson().toJson(synonymMap));
                             List<String> valid = new ArrayList<>();
                             valid.add(word);

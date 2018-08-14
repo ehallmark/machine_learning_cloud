@@ -45,7 +45,8 @@ public class SimilarityEngineController {
     private static List<AbstractSimilarityEngine> allEngines;
     @Setter
     private List<AggregationBuilder> aggregationBuilders;
-
+    @Getter
+    private Map<String,Collection<String>> synonymMap;
 
     public SimilarityEngineController dup() {
         return new SimilarityEngineController();
@@ -65,6 +66,12 @@ public class SimilarityEngineController {
         }).filter(i -> i != null).collect(Collectors.toList()));
         preFilters.forEach(filter -> filter.extractRelevantInformationFromParams(req));
         preFilters = preFilters.stream().filter(filter -> filter.isActive()).collect(Collectors.toList());
+        synonymMap = new HashMap<>();
+        preFilters.forEach(filter->{
+            if(filter.getSynonymMap()!=null) {
+                synonymMap.putAll(filter.getSynonymMap());
+            }
+        });
     }
 
     private static int getResultLimitForRole(String role) {
