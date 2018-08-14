@@ -1686,9 +1686,9 @@ $(document).ready(function() {
         var max_synonyms = $('#synonym-test-max').val();
         var min_similarity = $('#synonym-test-min').val();
 
-        $.ajax(
-            type: 'json',
-            method: 'POST',
+        $.ajax({
+            dataType: 'json',
+            type: 'POST',
             url: $container.attr('data-url'),
             success: function(data) {
                 $('#synonym-test-results').html(data.results);
@@ -1701,7 +1701,7 @@ $(document).ready(function() {
             error: function() {
                 $('#synonym-test-results').html('An unknown error occurred.');
             }
-        );
+        });
     })
 
 
