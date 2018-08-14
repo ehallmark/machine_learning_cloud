@@ -94,7 +94,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
                             // find synonyms
                             System.out.println("Searching for synonyms...");
                             String word = qStr.toLowerCase().trim();
-                            Map<String, Collection<String>> synonymMap = Word2VecManager.synonymsFor(Collections.singletonList(word), 5, 0.0);
+                            Map<String, Collection<String>> synonymMap = Word2VecManager.synonymsFor(Collections.singletonList(word), 5, 0.5);
                             System.out.println("Synonyms for "+word+": "+new Gson().toJson(synonymMap));
                             List<String> valid = new ArrayList<>();
                             valid.add(word);
