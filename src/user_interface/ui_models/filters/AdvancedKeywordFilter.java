@@ -86,6 +86,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
                 Function<Query, QueryBuilder> leafFunction = q -> {
                     String qStr = q.toString();
                     System.out.println("qStr: "+qStr);
+                    Operator op = Operator.AND;
                     if (q instanceof TermQuery) {
                         if(qStr.replaceAll("[^A-Za-z0-9]","").length()!=qStr.length()) {
                             qStr = "\"" + qStr + "\"";
@@ -99,15 +100,18 @@ public class AdvancedKeywordFilter extends AbstractFilter {
                             valid.add(word);
                             Collection<String> synonyms = synonymMap.getOrDefault(word, Collections.emptyList());
                             valid.addAll(synonyms);
-                            qStr = String.join(" | ", valid);
+                            qStr = String.join(" ", valid);
                             System.out.println("QStr After: "+qStr);
+                            op = Operator.OR;
                         }
                     }
-                    return QueryBuilders.simpleQueryStringQuery(qStr).defaultOperator(Operator.AND)
+                    return QueryBuilders.simpleQueryStringQuery(qStr).defaultOperator(op)
                             .analyzeWildcard(true)
                             .field(getFullPrerequisite());
                 };
-                return handleQuery(lucene, leafFunction, QueryBuilders.boolQuery());
+                QueryBuilder ret = handleQuery(lucene, leafFunction, QueryBuilders.boolQuery());
+                System.out.println("Synonym query: "+ret);
+                return ret;
             }
             return QueryBuilders.simpleQueryStringQuery(queryStr)
                     .defaultOperator(Operator.AND)
