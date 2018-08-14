@@ -19,6 +19,7 @@ import seeding.Constants;
 import seeding.google.elasticsearch.Attributes;
 import seeding.google.word2vec.Word2VecManager;
 import spark.Request;
+import user_interface.server.BigQueryServer;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
@@ -39,6 +40,8 @@ public class AdvancedKeywordFilter extends AbstractFilter {
     public static final String NOT_FRIENDLY = "NOT";
 
     protected Boolean includeSynonyms;
+    protected Double minSimilarity;
+    protected Integer maxSynonyms;
     @Setter
     protected String queryStr;
 
@@ -94,7 +97,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
                             // find synonyms
                             System.out.println("Searching for synonyms...");
                             String word = qStr.toLowerCase().trim();
-                            Map<String, Collection<String>> synonymMap = Word2VecManager.synonymsFor(Collections.singletonList(word), 5, 0.5);
+                            Map<String, Collection<String>> synonymMap = Word2VecManager.synonymsFor(Collections.singletonList(word), maxSynonyms, minSimilarity);
                             System.out.println("Synonyms for "+word+": "+new Gson().toJson(synonymMap));
                             List<String> valid = new ArrayList<>();
                             valid.add(word);
@@ -149,6 +152,19 @@ public class AdvancedKeywordFilter extends AbstractFilter {
         queryStr = queryStr.replace(" "+AND_FRIENDLY+" ",AND);
         queryStr = queryStr.replace(" "+NOT_FRIENDLY+" ",NOT);
         includeSynonyms = SimilarPatentServer.extractBool(req, getUseSynonymsId());
+        maxSynonyms = SimilarPatentServer.extractInt(req, Constants.MAX_SYNONYMS_FIELD_ID, Constants.DEFAULT_MAX_SYNONYMS);
+        minSimilarity = BigQueryServer.extractDouble(req, Constants.MIN_SIMILARITY_FIELD_ID, Constants.DEFAULT_MIN_SIMILARITY);
+        if(includeSynonyms && (minSimilarity==null || minSimilarity<0 || minSimilarity>1)) {
+            throw new RuntimeException("Minimum similarity for synonyms must be between 0-1. Set to 0 to disable synonyms.");
+        }
+        if(includeSynonyms && (maxSynonyms==null || maxSynonyms < 0)) {
+            throw new RuntimeException("Maximum synonyms must be non-negative. Set to 0 to disable synonyms.");
+        }
+        if(maxSynonyms==null) maxSynonyms = Constants.DEFAULT_MAX_SYNONYMS;
+        if(minSimilarity==null) minSimilarity = Constants.DEFAULT_MIN_SIMILARITY;
+        if(minSimilarity==0||maxSynonyms==0) {
+            includeSynonyms=false;
+        }
     }
 
     @Override

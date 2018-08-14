@@ -3144,6 +3144,14 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                                                 label("List Item Separator").attr("style","width: 100%;").with(
                                                                                                         input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder("; ").withName(LIST_ITEM_SEPARATOR_FIELD)
                                                                                                 )
+                                                                                        ), div().withClass("col-12 attributeElement").with(
+                                                                                                label("Maximum Synonyms").attr("title", "This setting determines the maximum number of synonyms to accept for a given search term. Values must be non-negative.").attr("style", "width:100%;").with(
+                                                                                                        input().withId(Constants.MAX_SYNONYMS_FIELD_ID).withClass("form-control").attr("step", "1").withType("number").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder(String.valueOf(Constants.DEFAULT_MAX_SYNONYMS)).withName(Constants.MAX_SYNONYMS_FIELD_ID)
+                                                                                                )
+                                                                                        ), div().withClass("col-12 attributeElement").with(
+                                                                                                label("Minimum Synonym Similarity").attr("title", "This setting determines the minimum similarity required to accept a synonym. Values range of [0-1].").attr("style", "width:100%;").with(
+                                                                                                        input().withId(Constants.MIN_SIMILARITY_FIELD_ID).withClass("form-control").attr("step", "0.1").withType("number").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder(String.valueOf(Constants.DEFAULT_MIN_SIMILARITY)).withName(Constants.MIN_SIMILARITY_FIELD_ID)
+                                                                                                )
                                                                                         )
                                                                                 )
                                                                         )

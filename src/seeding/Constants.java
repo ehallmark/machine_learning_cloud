@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Constants {
+	public static final int DEFAULT_MAX_SYNONYMS = 10;
+	public static final double DEFAULT_MIN_SIMILARITY = 0.5;
 	public static final String CPC_CODE_AJAX_URL = "/data/cpc/02395328523985293085923dgkld0938592385902835902";
 	public static final String ASSIGNEE_NAME_AJAX_URL = "/data/assignee/02395328523985293085923dgkld0938592385902835902";
 	public static final String DATASET_NAME_AJAX_URL = "/data/dataset_name/02395328523985293085923dgkld0938592385902835902";
@@ -66,6 +68,8 @@ public class Constants {
 	public static final String CORRESPONDENT_ADDRESS_ID = "correspondentAddressId";
 	public static final String APPLICATION_TYPE = "applicationType";
 	public static final String APPLICATION_CONFIRMATION_NUM = "applicationConfirmationNumber";
+	public static final String MIN_SIMILARITY_FIELD_ID = "minSimilarityFieldId";
+	public static final String MAX_SYNONYMS_FIELD_ID = "maxSimilarityFieldId";
 	public static final String APPLICANT_FILE_REFERENCE = "applicantFileReference";
 	public static final String APPLICATION_STATUS = "applicationStatus";
 	public static final String APPLICATION_STATUS_DATE = "applicationStatusDate";

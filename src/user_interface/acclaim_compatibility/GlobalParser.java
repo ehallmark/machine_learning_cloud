@@ -1,5 +1,6 @@
 package user_interface.acclaim_compatibility;
 
+import com.google.gson.Gson;
 import data_pipeline.helpers.Function3;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -13,6 +14,7 @@ import seeding.google.elasticsearch.Attributes;
 import seeding.google.elasticsearch.attributes.Expired;
 import seeding.google.elasticsearch.attributes.Granted;
 import seeding.google.elasticsearch.attributes.Lapsed;
+import seeding.google.word2vec.Word2VecManager;
 import user_interface.server.BigQueryServer;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
@@ -29,6 +31,21 @@ import java.util.*;
  * Created by ehallmark on 1/5/18.
  */
 public class GlobalParser {
+    private static final Set<String> synonymAttributes = Collections.synchronizedSet(new HashSet<>(Arrays.asList(
+            "TAC",
+            Attributes.CLAIMS,
+            Attributes.DESCRIPTION,
+            Attributes.INVENTION_TITLE,
+            Attributes.ABSTRACT,
+            "ABST",
+            "TTL",
+            "ACLM",
+            "ICLM",
+            "DCLM",
+            "SPEC",
+            "CLM"
+    )));
+
     private static final Function3<String,String,String,QueryBuilder> defaultDateTransformation = (name,val,user) -> {
         if(val==null||val.length()<=2) return null;
         String[] vals = val.toUpperCase().substring(1, val.length() - 1).split(" TO ");
@@ -266,8 +283,14 @@ public class GlobalParser {
     private QueryParser parser;
     private String user;
     private String userGroup;
-    public GlobalParser(String user, String userGroup) {
+    private boolean useSynonyms;
+    private int maxSynonyms;
+    private double minSimilarity;
+    public GlobalParser(String user, String userGroup, boolean useSynonyms, int maxSynonyms, double minSimilarity) {
         this.user=user;
+        this.maxSynonyms=maxSynonyms;
+        this.minSimilarity=minSimilarity;
+        this.useSynonyms = useSynonyms;
         this.userGroup=userGroup;
         this.parser = new QueryParser("", new KeywordAnalyzer());
         parser.setDefaultOperator(QueryParser.Operator.AND);
@@ -313,7 +336,7 @@ public class GlobalParser {
         return val;
     }
 
-    private static QueryBuilder replaceAcclaimName(String queryStr, Query query, String user, String userGroup) {
+    private static QueryBuilder replaceAcclaimName(String queryStr, Query query, String user, String userGroup, boolean useSynonyms, int maxSynonyms, double minSimilarity) {
         String nestedPath = null;
         String fullAttr = null;
         String val = null;
@@ -393,6 +416,18 @@ public class GlobalParser {
         if(query instanceof TermQuery) {
             if(val.replaceAll("[^A-Za-z0-9]","").length()!=val.length()) {
                 val = "\"" + val + "\"";
+            } else if(useSynonyms && (fullAttr==null || synonymAttributes.contains(fullAttr))) {
+                // synonyms
+                System.out.println("Using synonyms in expert query...");
+                String word = val.toLowerCase().trim();
+                Map<String, Collection<String>> synonymMap = Word2VecManager.synonymsFor(Collections.singletonList(word), maxSynonyms, minSimilarity);
+                System.out.println("Synonyms for "+word+": "+new Gson().toJson(synonymMap));
+                List<String> valid = new ArrayList<>();
+                valid.add(word);
+                Collection<String> synonyms = synonymMap.getOrDefault(word, Collections.emptyList());
+                valid.addAll(synonyms);
+                val = String.join(" | ", valid);
+                System.out.println("QStr After: "+val);
             }
         }
 
@@ -474,7 +509,7 @@ public class GlobalParser {
             booleanQuery = (BooleanQuery)query;
             return parseAcclaimQueryHelper(booleanQuery);
         } else {
-            return replaceAcclaimName(query.toString(),query,user, userGroup);
+            return replaceAcclaimName(query.toString(),query,user, userGroup, useSynonyms, maxSynonyms, minSimilarity);
         }
     }
 
@@ -647,7 +682,7 @@ public class GlobalParser {
                     }
 
                 } else {
-                    builder = replaceAcclaimName(queryStr,subQuery,user,userGroup);
+                    builder = replaceAcclaimName(queryStr,subQuery,user,userGroup, useSynonyms, maxSynonyms, minSimilarity);
                 }
                 if(builder!=null) {
                     if(isProximityQuery||c.isRequired()) {
@@ -676,7 +711,7 @@ public class GlobalParser {
 
 
     public static void main(String[] args) throws Exception {
-        GlobalParser parser = new GlobalParser("ehallmark", "ehallmark");
+        GlobalParser parser = new GlobalParser("ehallmark", "ehallmark", false, 1, 0.);
 
         QueryBuilder res = parser.parseAcclaimQuery("RFID:id.somethin && blah near2 blah \"search everything\" CPC:A02F33+ AND CPC:A02301\\/32 (ANC_F:\"HTC CORP\" OR ANC_F:\"HTC\") AND (ANO_F:HTC || FIELD:isEmptyANO_F) AND TTL:one ADJ21 (TTL: three AND TTL:two) CC:US AND DT:G AND EXP:[NOW+5YEARS TO NOW+6YEARS] AND EXP:f AND NOT PEND:false AND (PT:U OR PT:RE)");
 
