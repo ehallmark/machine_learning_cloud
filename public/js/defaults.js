@@ -1681,6 +1681,13 @@ $(document).ready(function() {
 
     $('#synonym-finder-button').click(function(e) {
         e.preventDefault();
+        var $button = $(this);
+        if($button.prop('disabled')) {
+            return false;
+        }
+        $button.prop('disabled', true);
+        var $text = $button.text();
+        $button.text('Finding...');
         var $container = $('#synonymForm');
         var words = $('#synonym-test-word').val();
         var max_synonyms = $('#synonym-test-max').val();
@@ -1700,6 +1707,10 @@ $(document).ready(function() {
             },
             error: function() {
                 $('#synonym-test-results').html('An unknown error occurred.');
+            },
+            complete: function() {
+                $button.prop('disabled', false);
+                $button.text($text);
             }
         });
     })
