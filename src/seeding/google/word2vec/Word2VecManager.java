@@ -46,7 +46,7 @@ public class Word2VecManager {
             wordToCountMap = Collections.synchronizedMap(new HashMap<>());
             Connection conn = Database.getConn();
             try {
-                PreparedStatement ps = conn.prepareStatement("select keyword, doc_count::long from big_query_keyword_count_helper where num_words=1");
+                PreparedStatement ps = conn.prepareStatement("select keyword, doc_count from big_query_keyword_count_helper where num_words=1");
                 ResultSet rs = ps.executeQuery();
                 while(rs.next()) {
                     wordToCountMap.put(rs.getString(1), rs.getInt(2));
