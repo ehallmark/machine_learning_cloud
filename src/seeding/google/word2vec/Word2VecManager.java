@@ -40,8 +40,8 @@ public class Word2VecManager {
         return similarityMap;
     }
 
-    private static Map<String,Long> wordToCountMap;
-    public static synchronized Map<String,Long> getWordToCountMap() {
+    private static Map<String,Integer> wordToCountMap;
+    public static synchronized Map<String,Integer> getWordToCountMap() {
         if(wordToCountMap == null) {
             wordToCountMap = Collections.synchronizedMap(new HashMap<>());
             Connection conn = Database.getConn();
@@ -49,7 +49,7 @@ public class Word2VecManager {
                 PreparedStatement ps = conn.prepareStatement("select keyword, doc_count::long from big_query_keyword_count_helper where num_words=1");
                 ResultSet rs = ps.executeQuery();
                 while(rs.next()) {
-                    wordToCountMap.put(rs.getString(1), rs.getLong(2));
+                    wordToCountMap.put(rs.getString(1), rs.getInt(2));
                 }
                 rs.close();
                 ps.close();
