@@ -67,10 +67,10 @@ public class DataSearcher {
             .preTags("<span style=\"background-color: yellow;\">")
             .requireFieldMatch(true)
             .highlightFilter(true)
-            .field(Constants.CLAIMS + "." + Constants.CLAIM)
-            .field(Constants.ABSTRACT)
-            .field(Constants.INVENTION_TITLE)
-            .field(Constants.ASSIGNMENTS + "." + Constants.CONVEYANCE_TEXT);
+            .field(Attributes.CLAIMS)
+            .field(Attributes.ABSTRACT)
+            .field(Attributes.INVENTION_TITLE)
+            .field(Attributes.ASSIGNMENTS + "." + Attributes.CONVEYANCE_TEXT);
 
     public static final String ARRAY_SEPARATOR = ">>>><<<<";
     @Getter
