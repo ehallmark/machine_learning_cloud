@@ -28,14 +28,10 @@ public class Word2VecManager {
         Word2Vec word2Vec = getOrLoadManager();
         Map<String, Collection<String>> similarityMap = new HashMap<>();
         for (String word : words) {
-            Collection<String> similar = word2Vec.wordsNearest(word, n*2).stream().filter(sim->{
-                return getWordToCountMap().containsKey(sim) && word2Vec.similarity(word,sim) >= minSimilarity;
+            String formatted = word.toLowerCase();
+            Collection<String> similar = word2Vec.wordsNearest(formatted, n*3).stream().filter(sim->{
+                return getWordToCountMap().containsKey(sim) && word2Vec.similarity(formatted,sim) >= minSimilarity;
             }).limit(n).collect(Collectors.toList());
-            System.out.println("Similar to: "+word);
-
-            for(String sim : similar) {
-                System.out.println("  "+sim+": "+word2Vec.similarity(word, sim));
-            }
             similarityMap.put(word, similar);
         }
         return similarityMap;
