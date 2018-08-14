@@ -431,7 +431,7 @@ public class GlobalParser {
                 valid.add(word);
                 Collection<String> synonyms = synonymMap.getOrDefault(word, Collections.emptyList());
                 valid.addAll(synonyms);
-                val = String.join(" | ", valid);
+                val = "("+String.join(" OR ", valid)+")";
                 System.out.println("QStr After: "+val);
             }
         }
