@@ -619,9 +619,7 @@ public class BigQueryServer extends SimilarPatentServer {
                     Collection<String> synonyms = synonymMap.getOrDefault(word, Collections.emptyList());
                     tag = tag.with(div().withClass("col-12").with(
                             p("Synonyms for: "+word)
-                    )).with(synonyms.stream().map(synonym->ol().with(
-                            li(synonym)
-                    )).collect(Collectors.toList()));
+                    )).with(ol().with(synonyms.stream().map(synonym-> li(synonym)).collect(Collectors.toList())));
                 }
                 results.put("results", tag.render());
 
@@ -3214,7 +3212,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                                 div().withClass("row").attr("style", "padding-bottom: 250px;").with(
                                                         loaderTag(),
                                                         div().withClass("col-12").withId("synonymForm").attr("data-url", SYNONYM_FINDER_URL).with(
-                                                                div().withClass("row").with(
+                                                                div().withClass("row").attr("style", "padding-top: 30px;").with(
                                                                         div().withClass("col-6").with(
                                                                                 label("Search synonyms of ").with(
                                                                                         br(),
@@ -3227,7 +3225,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                                 label("Minimum similarity").attr("title", "The minimum allowed similarity for a synonym. Values must be between 0 and 1.").with(
                                                                                         br(),
                                                                                         input().withType("number").attr("step", "0.1").withValue("0.5").withId("synonym-test-min").withClass("form-control")
-                                                                                ), br(),
+                                                                                ), br(),br(),
                                                                                 div().withClass("btn btn-outline-secondary div-button").attr("style", "width: 100%").withId("synonym-finder-button").withText("Find Synonyms")
                                                                         ), div().withClass("col-6").attr("style", "max-height: 800px; overflow-y: auto;").withId("synonym-test-results").with(
 
