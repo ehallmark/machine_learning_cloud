@@ -1685,6 +1685,7 @@ $(document).ready(function() {
     });
 
     $('#synonym-finder-button').click(function(e) {
+        $('#miniTip').hide();
         e.preventDefault();
         var $button = $(this);
         if($button.hasClass('disabled')) {
@@ -1697,6 +1698,7 @@ $(document).ready(function() {
         var words = $('#synonym-test-word').val();
         var max_synonyms = $('#synonym-test-max').val();
         var min_similarity = $('#synonym-test-min').val();
+        $('#miniTip').hide();
 
         $.ajax({
             dataType: 'json',
