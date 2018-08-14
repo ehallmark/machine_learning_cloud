@@ -1678,6 +1678,11 @@ $(document).ready(function() {
         return false;
     };
 
+    $('#synonym-test-word,#synonym-test-max,#synonym-test-word').keyup(function(e) {
+        if (e.keyCode === 13) {
+           $('#synonym-finder-button').trigger('click');
+        }
+    });
 
     $('#synonym-finder-button').click(function(e) {
         e.preventDefault();
