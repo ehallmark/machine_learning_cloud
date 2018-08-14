@@ -59,14 +59,13 @@ public class AdvancedKeywordFilter extends AbstractFilter {
             for(BooleanClause clause : ((BooleanQuery) query).clauses()) {
                 QueryBuilder innerQuery = handleQuery(clause.getQuery(), leafFunction, innerBuilder);
                 if(clause.isProhibited()) {
-                    innerBuilder = innerBuilder.mustNot(innerQuery);
+                    builder = builder.mustNot(innerQuery);
                 } else if(clause.isRequired()) {
-                    innerBuilder = innerBuilder.must(innerQuery);
+                    builder = builder.must(innerQuery);
                 } else {
-                    innerBuilder = innerBuilder.should(innerQuery);
+                    builder = builder.should(innerQuery);
                 }
             }
-            builder = builder.must(innerBuilder);
         } else {
             builder = builder.must(leafFunction.apply(query));
         }
@@ -94,7 +93,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
                             // find synonyms
                             System.out.println("Searching for synonyms...");
                             String word = qStr.toLowerCase().trim();
-                            Map<String, Collection<String>> synonymMap = Word2VecManager.synonymsFor(Collections.singletonList(word), 5, 0.90);
+                            Map<String, Collection<String>> synonymMap = Word2VecManager.synonymsFor(Collections.singletonList(word), 5, 0.0);
                             System.out.println("Synonyms for "+word+": "+new Gson().toJson(synonymMap));
                             List<String> valid = new ArrayList<>();
                             valid.add(word);
