@@ -5,7 +5,6 @@ import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import seeding.Constants;
-import seeding.google.elasticsearch.Attributes;
 import spark.Request;
 import user_interface.acclaim_compatibility.GlobalParser;
 import user_interface.server.BigQueryServer;
@@ -95,7 +94,7 @@ public class AcclaimExpertSearchFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         return div().with(
-                button("Syntax").withClass("miniTip2 btn btn-sm btn-outline-secondary"),
+                div().withText("Syntax").withClass("miniTip2 btn btn-sm btn-outline-secondary"),
                 textarea().withId(getId()).withClass("form-control").attr("placeholder","Example: (ACLM:\"find in claim text\"^3 OR TTL:\"in invention title\"~6) || ACLM:prefi* || TTL:wil?card && NOT EXP:expired AND EXP:[NOW+5years TO *]").withName(getName()),
                 br(),
                 label("Synonym Search? ").attr("title", "Allows synonyms of keywords to be matched.").with(

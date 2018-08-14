@@ -173,7 +173,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         boolean allowSynonyms = Attributes.ATTRIBUTES_WITH_SYNONYMS.contains(getAttribute().getName());
         ContainerTag tag = div().with(
-                button("Syntax").withClass("miniTip btn btn-sm btn-outline-secondary"),
+                div().withText("Syntax").withClass("miniTip btn btn-sm btn-outline-secondary"),
                 textarea().withId(getId()).withClass("form-control").attr("placeholder","Example: (\"find this phrase\" | \"or this one\")").withName(getName())
         );
         if(allowSynonyms) {
