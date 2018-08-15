@@ -608,7 +608,7 @@ public class BigQueryServer extends SimilarPatentServer {
             authorize(req,res);
             Map<String, Object> results = new HashMap<>();
 
-            String words = extractString(req, "words", "");
+            String words = extractString(req, "words", "").toLowerCase();
             double minSimilarity = extractDouble(req, "min_similarity", Constants.DEFAULT_MIN_SIMILARITY);
             int maxSynonyms = extractInt(req, "max_synonyms", Constants.DEFAULT_MAX_SYNONYMS);
             String[] wordArr = words.split("\\s+");

@@ -5,6 +5,7 @@ import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import seeding.Constants;
 import seeding.Database;
+import synonyms.ThesaurusCSVBuilder;
 
 import java.io.File;
 import java.sql.Connection;
@@ -19,19 +20,23 @@ public class Word2VecManager {
         if(MODEL==null) {
             String word2VecPath = new File("data/word2vec_model_large.nn256").getAbsolutePath();
             MODEL = WordVectorSerializer.readWord2VecModel(word2VecPath);
+            System.out.println("Loading word to count map...");
             getWordToCountMap();
+            System.out.println("Loading thesaurus...");
+            getDefaultThesaurus();
+            System.out.println("Finished loading word2vec mangager.");
         }
         return MODEL;
     }
 
     public static Map<String, Collection<String>> synonymsFor(List<String> words, int n, double minSimilarity) {
-        Word2Vec word2Vec = getOrLoadManager();
+        ThesaurusCSVBuilder thesaurus = getDefaultThesaurus();
         Map<String, Collection<String>> similarityMap = new HashMap<>();
+        String[] context = words.toArray(new String[words.size()]);
         for (String word : words) {
-            String formatted = word.toLowerCase();
-            Collection<String> similar = word2Vec.wordsNearest(formatted, n*3).stream().filter(sim->{
-                return getWordToCountMap().containsKey(sim) && word2Vec.similarity(formatted,sim) >= minSimilarity;
-            }).limit(n).collect(Collectors.toList());
+            Collection<String> similar = thesaurus.synonymsFor(word, context).stream().filter(sim->{
+                return getWordToCountMap().containsKey(sim);
+            }).map(s->s.contains(" ")?("\""+s+"\""):s).limit(n).collect(Collectors.toList());
             similarityMap.put(word, similar);
         }
         return similarityMap;
@@ -43,7 +48,7 @@ public class Word2VecManager {
             wordToCountMap = Collections.synchronizedMap(new HashMap<>());
             Connection conn = Database.getConn();
             try {
-                PreparedStatement ps = conn.prepareStatement("select keyword, doc_count from big_query_keyword_count_helper where num_words=1");
+                PreparedStatement ps = conn.prepareStatement("select keyword, doc_count from big_query_keyword_count_helper");
                 ResultSet rs = ps.executeQuery();
                 while(rs.next()) {
                     String word = rs.getString(1);
@@ -58,6 +63,16 @@ public class Word2VecManager {
             }
         }
         return wordToCountMap;
+    }
+
+    private static ThesaurusCSVBuilder THESAURUS;
+    public static synchronized ThesaurusCSVBuilder getDefaultThesaurus() {
+        if(THESAURUS==null) {
+            THESAURUS = new ThesaurusCSVBuilder();
+            // test
+            THESAURUS.synonymsFor("test", new String[]{"context", "words"});
+        }
+        return THESAURUS;
     }
 
 

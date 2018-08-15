@@ -1,11 +1,17 @@
 package synonyms;
 
 import com.opencsv.CSVReader;
+import org.deeplearning4j.models.word2vec.Word2Vec;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.ops.transforms.Transforms;
+import org.nd4j.linalg.primitives.Pair;
+import seeding.google.word2vec.Word2VecManager;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ThesaurusCSVBuilder {
     private static Map<String,WordSynonym> loadWordSynonyms() throws Exception {
@@ -98,11 +104,56 @@ public class ThesaurusCSVBuilder {
         return results;
     }
 
+    public List<String> synonymsFor(String word, String... contextWords) {
+        if (word == null) return Collections.emptyList();
+        word = word.toLowerCase();
+        Word2Vec model = Word2VecManager.getOrLoadManager();
+        INDArray contextVector;
+        if (contextWords.length > 0) {
+            INDArray vec = model.getWordVectors(Arrays.asList(contextWords));
+            if (vec.shape()[0] > 0) {
+                contextVector = Transforms.unitVec(vec.sum(0));
+            } else {
+                contextVector = null;
+            }
+        } else {
+            contextVector = null;
+        }
+        List<WordSynonym> wordSynonyms = allMeaningsOfWord(word);
+        if (wordSynonyms.isEmpty()) {
+            if ((word.endsWith("es") || word.endsWith("ed")) && word.length() > 3 && word.substring(word.length() - 3, word.length() - 2).replaceAll("[aeiou ]", "").length() == 1) {
+                wordSynonyms = allMeaningsOfWord(word.substring(0, word.length() - 2));
+            } else if (word.endsWith("s")) {
+                wordSynonyms = allMeaningsOfWord(word.substring(0, word.length() - 1));
+            }
+        }
+        // sort word synonyms by overall similarity to the context vector
+        WordSynonym bestSynonym = wordSynonyms.stream().map(s -> {
+            double sim;
+            if (s.getSynonyms().size() > 0 && contextVector != null) {
+                INDArray vectors = model.getWordVectors(s.getSynonyms());
+                if (vectors.shape()[0] > 0) {
+                    vectors = Transforms.unitVec(vectors.sum(0));
+                    sim = Transforms.cosineSim(vectors, contextVector);
+                } else {
+                    sim = 0d;
+                }
+            } else {
+                sim = 0d;
+            }
+            return new Pair<>(s, sim);
+        }).max((e1, e2) -> e1.getSecond().compareTo(e2.getSecond())).map(e -> e.getFirst()).orElse(null);
+        if (bestSynonym == null) {
+            return Collections.emptyList();
+        } else {
+            return bestSynonym.getSynonyms().stream().collect(Collectors.toList());
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         ThesaurusCSVBuilder thesaurus = new ThesaurusCSVBuilder();
-        for(WordSynonym word: thesaurus.allMeaningsOfWord("patent")) {
-            System.out.println("Similar word: "+String.join("; ", word.getSynonyms()));
+        for(String word: Arrays.asList("patent", "invention", "novel", "wifi", "inventions", "patented")) {
+            System.out.println("Similar to "+word+": "+String.join("; ", thesaurus.synonymsFor(word)));
         }
 
     }
