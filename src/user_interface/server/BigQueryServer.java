@@ -3191,11 +3191,11 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                                                 )
                                                                                         ), div().withClass("col-12 attributeElement").with(
                                                                                                 label("Maximum Synonyms").attr("title", "This setting determines the maximum number of synonyms to accept for a given search term. Values must be non-negative.").attr("style", "width:100%;").with(
-                                                                                                        input().withId(Constants.MAX_SYNONYMS_FIELD_ID).withClass("form-control").attr("step", "1").withType("number").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder(String.valueOf(Constants.DEFAULT_MAX_SYNONYMS)).withName(Constants.MAX_SYNONYMS_FIELD_ID)
+                                                                                                        input().attr("min", "0").withId(Constants.MAX_SYNONYMS_FIELD_ID).withClass("form-control").attr("step", "1").withType("number").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder(String.valueOf(Constants.DEFAULT_MAX_SYNONYMS)).withName(Constants.MAX_SYNONYMS_FIELD_ID)
                                                                                                 )
                                                                                         ), div().withClass("col-12 attributeElement").with(
                                                                                                 label("Minimum Synonym Similarity").attr("title", "This setting determines the minimum similarity required to accept a synonym. Values range of [0-1].").attr("style", "width:100%;").with(
-                                                                                                        input().withId(Constants.MIN_SIMILARITY_FIELD_ID).withClass("form-control").attr("step", "0.1").withType("number").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder(String.valueOf(Constants.DEFAULT_MIN_SIMILARITY)).withName(Constants.MIN_SIMILARITY_FIELD_ID)
+                                                                                                        input().attr("min", "0").attr("max", "1").withId(Constants.MIN_SIMILARITY_FIELD_ID).withClass("form-control").attr("step", "0.1").withType("number").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder(String.valueOf(Constants.DEFAULT_MIN_SIMILARITY)).withName(Constants.MIN_SIMILARITY_FIELD_ID)
                                                                                                 )
                                                                                         )
                                                                                 )
@@ -3222,11 +3222,11 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                                 ), br(),
                                                                                 label("Maximum number of synonyms ").attr("style", "width: 80%;").attr("title", "The maximum number of synonyms to return. Values must be non-negative.").with(
                                                                                         br(),
-                                                                                        input().attr("style", "width: 100%;").withType("number").attr("step", "1").withValue("10").withId("synonym-test-max").withClass("form-control")
+                                                                                        input().attr("min", "0").attr("style", "width: 100%;").withType("number").attr("step", "1").withValue("10").withId("synonym-test-max").withClass("form-control")
                                                                                 ), br(),
                                                                                 label("Minimum similarity").attr("style", "width: 80%;").attr("title", "The minimum allowed similarity for a synonym. Values must be between 0 and 1.").with(
                                                                                         br(),
-                                                                                        input().attr("style", "width: 100%;").withType("number").attr("step", "0.1").withValue("0.5").withId("synonym-test-min").withClass("form-control")
+                                                                                        input().attr("min", "0").attr("max", "1").attr("style", "width: 100%;").withType("number").attr("step", "0.1").withValue("0.5").withId("synonym-test-min").withClass("form-control")
                                                                                 ), br(),br(),
                                                                                 div().withClass("btn btn-outline-secondary div-button").attr("style", "width: 100%").withId("synonym-finder-button").withText("Find Synonyms")
                                                                         ), div().withClass("col-6").attr("style", "max-height: 800px; overflow-y: auto;").withId("synonym-test-results").with(
