@@ -35,6 +35,7 @@ public class Word2VecManager {
         String[] context = words.toArray(new String[words.size()]);
         for (String word : words) {
             Collection<String> similar = thesaurus.synonymsFor(word, context).stream().filter(sim->{
+                System.out.println("Found: "+sim);
                 return getWordToCountMap().containsKey(sim);
             }).map(s->s.contains(" ")?("\""+s+"\""):s).limit(n).collect(Collectors.toList());
             similarityMap.put(word, similar);

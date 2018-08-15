@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ThesaurusCSVBuilder {
     private static Map<String,WordSynonym> loadWordSynonyms() throws Exception {
@@ -107,10 +108,13 @@ public class ThesaurusCSVBuilder {
     public List<String> synonymsFor(String word, String... contextWords) {
         if (word == null) return Collections.emptyList();
         word = word.toLowerCase();
+        System.out.println("Searching for synonyms of: "+word);
         Word2Vec model = Word2VecManager.getOrLoadManager();
         INDArray contextVector;
-        if (contextWords.length > 0) {
-            INDArray vec = model.getWordVectors(Arrays.asList(contextWords));
+        List<String> contextWordsAvailable = Stream.of(contextWords)
+                .filter(w->model.hasWord(w)).collect(Collectors.toList());
+        if (contextWordsAvailable.size() > 0) {
+            INDArray vec = model.getWordVectors(contextWordsAvailable);
             if (vec.shape()[0] > 0) {
                 contextVector = Transforms.unitVec(vec.sum(0));
             } else {
@@ -130,8 +134,10 @@ public class ThesaurusCSVBuilder {
         // sort word synonyms by overall similarity to the context vector
         WordSynonym bestSynonym = wordSynonyms.stream().map(s -> {
             double sim;
-            if (s.getSynonyms().size() > 0 && contextVector != null) {
-                INDArray vectors = model.getWordVectors(s.getSynonyms());
+            List<String> availableSynonyms = s.getSynonyms().stream().filter(w->model.hasWord(w))
+                    .collect(Collectors.toList());
+            if (availableSynonyms.size() > 0 && contextVector != null) {
+                INDArray vectors = model.getWordVectors(availableSynonyms);
                 if (vectors.shape()[0] > 0) {
                     vectors = Transforms.unitVec(vectors.sum(0));
                     sim = Transforms.cosineSim(vectors, contextVector);
