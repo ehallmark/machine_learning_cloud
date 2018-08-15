@@ -305,47 +305,35 @@ public class UpdateAll {
         }
 
         ExecutorService service = Executors.newFixedThreadPool(4);
-        service.execute(() -> {
-            try {
-                runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignee_table.sql"));
-            } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println("Failed to execute assignee_table...");
-                System.exit(1);
-            }
-        });
 
-        service.execute(() -> {
-            try {
-                runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignment_aggs.sql"));
-            } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println("Failed to execute assignment_aggs...");
-                System.exit(1);
-            }
-
-            try {
-                runSqlTable(new File("src/seeding/google/postgres/attribute_tables/latest_assignees.sql"));
-            } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println("Failed to execute latest_assignees...");
-                System.exit(1);
-            }
-
-            try {
-                runSqlTable(new File("src/seeding/google/postgres/attribute_tables/granted.sql"));
-            } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println("Failed to execute granted...");
-                System.exit(1);
-            }
-        });
-
-        service.shutdown();
         try {
-            service.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignee_table.sql"));
         } catch(Exception e) {
             e.printStackTrace();
+            System.out.println("Failed to execute assignee_table...");
+            System.exit(1);
+        }
+        try {
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignment_aggs.sql"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute assignment_aggs...");
+            System.exit(1);
+        }
+
+        try {
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/latest_assignees.sql"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute latest_assignees...");
+            System.exit(1);
+        }
+
+        try {
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/granted.sql"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute granted...");
             System.exit(1);
         }
 
