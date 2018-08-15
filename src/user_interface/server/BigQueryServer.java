@@ -619,7 +619,9 @@ public class BigQueryServer extends SimilarPatentServer {
                     Collection<String> synonyms = synonymMap.getOrDefault(word, Collections.emptyList());
                     tag = tag.with(div().withClass("col-12").with(
                             p("Synonyms for: "+word)
-                    )).with(ol().with(synonyms.stream().map(synonym-> li(synonym)).collect(Collectors.toList())));
+                    )).with(ol().with(synonyms.stream().map(synonym->new Pair<>(synonym, Word2VecManager.getOrLoadManager().similarity(word.toLowerCase(),synonym)))
+                            .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond()))
+                            .map(p-> li(p.getFirst()+" ("+p.getSecond()+")")).collect(Collectors.toList())));
                 }
                 results.put("results", tag.render());
 
