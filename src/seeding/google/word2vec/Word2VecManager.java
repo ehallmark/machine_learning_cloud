@@ -24,7 +24,7 @@ public class Word2VecManager {
             getWordToCountMap();
             System.out.println("Loading thesaurus...");
             getDefaultThesaurus();
-            System.out.println("Finished loading word2vec mangager.");
+            System.out.println("Finished loading word2vec manager.");
         }
         return MODEL;
     }
