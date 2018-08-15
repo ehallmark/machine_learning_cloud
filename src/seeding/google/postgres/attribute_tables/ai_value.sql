@@ -11,8 +11,8 @@ insert into big_query_ai_value_family_size (family_id,family_size) (
     select family_id,count(*) from patents_global where family_id!='-1' group by family_id
 );
 
-drop table big_query_ai_value_claims;
-create table big_query_ai_value_claims (
+-- drop table big_query_ai_value_claims;
+create table if not exists big_query_ai_value_claims (
     publication_number_full varchar(32) primary key,
     means_present integer,
     num_claims integer,
@@ -20,13 +20,13 @@ create table big_query_ai_value_claims (
 ); -- insert script is located in patent_text.sql
 
 insert into big_query_ai_value_claims (
-    select publication_number_full,
-    coalesce(case when bool_or(means_present) is null then null when bool_or(means_present) then 1 else 0 end, case when bool_and(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else (claim like '% means %')::boolean end) then 1 else 0 end),
-    coalesce(mode() within group(order by num_claims), count(*)),
-    coalesce(mode() within group(order by length_smallest_ind_claim), min(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else array_length(array_remove(regexp_split_to_array(claim,'\s+'),''),1) end))
-    from big_query_patent_english_claims as p, unnest(regexp_split_to_array(claims, '((Iaddend..Iadd.)|(\n\s*\n\s*\n\s*))')) with ordinality as c(claim,n)
-    where num_claims is not null or (claim is not null and char_length(trim(claim))>20)
-    group by publication_number_full
+    select p.publication_number_full,
+    coalesce(case when bool_or(p.means_present) is null then null when bool_or(p.means_present) then 1 else 0 end, case when bool_and(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else (claim like '% means %')::boolean end) then 1 else 0 end),
+    coalesce(mode() within group(order by p.num_claims), count(*)),
+    coalesce(mode() within group(order by p.length_smallest_ind_claim), min(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else array_length(array_remove(regexp_split_to_array(claim,'\s+'),''),1) end))
+    from big_query_patent_english_claims as p full outer join big_query_ai_value_claims as e on (p.publication_number_full=e.publication_number_full), unnest(regexp_split_to_array(claims, '((Iaddend..Iadd.)|(\n\s*\n\s*\n\s*))')) with ordinality as c(claim,n)
+    where (p.num_claims is not null or (claim is not null and char_length(trim(claim))>20)) and e.publication_number_full is null
+    group by p.publication_number_full
 );
 
 
