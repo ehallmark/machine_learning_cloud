@@ -26,9 +26,38 @@ create table big_query_priority_and_expiration (
     priority_date date not null,
     priority_date_est date not null,
     expiration_date_est date,
-    expiration_reason text,
     term_adjustments integer
 );
+
+drop table big_query_priority_and_expiration_by_fam;
+create table big_query_priority_and_expiration_by_fam (
+    family_id varchar(32) primary key,
+    expiration_date_est date,
+    term_adjustments integer
+);
+
+
+insert into big_query_priority_and_expiration_by_fam (
+    select p.family_id,
+    case when bool_or(p.kind_code = 'WO') then min(case when p.kind_code='WO' then p.filing_date else null end)
+        else min(coalesce(p.priority_date, p.filing_date)) end,
+    coalesce(priority_date, filing_date) + interval '1' day * coalesce(term_adjustments,0),
+    case when country_code='US'
+        then
+            case when kind_code like 'S%'
+                then publication_date + interval '14 years'
+                else coalesce(priority_date, filing_date) + interval '1' day * coalesce(term_adjustments,0) + interval '20 years'
+            end
+        else null
+    end,
+    term_adjustments
+    from patents_global as p
+    left outer join big_query_pair_by_pub as pair
+    on (p.publication_number_full=pair.publication_number_full)
+    where p.family_id is not null and p.family_id!='-1'
+    group by p.family_id
+);
+
 
 insert into big_query_priority_and_expiration (
     select p.publication_number_full,
@@ -42,17 +71,9 @@ insert into big_query_priority_and_expiration (
             end
         else null
     end,
-    case when country_code='US'
-        then
-            case when kind_code like 'S%'
-                then 'US Design Patent: Expiration Date = Issued Date + Term Adjustments + 14 years'
-                else 'US Patent: Expiration Date = Priority Date + Term Adjustments + 20 years'
-            end
-        else null
-    end,
     term_adjustments
     from patents_global as p
     left outer join big_query_pair_by_pub as pair
     on (p.publication_number_full=pair.publication_number_full)
 
-);
+) on conflict do nothing;
