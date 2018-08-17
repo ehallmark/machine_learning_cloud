@@ -132,7 +132,7 @@ public class ThesaurusCSVBuilder {
             }
         }
         // sort word synonyms by overall similarity to the context vector
-        WordSynonym bestSynonym = wordSynonyms.stream().map(s -> {
+        return wordSynonyms.stream().map(s -> {
             double sim;
             List<String> availableSynonyms = s.getSynonyms().stream().flatMap(w->Stream.of(w.split("\\s+"))).filter(w->model.hasWord(w))
                     .collect(Collectors.toList());
@@ -148,12 +148,9 @@ public class ThesaurusCSVBuilder {
                 sim = 0d;
             }
             return new Pair<>(s, sim);
-        }).filter(p->p.getSecond()>=minSimilarity).max((e1, e2) -> e1.getSecond().compareTo(e2.getSecond())).map(e -> e.getFirst()).orElse(null);
-        if (bestSynonym == null) {
-            return Collections.emptyList();
-        } else {
-            return bestSynonym.getSynonyms().stream().collect(Collectors.toList());
-        }
+        }).filter(p->p.getSecond()>=minSimilarity).sorted((e1, e2) -> e1.getSecond().compareTo(e2.getSecond())).flatMap(e -> {
+            return e.getFirst().getSynonyms().stream();
+        }).distinct().collect(Collectors.toList());
     }
 
     public static void main(String[] args) throws Exception {
