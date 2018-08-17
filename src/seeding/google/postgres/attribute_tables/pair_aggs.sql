@@ -29,51 +29,40 @@ create table big_query_priority_and_expiration (
     term_adjustments integer
 );
 
-drop table big_query_priority_and_expiration_by_fam;
-create table big_query_priority_and_expiration_by_fam (
+drop table big_query_international_priority;
+create table big_query_international_priority (
     family_id varchar(32) primary key,
-    expiration_date_est date,
-    term_adjustments integer
+    priority_date date not null
 );
 
 
-insert into big_query_priority_and_expiration_by_fam (
+insert into big_query_international_priority (
     select p.family_id,
-    case when bool_or(p.kind_code = 'WO') then min(case when p.kind_code='WO' then p.filing_date else null end)
-        else min(coalesce(p.priority_date, p.filing_date)) end,
-    coalesce(priority_date, filing_date) + interval '1' day * coalesce(term_adjustments,0),
-    case when country_code='US'
-        then
-            case when kind_code like 'S%'
-                then publication_date + interval '14 years'
-                else coalesce(priority_date, filing_date) + interval '1' day * coalesce(term_adjustments,0) + interval '20 years'
-            end
-        else null
-    end,
-    term_adjustments
+    min(case when p.kind_code='WO' then coalesce(p.priority_date,p.filing_date) else null end)
     from patents_global as p
-    left outer join big_query_pair_by_pub as pair
-    on (p.publication_number_full=pair.publication_number_full)
     where p.family_id is not null and p.family_id!='-1'
     group by p.family_id
+    having bool_or(p.kind_code='WO')
 );
 
 
 insert into big_query_priority_and_expiration (
     select p.publication_number_full,
-    coalesce(priority_date, filing_date),
-    coalesce(priority_date, filing_date) + interval '1' day * coalesce(term_adjustments,0),
+    coalesce(p.priority_date, p.filing_date),
+    coalesce(p.priority_date, p.filing_date) + interval '1' day * coalesce(pair.term_adjustments,0),
     case when country_code='US'
         then
-            case when kind_code like 'S%'
-                then publication_date + interval '14 years'
-                else coalesce(priority_date, filing_date) + interval '1' day * coalesce(term_adjustments,0) + interval '20 years'
+            case when p.kind_code like 'S%'
+                then p.publication_date + interval '14 years'
+                else coalesce(pct.priority_date, coalesce(p.priority_date, p.filing_date)) + interval '1' day * coalesce(pair.term_adjustments,0) + interval '20 years'
             end
         else null
     end,
-    term_adjustments
+    pair.term_adjustments
     from patents_global as p
     left outer join big_query_pair_by_pub as pair
-    on (p.publication_number_full=pair.publication_number_full)
+        on (p.publication_number_full=pair.publication_number_full)
+    left outer join big_query_international_priority as pct
+        on (p.family_id=pct.family_id)
 
 ) on conflict do nothing;
