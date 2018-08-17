@@ -105,7 +105,7 @@ public class ThesaurusCSVBuilder {
         return results;
     }
 
-    public List<String> synonymsFor(String word, String... contextWords) {
+    public List<String> synonymsFor(String word, double minSimilarity, String... contextWords) {
         if (word == null) return Collections.emptyList();
         word = word.toLowerCase();
         System.out.println("Searching for synonyms of: "+word);
@@ -134,7 +134,7 @@ public class ThesaurusCSVBuilder {
         // sort word synonyms by overall similarity to the context vector
         WordSynonym bestSynonym = wordSynonyms.stream().map(s -> {
             double sim;
-            List<String> availableSynonyms = s.getSynonyms().stream().filter(w->model.hasWord(w))
+            List<String> availableSynonyms = s.getSynonyms().stream().flatMap(w->Stream.of(w.split("\\s+"))).filter(w->model.hasWord(w))
                     .collect(Collectors.toList());
             if (availableSynonyms.size() > 0 && contextVector != null) {
                 INDArray vectors = model.getWordVectors(availableSynonyms);
@@ -148,7 +148,7 @@ public class ThesaurusCSVBuilder {
                 sim = 0d;
             }
             return new Pair<>(s, sim);
-        }).max((e1, e2) -> e1.getSecond().compareTo(e2.getSecond())).map(e -> e.getFirst()).orElse(null);
+        }).filter(p->p.getSecond()>=minSimilarity).max((e1, e2) -> e1.getSecond().compareTo(e2.getSecond())).map(e -> e.getFirst()).orElse(null);
         if (bestSynonym == null) {
             return Collections.emptyList();
         } else {
@@ -159,7 +159,7 @@ public class ThesaurusCSVBuilder {
     public static void main(String[] args) throws Exception {
         ThesaurusCSVBuilder thesaurus = new ThesaurusCSVBuilder();
         for(String word: Arrays.asList("patent", "invention", "novel", "wifi", "inventions", "patented")) {
-            System.out.println("Similar to "+word+": "+String.join("; ", thesaurus.synonymsFor(word)));
+            System.out.println("Similar to "+word+": "+String.join("; ", thesaurus.synonymsFor(word, 0.4)));
         }
 
     }

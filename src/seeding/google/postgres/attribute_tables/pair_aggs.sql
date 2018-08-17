@@ -30,11 +30,11 @@ create table big_query_international_priority (
 
 insert into big_query_international_priority (
     select p.family_id,
-    min(case when p.kind_code='WO' then coalesce(p.priority_date,p.filing_date) else null end)
+    min(case when p.country_code='WO' then p.filing_date else null end)
     from patents_global as p
     where p.family_id is not null and p.family_id!='-1'
     group by p.family_id
-    having bool_or(p.kind_code='WO')
+    having bool_or(p.country_code='WO')
 );
 
 -- TODO make this a global thing

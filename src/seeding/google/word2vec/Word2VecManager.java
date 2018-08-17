@@ -34,7 +34,7 @@ public class Word2VecManager {
         Map<String, Collection<String>> similarityMap = new HashMap<>();
         String[] context = words.toArray(new String[words.size()]);
         for (String word : words) {
-            Collection<String> similar = thesaurus.synonymsFor(word, context).stream().filter(sim->{
+            Collection<String> similar = thesaurus.synonymsFor(word, minSimilarity, context).stream().filter(sim->{
                 System.out.println("Found: "+sim);
                 return getWordToCountMap().containsKey(sim);
             }).map(s->s.contains(" ")?("\""+s+"\""):s).limit(n).collect(Collectors.toList());
@@ -71,7 +71,7 @@ public class Word2VecManager {
         if(THESAURUS==null) {
             THESAURUS = new ThesaurusCSVBuilder();
             // test
-            THESAURUS.synonymsFor("test", new String[]{"context", "words"});
+            THESAURUS.synonymsFor("test", 0, new String[]{"context", "words"});
         }
         return THESAURUS;
     }
