@@ -112,6 +112,7 @@ public class ThesaurusCSVBuilder {
         Word2Vec model = Word2VecManager.getOrLoadManager();
         INDArray contextVector;
         List<String> contextWordsAvailable = Stream.of(contextWords)
+                .flatMap(w->Stream.of(w.split("//s+")))
                 .filter(w->model.hasWord(w)).collect(Collectors.toList());
         if (contextWordsAvailable.size() > 0) {
             INDArray vec = model.getWordVectors(contextWordsAvailable);
