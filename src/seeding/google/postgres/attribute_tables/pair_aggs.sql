@@ -19,15 +19,7 @@ insert into big_query_pair_by_pub (publication_number_full,original_entity_type,
     order by p.publication_number_full,p.publication_date desc nulls last
 );
 
--- TODO make this a global thing
-drop table big_query_priority_and_expiration;
-create table big_query_priority_and_expiration (
-    publication_number_full varchar(32) primary key,
-    priority_date date not null,
-    priority_date_est date not null,
-    expiration_date_est date,
-    term_adjustments integer
-);
+
 
 drop table big_query_international_priority;
 create table big_query_international_priority (
@@ -43,6 +35,16 @@ insert into big_query_international_priority (
     where p.family_id is not null and p.family_id!='-1'
     group by p.family_id
     having bool_or(p.kind_code='WO')
+);
+
+-- TODO make this a global thing
+drop table big_query_priority_and_expiration;
+create table big_query_priority_and_expiration (
+    publication_number_full varchar(32) primary key,
+    priority_date date not null,
+    priority_date_est date not null,
+    expiration_date_est date,
+    term_adjustments integer
 );
 
 
@@ -65,4 +67,4 @@ insert into big_query_priority_and_expiration (
     left outer join big_query_international_priority as pct
         on (p.family_id=pct.family_id)
 
-) on conflict do nothing;
+);
