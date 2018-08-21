@@ -23,21 +23,11 @@ import java.util.stream.Collectors;
 
  */
 public class PAIRHandler extends NestedHandler {
-    static TermAdjustmentAttribute termAdjustmentAttribute = new TermAdjustmentAttribute();
-
     protected static AtomicInteger cnt = new AtomicInteger(0);
     protected int batchSize = 10000;
-    protected boolean updatePostgres;
-    protected boolean updateElasticSearch;
-    protected Map<String,Integer> termAdjustmentMap;
-    private boolean onlyUpdateTermAdjustments;
     private Consumer<Map<String,Object>> postgresConsumer;
-    public PAIRHandler(Consumer<Map<String,Object>> postgresConsumer, boolean updateElasticSearch, boolean onlyUpdateTermAdjustments) {
-        this.updatePostgres = postgresConsumer!=null;
+    public PAIRHandler(Consumer<Map<String,Object>> postgresConsumer) {
         this.postgresConsumer=postgresConsumer;
-        this.termAdjustmentMap = updateElasticSearch ? termAdjustmentAttribute.loadMap() : null;
-        this.onlyUpdateTermAdjustments = onlyUpdateTermAdjustments;
-        this.updateElasticSearch = updateElasticSearch;
     }
 
     @Override
@@ -53,7 +43,7 @@ public class PAIRHandler extends NestedHandler {
                 String filingNumber = dataMap.get(applicationNumber);
                 if (filingNumber != null) {
                     filingNumber = Flag.filingDocumentHandler.apply(applicationNumber).apply(filingNumber).toString();
-                    if(updatePostgres) filingNumber = filingNumber.replace("/","");
+                    filingNumber = filingNumber.replace("/","");
                     dataMap.put(applicationNumber,filingNumber);
 
                     if (dataMap.containsKey(publicationNumber)) {
@@ -66,22 +56,7 @@ public class PAIRHandler extends NestedHandler {
                         }
                     }
                     Map<String,Object> cleanData = dataMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey().dbName,e->e.getValue()));
-                    if(updatePostgres) {
-                        postgresConsumer.accept(cleanData);
-                    }
-                    if(updateElasticSearch) {
-                        if(cleanData.size() > 0) {
-                            if(termAdjustmentMap!=null) {
-                                if(cleanData.containsKey(Constants.PATENT_TERM_ADJUSTMENT)) {
-                                    int adjustment = Integer.valueOf(cleanData.get(Constants.PATENT_TERM_ADJUSTMENT).toString());
-                                    termAdjustmentMap.put(filingNumber, adjustment);
-                                }
-                            }
-                            if(!onlyUpdateTermAdjustments) {
-                                DataIngester.ingestBulkFromFiling(filingNumber, cleanData, false);
-                            }
-                        }
-                    }
+                    postgresConsumer.accept(cleanData);
                 }
                 dataMap = new HashMap<>();
             }
@@ -111,16 +86,13 @@ public class PAIRHandler extends NestedHandler {
 
     @Override
     public CustomHandler newInstance() {
-        PAIRHandler handler = new PAIRHandler(postgresConsumer,updateElasticSearch,onlyUpdateTermAdjustments);
+        PAIRHandler handler = new PAIRHandler(postgresConsumer);
         handler.init();
         return handler;
     }
 
     @Override
     public void save() {
-        if(termAdjustmentAttribute!=null) {
-            termAdjustmentAttribute.saveMap(termAdjustmentMap);
-        }
     }
 
     public void endElement(String uri,String localName,

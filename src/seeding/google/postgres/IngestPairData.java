@@ -105,7 +105,7 @@ public class IngestPairData {
                 return false;
             }
         });
-        PAIRHandler handler = new PAIRHandler(ingest,false,false);
+        PAIRHandler handler = new PAIRHandler(ingest);
         handler.init();
         pairIterator.applyHandlers(handler);
         handler.save();

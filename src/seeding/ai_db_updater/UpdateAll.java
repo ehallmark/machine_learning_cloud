@@ -63,7 +63,7 @@ public class UpdateAll {
                     Database.main(args);
                     CreateCompDBAssigneeTransactionData.main(args);
                 } else if (arg.equals("4")) {
-                    UpdatePairBulkData.main(args);
+                   // UpdatePairBulkData.main(args);
                 } else if (arg.equals("5")) {
                     UpdateMaintenanceFeeData.main(args);
                 } else if (arg.equals("6")) {
