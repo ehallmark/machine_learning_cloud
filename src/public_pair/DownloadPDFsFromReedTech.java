@@ -14,8 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DownloadPDFsFromReedTech {
-    public static final String STORAGE_PREFIX = "/usb/public_pair/";
-    public static final File PAIR_BULK_FOLDER = new File(STORAGE_PREFIX+"data/");
+    public static final File PAIR_BULK_FOLDER = new File("pair_bulk_data/");
     public static void main(String[] args) throws Exception {
         List<Pair<String,Long>> applicationNumbers = LoadIndexFile.load();
         final ProxyHandler proxyHandler = new ProxyHandler();
@@ -67,18 +66,19 @@ public class DownloadPDFsFromReedTech {
         executor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    private static File fileFromApplicationNumber(String appNum8DigitFormat) {
+    public static File fileFromApplicationNumber(String appNum8DigitFormat) {
         String group1 = appNum8DigitFormat.substring(0,2);
         String group2 = appNum8DigitFormat.substring(2,4);
         return fileFromHelper(group1,group2,appNum8DigitFormat);
     }
 
     private static File fileFromHelper(String groupNo, String groupNo2, String appNo) {
-        File groupFolder = new File(new File(PAIR_BULK_FOLDER, groupNo), groupNo2);
-        if(!groupFolder.exists()) {
-            groupFolder.mkdirs();
-        }
-        return new File(groupFolder, appNo+".zip");
+       // File groupFolder = new File(new File(PAIR_BULK_FOLDER, groupNo), groupNo2);
+       // if(!groupFolder.exists()) {
+       //     groupFolder.mkdirs();
+       // }
+       // return new File(groupFolder, appNo+".zip");
+        return new File(PAIR_BULK_FOLDER,appNo);
     }
 
 }

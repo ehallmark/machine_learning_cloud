@@ -18,13 +18,9 @@ public class LoadIndexFile {
 
     public static final String STORAGE_PREFIX = "public_pair/";
     public static final String INDEX_FILE_URL = "http://patents.reedtech.com/downloads/PAIRIndex/Today/PAIRIndex.zip";
-    public static final String VALID_APPLICATION_NUMBERS_FILE = "valid_application_numbers_for_public_pair.csv";
     public static final String INDEX_OUTPUT_FILE = STORAGE_PREFIX+"PAIRIndex.txt";
 
     public static List<Pair<String,Long>> load() throws Exception {
-        Set<String> validApps = new HashSet<>(FileUtils.readLines(new File(VALID_APPLICATION_NUMBERS_FILE)));
-        System.out.println("Num valid apps: "+validApps.size());
-
         List<Pair<String,Long>> applicationNumbers = new ArrayList<>();
         // pull latest index file from reedtech.com
         {
@@ -47,12 +43,10 @@ public class LoadIndexFile {
             reader.lines().forEach(line->{
                 String[] cell = line.split(",");
                 String app_num = cell[0];
-                if(validApps.contains(app_num)) {
-                    long b = Long.valueOf(cell[2]);
-                    applicationNumbers.add(new Pair<>(app_num, b));
-                    cnt.getAndIncrement();
-                    bytes.getAndAdd(b);
-                }
+                long b = Long.valueOf(cell[2]);
+                applicationNumbers.add(new Pair<>(app_num, b));
+                cnt.getAndIncrement();
+                bytes.getAndAdd(b);
                 if (ttl.getAndIncrement() % 10000 == 9999) {
                     System.out.println("Read index: " + cnt.get()+" valid out of "+ttl.get()+" seen.");
                 }
