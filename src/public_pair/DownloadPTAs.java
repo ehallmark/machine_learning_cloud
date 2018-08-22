@@ -97,7 +97,7 @@ public class DownloadPTAs {
                         if(cells.length>1) {
                             if (cells[0].toLowerCase().contains("total pta adjustments")) {
                                 try {
-                                    int pta = Integer.valueOf(cells[1].trim());
+                                    int pta = Integer.valueOf(cells[1].trim().replaceAll("[^0-9]", ""));
                                     PreparedStatement ps = conn.prepareStatement("update big_query_pair set term_adjustments = ? where application_number_formatted = ?");
                                     ps.setInt(1, pta);
                                     ps.setString(2, appNum);
