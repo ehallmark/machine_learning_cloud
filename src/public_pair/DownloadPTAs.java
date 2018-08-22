@@ -86,7 +86,7 @@ public class DownloadPTAs {
             while(entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
                 if(entry.getName().contains("patent_term_adjustments")) {
-                    System.out.println("FOUND TERM ADJUSTMENTS!!!");
+                    System.out.println("FOUND TERM ADJUSTMENTS!!!   Application: "+appNum);
                     InputStream stream = zip.getInputStream(entry);
                     StringWriter writer = new StringWriter();
                     IOUtils.copy(stream, writer, Charsets.UTF_8);
@@ -111,7 +111,6 @@ public class DownloadPTAs {
                             }
                         }
                     }
-                    System.exit(0);
                 }
             }
 
