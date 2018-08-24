@@ -227,8 +227,9 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
     });
 
     $topLevelElem.find('textarea').keydown(function(e){
-        if (e.keyCode == 65 && e.ctrlKey) {
-            e.target.select()
+        if (e.keyCode == 65 && (e.metaKey || e.ctrlKey)) {
+            e.target.focus();
+            e.target.select();
         }
     });
 
