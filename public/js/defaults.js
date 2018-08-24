@@ -226,6 +226,12 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
         }
     });
 
+    $topLevelElem.find('textarea').keydown(function(e){
+        if (e.keyCode == 65 && e.ctrlKey) {
+            e.target.select()
+        }
+    });
+
 
     $topLevelElem.find('.multiselect').select2({
         minimumResultsForSearch: 5,
