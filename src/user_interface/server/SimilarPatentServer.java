@@ -1818,7 +1818,7 @@ public class SimilarPatentServer {
         return table().withClass("table table-striped").attr("data-total", String.valueOf(totalHits)).withId(preview?"main-preview-data-table":"main-data-table").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                 thead().with(
                         tr().with(
-                                th().attr("data-dynatable-no-sort", "true").attr("data-dynatable-column", "selection").with(
+                                th().attr("data-dynatable-column", "selection").with(
                                         label("Select All").with( br(),
                                                 input().withType("checkbox").withId(preview?"preview-data-table-select-all":"data-table-select-all").attr("onclick", "$('#"+(preview?"data-table-preview":"data-table")+" table tbody tr input.tableSelection').prop('checked', $(this).prop('checked')).trigger('change');")
                                         )
