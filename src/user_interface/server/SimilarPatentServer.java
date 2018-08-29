@@ -60,6 +60,7 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -1829,14 +1830,15 @@ public class SimilarPatentServer {
         );
     }
 
-    static String selectionTag(String id) {
-        return input().withType("checkbox").withClass(BigQueryServer.TABLE_SELECTION_FIELD).withValue(id).render();
+    static String selectionTag(String id, long idxInTable) {
+        return span().with(b(String.valueOf(idxInTable)),input().withType("checkbox").withClass(BigQueryServer.TABLE_SELECTION_FIELD).withValue(id)).render();
     }
 
     static List<Map<String,String>> getTableRowData(List<Item> items, List<String> attributes, boolean useHighlighter, String itemSeparator) {
+        AtomicLong cnt = new AtomicLong(1L);
         return items.stream().map(item -> {
             Map<String,String> map = item.getDataAsMap(attributes,useHighlighter,itemSeparator);
-            map.put("selection", selectionTag(item.getName()));
+            map.put("selection", selectionTag(item.getName(), cnt.getAndIncrement()));
             return map;
         }).collect(Collectors.toList());
     }
