@@ -3139,9 +3139,11 @@ public class BigQueryServer extends SimilarPatentServer {
                                                 a("Search Options").withId("data-tab-link").withClass("nav-link active").attr("data-toggle","tab").withHref("#data-tab").attr("role","tab")
                                         ), li().withClass("nav-item").with(
                                                 a("Visualizations").withId("chart-tab-link").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
-                                        ), li().withClass("nav-item").with(
-                                                a("Synonym Helper").withId("synonym-tab-link").withClass("nav-link").attr("data-toggle", "tab").withHref("#synonym-tab").attr("role","tab")
-                                        ), li().withClass("nav-item").with(
+                                        )
+                                        //, li().withClass("nav-item").with(
+                                        //        a("Synonym Helper").withId("synonym-tab-link").withClass("nav-link").attr("data-toggle", "tab").withHref("#synonym-tab").attr("role","tab")
+                                        // )
+                                        , li().withClass("nav-item").with(
                                                 a("Results").withId("results-link").withClass("nav-link").attr("data-toggle","tab").withHref("#results").attr("role","tab")
                                         )
                                 )
