@@ -400,6 +400,11 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 xButton.click(function(e) {
                     $box.trigger('click');
                 });
+                $box.keyup(function(e) {
+                    if(e.keyCode === 27) {
+                        $box.trigger('click');
+                    }
+                });
                 var tableId = 'main-preview-data-table';
                 var $table = $('#'+tableId);
                 $table.wrap('<div style="overflow-y: auto; margin-top: 15px; width: 100%; height: 100%;"></div>');
