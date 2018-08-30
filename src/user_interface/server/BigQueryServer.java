@@ -1387,6 +1387,9 @@ public class BigQueryServer extends SimilarPatentServer {
                 if(headers!=null && headers.contains("selection")) {
                     headers = new ArrayList<>(headers);
                     headers.remove("selection");
+                    if(headers.contains("idx")) {
+                        headers.remove("idx");
+                    }
                 }
                 nonHumanAttrs = null;
                 data = (List<Map<String, String>>) map.getOrDefault("rows-highlighted", Collections.emptyList());
@@ -1416,6 +1419,9 @@ public class BigQueryServer extends SimilarPatentServer {
                 if(headers!=null && headers.contains("selection")) {
                     headers = new ArrayList<>(headers);
                     headers.remove("selection");
+                    if(headers.contains("idx")) {
+                        headers.remove("idx");
+                    }
                 }
                 data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
                 title = "Data";
@@ -1483,10 +1489,12 @@ public class BigQueryServer extends SimilarPatentServer {
                 headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
                 if(headers!=null&&!headers.contains("selection")) {
                     headers.add("selection");
+                    headers.add("idx");
                     headers = new ArrayList<>(headers);
                 }
                 data = (List<Map<String,String>>)map.getOrDefault("rows-highlighted",Collections.emptyList());
-                numericAttrNames = (Set<String>)map.getOrDefault("numericAttrNames",Collections.emptySet());
+                numericAttrNames = (Set<String>)map.getOrDefault("numericAttrNames",new HashSet<>());
+                numericAttrNames.add("idx");
                 lock = (Lock)map.getOrDefault("lock",new ReentrantLock());
 
             } else if(paramIdx.length()>0) {
@@ -1523,10 +1531,12 @@ public class BigQueryServer extends SimilarPatentServer {
                 headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
                 if(headers!=null&&!headers.contains("selection")) {
                     headers.add("selection");
+                    headers.add("idx");
                     headers = new ArrayList<>(headers);
                 }
                 data = (List<Map<String,String>>)map.getOrDefault("rows-highlighted",Collections.emptyList());
-                numericAttrNames = (Set<String>)map.getOrDefault("numericAttrNames",Collections.emptySet());
+                numericAttrNames = (Set<String>)map.getOrDefault("numericAttrNames",new HashSet<>());
+                numericAttrNames.add("idx");
                 lock = (Lock)map.getOrDefault("lock",new ReentrantLock());
             }
             System.out.println("Number of headers: "+headers.size());
@@ -2378,6 +2388,7 @@ public class BigQueryServer extends SimilarPatentServer {
 
             if(tableHeaders.contains("selection")) {
                 tableHeaders.remove("selection");
+                tableHeaders.remove("idx");
             }
             Tag dataTable = div().withClass("row").attr("style", "margin-top: 10px;").with(
                     tableFromPatentList(tableHeaders, true, totalHits)

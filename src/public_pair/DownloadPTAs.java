@@ -44,7 +44,7 @@ public class DownloadPTAs {
 
         final String baseUrl = "http://patents.reedtech.com/downloads/pairdownload/{{PATENT}}.zip";
 
-        ExecutorService service = Executors.newFixedThreadPool(20);
+        ExecutorService service = Executors.newFixedThreadPool(6);
 
         AtomicLong cnt = new AtomicLong(0);
         for(Pair<String,Long> app : applicationNumbers) {
@@ -92,24 +92,39 @@ public class DownloadPTAs {
                     IOUtils.copy(stream, writer, Charsets.UTF_8);
                     String string = writer.toString();
                     String[] lines = string.split("\\r?\\n");
+                    boolean found = false;
                     for(String line : lines) {
                         String[] cells = line.split("\\t");
                         if(cells.length>1) {
                             if (cells[0].toLowerCase().contains("total pta adjustments")) {
                                 try {
                                     int pta = Integer.valueOf(cells[1].trim().replaceAll("[^0-9]", ""));
-                                    PreparedStatement ps = conn.prepareStatement("update big_query_pair set term_adjustments = ? where application_number_formatted = ?");
-                                    ps.setInt(1, pta);
-                                    ps.setString(2, appNum);
-                                    ps.executeUpdate();
+                                    synchronized (conn) {
+                                        found = true;
+                                        PreparedStatement ps = conn.prepareStatement("update big_query_pair set term_adjustments = ? where application_number_formatted = ?");
+                                        ps.setInt(1, pta);
+                                        ps.setString(2, appNum);
+                                        ps.executeUpdate();
+                                    }
                                     System.out.println("Found pta: " + pta);
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                     System.out.println("Error parsing pta for line: " + line);
                                     System.out.println("FULL TSV: " + string);
                                 }
+                                break;
                             }
                         }
+                    }
+                    synchronized (conn) {
+                        if (!found) {
+                            int pta = 0;
+                            PreparedStatement ps = conn.prepareStatement("update big_query_pair set term_adjustments = ? where application_number_formatted = ?");
+                            ps.setInt(1, pta);
+                            ps.setString(2, appNum);
+                            ps.executeUpdate();
+                        }
+                        conn.commit();
                     }
                 }
             }

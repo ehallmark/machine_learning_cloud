@@ -60,6 +60,7 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -1821,6 +1822,9 @@ public class SimilarPatentServer {
                                         label("Select All").with( br(),
                                                 input().withType("checkbox").withId(preview?"preview-data-table-select-all":"data-table-select-all").attr("onclick", "$('#"+(preview?"data-table-preview":"data-table")+" table tbody tr input.tableSelection').prop('checked', $(this).prop('checked')).trigger('change');")
                                         )
+                                ),
+                                th().attr("data-dynatable-column", "idx").withText(
+                                        "Index"
                                 )
                         ).with(
                                 attributes.stream().map(attr -> th(fullHumanAttributeFor(attr)).attr("data-dynatable-column", attr)).collect(Collectors.toList())
@@ -1834,9 +1838,11 @@ public class SimilarPatentServer {
     }
 
     static List<Map<String,String>> getTableRowData(List<Item> items, List<String> attributes, boolean useHighlighter, String itemSeparator) {
+        AtomicLong cnt = new AtomicLong(1L);
         return items.stream().map(item -> {
             Map<String,String> map = item.getDataAsMap(attributes,useHighlighter,itemSeparator);
             map.put("selection", selectionTag(item.getName()));
+            map.put("idx", String.valueOf(cnt.getAndIncrement()));
             return map;
         }).collect(Collectors.toList());
     }
