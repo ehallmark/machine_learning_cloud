@@ -226,6 +226,13 @@ var setupNestedFilterSelects = function($selects, $topLevelElem) {
         }
     });
 
+    $topLevelElem.find('textarea').keydown(function(e){
+        if (e.keyCode == 65 && (e.metaKey || e.ctrlKey)) {
+            e.target.focus();
+            e.target.select();
+        }
+    });
+
 
     $topLevelElem.find('.multiselect').select2({
         minimumResultsForSearch: 5,
@@ -389,13 +396,13 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 $box.append(data.html);
                 var $preview = $box.find('#data-table-preview');
                 var xButton = $('<span style="float: right; cursor: pointer;">X</span>');
-                $preview.find('form').filter(':first').append(xButton);
+                $preview.prepend(xButton);
                 xButton.click(function(e) {
                     $box.trigger('click');
                 });
                 var tableId = 'main-preview-data-table';
                 var $table = $('#'+tableId);
-                $table.wrap('<div style="overflow-y: auto; width: 100%; height: 100%;"></div>');
+                $table.wrap('<div style="overflow-y: auto; margin-top: 15px; width: 100%; height: 100%;"></div>');
                 $table.parent().prepend($table.parent().prev());
                 $table.parent().prepend($table.parent().prev());
 
