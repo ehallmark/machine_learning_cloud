@@ -400,9 +400,10 @@ var handlePreviewAssetsAjax = function(chartId, group1, group2) {
                 xButton.click(function(e) {
                     $box.trigger('click');
                 });
-                $box.keyup(function(e) {
+                $(document).keyup(function(e) {
                     if(e.keyCode === 27) {
                         $box.trigger('click');
+                        $(document).off('keyup');
                     }
                 });
                 var tableId = 'main-preview-data-table';
