@@ -70,9 +70,12 @@ public class AggregateHeatMapChart extends AggregationChart<HeatMapChart> {
         String humanAttr = SimilarPatentServer.humanAttributeFor(attrName);
         String title = humanAttr + " "+chartTitle;
         String groupedByAttrName = attrNameToGroupByAttrNameMap.get(attrName);
-        String yLabel = BigQueryServer.fullHumanAttributeFor(groupedByAttrName);
-        String subtitle;
-        subtitle = "Grouped by "+SimilarPatentServer.humanAttributeFor(groupedByAttrName);
+        String yLabel = "";
+        String subtitle = "";
+        if(groupedByAttrName != null) {
+            yLabel = BigQueryServer.fullHumanAttributeFor(groupedByAttrName);
+            subtitle = "Grouped by " + SimilarPatentServer.humanAttributeFor(groupedByAttrName);
+        }
         Type collectorType = attrToCollectTypeMap.getOrDefault(attrName, Type.Count);
         Options parentOptions = new Options();
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
