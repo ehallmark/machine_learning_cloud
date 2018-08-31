@@ -2665,11 +2665,13 @@ public class BigQueryServer extends SimilarPatentServer {
                                 div().withClass("col-12").with(
                                         br(),
                                         p("Showing "+tableData.size()+" results out of "+totalCount+" total results matched. Took " + timeSeconds + " seconds."),
+                                        p("(Double click table to select a row)"),
                                         dataTable
                                 ), div().withClass("col-12").with(
                                         br(),
                                         (abstractCharts.size()==0?br():
                                         p("Charts computed from "+totalCount+" matched results. Took " + timeSeconds + " seconds.")),
+                                        p("(Right click on chart data for more options)"),
                                         chartTag
                                 )
                         );
