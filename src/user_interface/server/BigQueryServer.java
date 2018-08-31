@@ -1606,6 +1606,10 @@ public class BigQueryServer extends SimilarPatentServer {
                 } else {
                     dataPage = Collections.emptyList();
                 }
+                AtomicInteger cnt = new AtomicInteger(1);
+                for(Map<String,String> row : dataPage) {
+                    row.put("idx", String.valueOf(cnt.getAndIncrement()));
+                }
                 response.put("totalRecordCount",totalCount);
                 response.put("queryRecordCount",queriedCount);
                 response.put("records", dataPage);
