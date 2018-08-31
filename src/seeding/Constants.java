@@ -317,8 +317,8 @@ public class Constants {
 		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.REINSTATED,"reinstated.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.PUBLICATION_DATE, "publication date of the asset.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.FILING_DATE, "date of the patent filing.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.EXPIRATION_DATE_ESTIMATED, "expiration date computed from the original priority date, term length, and any available term adjustment information (US Only).");
-		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.PRIORITY_DATE_ESTIMATED, "priority date computed from the original priority date and any available term adjustment information.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.EXPIRATION_DATE_ESTIMATED, "expiration date computed from the priority date, term length, and any available patent term adjustments (PTA). Warning: PTA information is missing for many patents, and the calculation does not include Terminal Disclaimers.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.PRIORITY_DATE_ESTIMATED, "priority date computed from the original priority date and any available patent term adjustments (PTA). Warning: PTA information is missing for many patents, and the calculation does not include Terminal Disclaimers.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.TREE, "cpc code (includes child classes)");
 		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.AI_VALUE, "AI Value of the document. Ranges from 0-1. Developed by GTT Group.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(Attributes.CITATIONS+"."+Attributes.CITED_CATEGORY, "category of the citation. Available categories: (CH2 = Chapter 2; SUP = Supplementary search report; ISR = International search report; SEA = Search report; APP = Applicant; EXA = Examiner; OPP = Opposition; 115 = article 115; PRS = Pre-grant pre-search; APL = Appealed; FOP = Filed opposition)");
