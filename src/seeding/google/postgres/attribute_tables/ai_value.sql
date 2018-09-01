@@ -21,11 +21,12 @@ create table if not exists big_query_ai_value_claims (
 
 insert into big_query_ai_value_claims (
     select p.publication_number_full,
-    coalesce(case when bool_or(p.means_present) is null then null when bool_or(p.means_present) then 1 else 0 end, case when bool_and(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else (claim like '% means %')::boolean end) then 1 else 0 end),
-    coalesce(mode() within group(order by p.num_claims), count(*)),
-    coalesce(mode() within group(order by p.length_smallest_ind_claim), min(case when claim ~ 'claim [0-9]' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else array_length(array_remove(regexp_split_to_array(claim,'\s+'),''),1) end))
-    from big_query_patent_english_claims as p full outer join big_query_ai_value_claims as e on (p.publication_number_full=e.publication_number_full), unnest(regexp_split_to_array(claims, '((Iaddend..Iadd.)|(\n\s*\n\s*\n\s*))')) with ordinality as c(claim,n)
-    where (p.num_claims is not null or (claim is not null and char_length(trim(claim))>20)) and e.publication_number_full is null
+    case when bool_and(case when claim like ' claim%' or claim ~* 'recited in*\s*(\d+)' or claim like '%Iaddend..Iadd.%' or claim ~ 'The.*(?:of|in)\s*(\d+)' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else (claim like '% means %')::boolean end) then 1 else 0 end,
+    count(*),
+    min(case when claim like '% claim%' or claim ~* 'recited in*\s*(\d+)' or claim like '%Iaddend..Iadd.%' or claim ~ 'The.*(?:of|in)\s*(\d+)' OR claim like '%(canceled)%' OR char_length(claim)<5 then null else array_length(array_remove(regexp_split_to_array(claim,'\s+'),''),1) end)
+    from big_query_patent_english_claims as p full outer join big_query_ai_value_claims as e on (p.publication_number_full=e.publication_number_full),
+    unnest(regexp_split_to_array(trim(regexp_replace(replace(replace(replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(trim(claims),'^CLAIM\n','')||'\n', '\n(\s|\n)+', '\n', 'g'), '\n(\D)', ' $1', 'g'), '\n(\d\))', ' $1', 'g'),'^([^0-9])*([0-9\\.])*', ''), '\n', ' \n'), ', ', ' '), '  ', ' '), '\\n$','')), '\\n(\d+)\.\s*'))     with ordinality as c(claim,n)
+    where claim is not null and e.publication_number_full is null
     group by p.publication_number_full
 );
 
