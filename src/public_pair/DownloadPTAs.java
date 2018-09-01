@@ -44,7 +44,7 @@ public class DownloadPTAs {
 
         final String baseUrl = "http://patents.reedtech.com/downloads/pairdownload/{{PATENT}}.zip";
 
-        ExecutorService service = Executors.newFixedThreadPool(6);
+        ExecutorService service = Executors.newFixedThreadPool(1);
 
         AtomicLong cnt = new AtomicLong(0);
         for(Pair<String,Long> app : applicationNumbers) {

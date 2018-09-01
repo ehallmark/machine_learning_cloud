@@ -134,9 +134,9 @@ public class UpdateAll {
             service.execute(() -> {
                 // pair data
                 try {
-                    if (monthUpdate) {
+                    //if (monthUpdate) {
                         DownloadLatestPAIR.main(args);
-                    }
+                    //}
                     IngestPairData.main(args);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -304,8 +304,6 @@ public class UpdateAll {
             System.exit(1);
         }
 
-        ExecutorService service = Executors.newFixedThreadPool(4);
-
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignee_table.sql"));
         } catch(Exception e) {
@@ -351,10 +349,10 @@ public class UpdateAll {
             System.out.println("Predicting similarity vectors...");
             runProcess(". "+new File("scripts/production/update_similarity.sh"));
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/embedding_aggs.sql"));
-            if(monthUpdate) {
-                runProcess(". "+new File("scripts/production/update_cpc_similarity.sh"));
-                IngestAssigneeEmbeddingsToPostgres.main(args);
-            }
+            //if(monthUpdate) {
+            //    runProcess(". "+new File("scripts/production/update_cpc_similarity.sh"));
+            //    IngestAssigneeEmbeddingsToPostgres.main(args);
+            //}
 
         } catch(Exception e) {
             e.printStackTrace();
