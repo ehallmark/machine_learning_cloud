@@ -13,12 +13,13 @@ create table big_query_pair_by_pub (
 insert into big_query_pair_by_pub (publication_number_full,original_entity_type,status,status_date,abandoned,term_adjustments) (
     select distinct on (p.publication_number_full)
      p.publication_number_full, pair.original_entity_type, status, status_date, abandoned, coalesce(pair.term_adjustments,pta.term_adjustments)
-    from big_query_pair as pair
-    inner join patents_global as p on (p.application_number_formatted=pair.application_number_formatted AND p.country_code='US')
-    left join big_query_pta as pta on (pair.application_number_formatted=pta.application_number_formatted)
-    where p.country_code='US' and p.application_number_formatted is not null and family_id!='-1'
+    from patents_global as p
+    left join big_query_pair as pair on (p.application_number_formatted=pair.application_number_formatted AND p.country_code='US')
+    left join big_query_pta as pta on (p.application_number_formatted=pta.application_number_formatted AND p.country_code='US')
+    where p.country_code='US' and p.application_number_formatted is not null
     order by p.publication_number_full,p.publication_date desc nulls last
 );
+
 
 drop table big_query_international_priority;
 create table big_query_international_priority (
