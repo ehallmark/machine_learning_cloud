@@ -24,6 +24,7 @@ public class UpdateAll {
     public static void main(String[] args) {
         boolean updateGoogleJsons = false;
         boolean monthUpdate = false;
+        boolean aggsOnly = true;
 
         if (updateGoogleJsons) {
             /*
@@ -75,19 +76,18 @@ public class UpdateAll {
             START OF WEEKLY UPDATES
          */
 
-        // ingest latest us assets
-        try {
-            UpdateBasePatentData.main(args);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Exited during stage UpdateBasePatentData...");
-            System.exit(1);
-        }
+        if(!aggsOnly) {
+            // ingest latest us assets
+            try {
+                UpdateBasePatentData.main(args);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Exited during stage UpdateBasePatentData...");
+                System.exit(1);
+            }
 
-        {
-            ExecutorService service = Executors.newFixedThreadPool(3);
+            {
 
-            service.execute(() -> {
                 // scrape missing family ids
                 try {
                     IngestScrapedXMLIntoPostgres.main(args); // get pre
@@ -106,9 +106,7 @@ public class UpdateAll {
                     System.out.println("Exited during stage IngestScrapedXMLIntoPostgres...");
                     System.exit(1);
                 }
-            });
 
-            service.execute(() -> {
                 // update assignments
                 try {
                     IngestAssignmentData.main(args);
@@ -117,10 +115,8 @@ public class UpdateAll {
                     System.out.println("Exited during stage IngestAssignmentData...");
                     System.exit(1);
                 }
-            });
 
 
-            service.execute(() -> {
                 // maintenance data
                 try {
                     IngestMaintenanceFeeData.main(args);
@@ -129,13 +125,11 @@ public class UpdateAll {
                     System.out.println("Exited during stage IngestMaintenanceFeeData...");
                     System.exit(1);
                 }
-            });
 
-            service.execute(() -> {
                 // pair data
                 try {
                     //if (monthUpdate) {
-                        DownloadLatestPAIR.main(args);
+                    DownloadLatestPAIR.main(args);
                     //}
                     IngestPairData.main(args);
                 } catch (Exception e) {
@@ -143,9 +137,8 @@ public class UpdateAll {
                     System.out.println("Exited during stage IngestPairData...");
                     System.exit(1);
                 }
-            });
 
-            service.execute(() -> {
+
                 // ptab data
                 try {
                     IngestPTABData.main(args);
@@ -154,9 +147,7 @@ public class UpdateAll {
                     System.out.println("Exited during stage IngestPTABData...");
                     System.exit(1);
                 }
-            });
 
-            service.execute(() -> {
                 // wipo
                 try {
                     IngestWIPOTechnologies.main(args);
@@ -165,11 +156,9 @@ public class UpdateAll {
                     System.out.println("Exited during stage IngestWIPOTechnologies...");
                     System.exit(1);
                 }
-            });
 
 
-            // cpc backup datasource
-            service.execute(() -> {
+                // cpc backup datasource
                 try {
                     UpdateClassificationHash.main(args);
                 } catch (Exception e) {
@@ -177,13 +166,6 @@ public class UpdateAll {
                     System.out.println("Exited during stage UpdateClassificationHash...");
                     System.exit(1);
                 }
-            });
-            service.shutdown();
-            try {
-                service.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(1);
             }
         }
         // AGGREGATIONS (do family id idx first)
