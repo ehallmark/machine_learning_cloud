@@ -302,7 +302,7 @@ public class UpdateAll {
         }
 
         try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/latest_assignees.sql"));
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/latest_assignee.sql"));
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute latest_assignees...");
