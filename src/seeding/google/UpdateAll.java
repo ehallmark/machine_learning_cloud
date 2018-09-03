@@ -278,7 +278,7 @@ public class UpdateAll {
         try {
             System.out.println("Predicting keywords...");
             PredictKeywords.main(args);
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/patent_keyword_aggs.sql"));
+            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/patent_keywords_aggs.sql"));
             FilterKeywordsByTFIDF.main(args);
         } catch(Exception e) {
             e.printStackTrace();
