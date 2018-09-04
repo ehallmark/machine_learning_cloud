@@ -366,7 +366,7 @@ insert into patents_global_merged (
         sep.standard,
         coalesce(array_length(sep.standard,1),0),
         -- wipo tech
-        coalesce(wipo.wipo_technology,wipo_fam.wipo_technology),
+        coalesce(coalesce(wipo.wipo_technology,wipo_fam.wipo_technology),case when wipo_pred.wipo_technology is null then null else ARRAY[wipo_pred.wipo_technology] end),
         -- gtt tech
         tech.technology,
         tech.technology2,
@@ -460,6 +460,7 @@ insert into patents_global_merged (
     left outer join big_query_keywords_tfidf as ke on (p.family_id=ke.family_id)
     left outer join big_query_sep_by_family as sep on (sep.family_id=p.family_id)
     left outer join big_query_wipo_by_pub as wipo on (wipo.publication_number_full=p.publication_number_full)
+    left outer join big_query_wipo_prediction as wipo_pred on (wipo_pred.publication_number_full=p.publication_number_full)
     left outer join big_query_wipo_by_family as wipo_fam on (wipo_fam.family_id=p.family_id)
     left outer join big_query_ai_value_claims as value_claims on (value_claims.publication_number_full=p.publication_number_full)
     left outer join big_query_ai_value_family_size as value_family_size on (value_family_size.family_id=p.family_id)
