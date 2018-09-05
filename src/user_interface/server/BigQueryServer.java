@@ -1601,14 +1601,16 @@ public class BigQueryServer extends SimilarPatentServer {
                     });
                 }
                 List<Map<String, String>> dataPage;
+                AtomicInteger cnt = new AtomicInteger(1);
+                if(queriedData!=null) {
+                    for (Map<String, String> row : queriedData) {
+                        row.put("idx", String.valueOf(cnt.getAndIncrement()));
+                    }
+                }
                 if (offset < totalCount) {
                     dataPage = queriedData.subList(offset, Math.min(queriedData.size(), offset + perPage));
                 } else {
                     dataPage = Collections.emptyList();
-                }
-                AtomicInteger cnt = new AtomicInteger(1);
-                for(Map<String,String> row : dataPage) {
-                    row.put("idx", String.valueOf(cnt.getAndIncrement()));
                 }
                 response.put("totalRecordCount",totalCount);
                 response.put("queryRecordCount",queriedCount);
