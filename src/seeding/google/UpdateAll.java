@@ -297,6 +297,7 @@ public class UpdateAll {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignment_aggs.sql"));
         } catch(Exception e) {
             e.printStackTrace();
+
             System.out.println("Failed to execute assignment_aggs...");
             System.exit(1);
         }

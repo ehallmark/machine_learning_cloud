@@ -320,7 +320,7 @@ insert into patents_global_merged (
         p.invention_title[array_position(p.invention_title_lang,'en')],
         p.abstract[array_position(p.abstract_lang,'en')],
         p.claims[array_position(p.claims_lang,'en')],
-        value_claims.num_claims),
+        value_claims.num_claims,
         null, -- much faster for now... p.description[array_position(p.description_lang,'en')],
         p.inventor,
         p.assignee,
