@@ -207,7 +207,6 @@ public class Database {
 		List<String> results = new ArrayList<>(limit);
 		try {
 			PreparedStatement ps = conn.prepareStatement("select name,portfolio_size from " + tableName + " where lower(name) like ? || '%' limit " + limit);
-			ps.setFetchSize(limit);
 			ps.setString(1, search.toLowerCase());
 			System.out.println("Searching big query: "+ps.toString());
 			ResultSet rs = ps.executeQuery();
@@ -221,24 +220,6 @@ public class Database {
 			e.printStackTrace();
 		}
 		return results;
-	}
-
-	public static List<String> loadKeysFromDatabaseTable(Connection conn, String tableName, String field) {
-		List<String> data = new LinkedList<>();
-		try {
-			PreparedStatement ps = conn.prepareStatement("select " + field + " from " + tableName);
-			ps.setFetchSize(1000);
-			ResultSet rs = ps.executeQuery();
-			while(rs.next()) {
-				data.add(rs.getString(1));
-			}
-			rs.close();
-			ps.close();
-		} catch(Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException("Error loading key{"+field+"} from table{"+tableName+"}");
-		}
-		return data;
 	}
 
 	public static Collection<String> getAllFilings() {
@@ -267,7 +248,6 @@ public class Database {
 			for(int i = 0; i < assignees.size(); i++) {
 				ps.setString(i+1, assignees.get(i));
 			}
-			ps.setFetchSize(10);
 			System.out.println("Assignee Vector Query: "+ps.toString());
 			rs = ps.executeQuery();
 			while(rs.next()) {
@@ -310,7 +290,6 @@ public class Database {
 			for(int i = 0; i < assets.size(); i++) {
 				ps.setString(i+1, assets.get(i));
 			}
-			ps.setFetchSize(10);
 			long t0 = System.currentTimeMillis();
 			System.out.println("Executing query: "+ps.toString());
 			rs = ps.executeQuery();
@@ -342,7 +321,6 @@ public class Database {
 		ResultSet rs = null;
 		try {
 			ps = conn.prepareStatement("select p.publication_number_full,technology2  from big_query_family_id as p join big_query_technologies2 as t on (p.family_id=t.family_id) where technology2 is not null and p.publication_number_full in ('" + String.join("','", assets) + "')");
-			ps.setFetchSize(10);
 			rs = ps.executeQuery();
 			while(rs.next()) {
 				data.put(rs.getString(1),Collections.singletonList(rs.getString(2)));
@@ -364,44 +342,12 @@ public class Database {
 		return data;
 	}
 
-
-	public static List<String> loadAllFilingsWithVectors() throws SQLException {
-
-		PreparedStatement ps = conn.prepareStatement("select filing from sim_vectors");
-		List<String> list = new LinkedList<>();
-		ps.setFetchSize(100);
-		ResultSet rs = ps.executeQuery();
-		while(rs.next()) {
-			list.add(rs.getString(1));
-		}
-		rs.close();
-		ps.close();
-		return list;
-	}
-
 	private static INDArray toINDArray(Double[] vec) {
 	    double[] d = new double[vec.length];
 	    for(int i = 0; i < d.length; i++) {
 	        d[i]=vec[i];
         }
         return Nd4j.create(d);
-    }
-
-	public static Map<String,INDArray> loadVectorPredictions() throws SQLException {
-	    PreparedStatement ps = conn.prepareStatement("select filing,vector from sim_vectors");
-	    ps.setFetchSize(1000);
-	    Map<String,INDArray> map = Collections.synchronizedMap(new HashMap<>());
-	    ResultSet rs = ps.executeQuery();
-	    int cnt = 0;
-	    while(rs.next()) {
-	        INDArray vec = toINDArray((Double[])rs.getArray(2).getArray());
-	        map.put(rs.getString(1),vec);
-	        cnt++;
-	        if(cnt%10000==9999) {
-	        	System.out.println("Loaded "+cnt+" vectors...");
-			}
-        }
-	    return map;
     }
 
 	public static RecursiveAction upsertVectors(Map<String,Double[]> map) {
