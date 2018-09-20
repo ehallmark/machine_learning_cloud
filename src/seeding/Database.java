@@ -88,7 +88,6 @@ public class Database {
 	private static Map<String,Collection<String>> gatherPatentToTechnologyMap;
 	private static final File gatherValueMapFile = new File(Constants.DATA_FOLDER+"gather_patent_to_value_int_map.jobj");
 	private static Map<String,Integer> gatherValueMap;
-	private static volatile boolean init=false;
 
 
 	private static Connection conn;
@@ -129,7 +128,6 @@ public class Database {
 		List<String> results = new ArrayList<>(limit);
 		try {
 			PreparedStatement ps = conn.prepareStatement("select code,title_full,title_part::varchar[] from " + tableName + " where code like ?||'%' or lower(title_full) like ?||'%' order by case when code like ?||'%' then 0.0 else 1.0 end limit " + limit);
-			ps.setFetchSize(limit);
 			ps.setString(1, search.toUpperCase());
 			ps.setString(3, search.toUpperCase());
 			ps.setString(2, search.toLowerCase());

@@ -3493,6 +3493,8 @@ public class BigQueryServer extends SimilarPatentServer {
 
     public static void main(String[] args) throws Exception {
         loadStuff();
+        Database.getConn().setAutoCommit(true);
+
         HelpPage.helpPage(false);
         (new RecursiveAction() {
             @Override
