@@ -114,7 +114,7 @@ public class AssigneeGuess {
             }
             if(count%10000==9999) {
                 conn.commit();
-                System.out.println("Predicted "+count+", Correct: "+correctCount+", Wrong: "+wrongCount);
+                System.out.println("Predicted "+count+", Correct: "+correctCount+", Wrong: "+wrongCount + ", Accuracy: "+((double)correctCount)/(wrongCount+correctCount));
             }
             count ++;
         }
