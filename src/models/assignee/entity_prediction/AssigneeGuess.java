@@ -58,6 +58,7 @@ public class AssigneeGuess {
         ResultSet rs;
         long count = 0L;
         Iterator<String[]> iterator = reader.iterator();
+        iterator.next(); // skip first line
         while(iterator.hasNext()) {
             String[] lines = iterator.next();
             String assignee = lines[0];
