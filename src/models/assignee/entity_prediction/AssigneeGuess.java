@@ -78,6 +78,7 @@ public class AssigneeGuess {
         ps = conn.prepareStatement("select publication_number_full, filing_date, inventor_harmonized, assignee_harmonized from patents_global where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null");
         ps.setFetchSize(10);
         rs = ps.executeQuery();
+        PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee_guess) values (?, ?) on conflict (publication_number_full) do update set assignee_guess=excluded.assignee_guess");
         count = 0L;
         long correctCount = 0L;
         long wrongCount = 0L;
@@ -87,7 +88,10 @@ public class AssigneeGuess {
             String[] inventors = (String[]) rs.getArray(3).getArray();
             Pair<String, Double> bestGuessAssignee = bestGuessAssignee(inventors, date, assigneeAndDateMap);
             if(bestGuessAssignee!=null) {
-                System.out.println(publicationNumberFull+": Found "+bestGuessAssignee._1+" with score: "+bestGuessAssignee._2);
+                //System.out.println(publicationNumberFull+": Found "+bestGuessAssignee._1+" with score: "+bestGuessAssignee._2);
+                insertStatement.setString(1, publicationNumberFull);
+                insertStatement.setString(2, bestGuessAssignee._1);
+                insertStatement.executeUpdate();
                 try {
                     String[] assignees = (String[]) rs.getArray(4).getArray();
                     if(assignees!=null) {
@@ -109,6 +113,7 @@ public class AssigneeGuess {
                 }
             }
             if(count%10000==9999) {
+                conn.commit();
                 System.out.println("Predicted "+count+", Correct: "+correctCount+", Wrong: "+wrongCount);
             }
             count ++;
@@ -116,6 +121,8 @@ public class AssigneeGuess {
 
         rs.close();
         ps.close();
+        conn.commit();
+        conn.close();
 
     }
 }

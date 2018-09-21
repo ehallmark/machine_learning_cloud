@@ -16,3 +16,7 @@ insert into assignees_inventors (
 ) on conflict do nothing;
 
 
+create table assignee_guesses (
+    publication_number_full varchar(32) primary key,
+    assignee_guess text not null
+);
