@@ -60,7 +60,7 @@ public class AssigneeGuess {
         long count = 0L;
         Iterator<String[]> iterator = reader.iterator();
         iterator.next(); // skip first line
-        while(iterator.hasNext() && count < 10000000) {
+        while(iterator.hasNext() && count < 5000000) {
             String[] lines = iterator.next();
             String assignee = lines[0].toUpperCase();
             String inventor = lines[1].toUpperCase();
@@ -79,6 +79,8 @@ public class AssigneeGuess {
         ps.setFetchSize(10);
         rs = ps.executeQuery();
         count = 0L;
+        long correctCount = 0L;
+        long wrongCount = 0L;
         while(rs.next()) {
             String publicationNumberFull = rs.getString(1);
             LocalDate date = rs.getDate(2).toLocalDate();
@@ -89,14 +91,25 @@ public class AssigneeGuess {
                 try {
                     String[] assignees = (String[]) rs.getArray(4).getArray();
                     if(assignees!=null) {
-                        System.out.println("Actual assignees: "+String.join("; ", assignees));
+                        // System.out.println("Actual assignees: "+String.join("; ", assignees));
+                        boolean found = false;
+                        for(String assignee : assignees) {
+                            if(bestGuessAssignee._1.equals(assignee)) {
+                                found = true;
+                            }
+                        }
+                        if(found) {
+                            correctCount++;
+                        } else {
+                            wrongCount++;
+                        }
                     }
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
             }
             if(count%10000==9999) {
-                System.out.println("Predicted "+count);
+                System.out.println("Predicted "+count+", Correct: "+correctCount+", Wrong: "+wrongCount);
             }
             count ++;
         }
