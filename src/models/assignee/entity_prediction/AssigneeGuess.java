@@ -13,10 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AssigneeGuess {
@@ -44,9 +41,11 @@ public class AssigneeGuess {
         Map.Entry<String,Double> bestEntry = inventorScoreMaps.values().stream().flatMap(map->map.entrySet().stream()).collect(Collectors.groupingBy(e->e.getKey(), Collectors.summingDouble(e->e.getValue().get())))
         .entrySet().stream().max(Comparator.comparingDouble(e->e.getValue())).orElse(null);
 
-        if(bestEntry!=null) {
+        if(totalScore > 3 && bestEntry!=null) {
             final double score = bestEntry.getValue() / totalScore;
-            return new Pair<>(bestEntry.getKey(), score);
+            if (score > 0.5) {
+                return new Pair<>(bestEntry.getKey(), score);
+            }
         }
         return null;
     }
@@ -61,7 +60,7 @@ public class AssigneeGuess {
         long count = 0L;
         Iterator<String[]> iterator = reader.iterator();
         iterator.next(); // skip first line
-        while(iterator.hasNext() && count < 1000000) {
+        while(iterator.hasNext() && count < 10000000) {
             String[] lines = iterator.next();
             String assignee = lines[0].toUpperCase();
             String inventor = lines[1].toUpperCase();
