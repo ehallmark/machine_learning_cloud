@@ -1,14 +1,19 @@
 package models.assignee.entity_prediction;
 
+import com.opencsv.CSVReader;
 import graphical_modeling.util.Pair;
 import lombok.Getter;
 import org.nd4j.linalg.primitives.AtomicDouble;
 import seeding.Database;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,14 +53,16 @@ public class AssigneeGuess {
         Map<String, List<AssigneeAndDate>> assigneeAndDateMap = new HashMap<>();
 
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("select assignee,inventor,date from assignees_inventors");
-        ps.setFetchSize(100);
-        ResultSet rs = ps.executeQuery();
+        CSVReader reader = new CSVReader(new BufferedReader(new FileReader(new File("assignees_inventors.csv"))));
+        PreparedStatement ps;
+        ResultSet rs;
         long count = 0L;
-        while(rs.next()) {
-            String assignee = rs.getString(1);
-            String inventor = rs.getString(2);
-            LocalDate date = rs.getDate(3).toLocalDate();
+        Iterator<String[]> iterator = reader.iterator();
+        while(iterator.hasNext()) {
+            String[] lines = iterator.next();
+            String assignee = lines[0];
+            String inventor = lines[1];
+            LocalDate date = LocalDate.parse(lines[2], DateTimeFormatter.ISO_DATE);
             AssigneeAndDate assigneeAndDate = new AssigneeAndDate(assignee, date);
             assigneeAndDateMap.putIfAbsent(inventor, new ArrayList<>());
             assigneeAndDateMap.get(inventor).add(assigneeAndDate);
@@ -64,8 +71,7 @@ public class AssigneeGuess {
             }
             count ++;
         }
-        rs.close();
-        ps.close();
+        reader.close();
 
 
         ps = conn.prepareStatement("select publication_number_full, filing_date, inventor_harmonized, assignee_harmonized from patents_global where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null");
