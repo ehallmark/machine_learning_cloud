@@ -28,7 +28,7 @@ public class AssigneeGuess {
                 assigneeAndDates.forEach((date, assignee)->{
                     scoreMap.putIfAbsent(assignee, new AtomicDouble(0));
                     double dateDiff = Math.abs((double)filingDate.getYear() + ((double)filingDate.getMonthValue()-1.0)/12.0 - ((double)date.getYear() + ((double)date.getMonthValue()-1.0)/12.0));
-                    if(dateDiff < 2.0) {
+                    if(dateDiff < 1.0) {
                         scoreMap.get(assignee).getAndAdd(1.0 / (1.0 + dateDiff));
                     }
                 });
