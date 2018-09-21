@@ -60,7 +60,7 @@ public class AssigneeGuess {
         long count = 0L;
         Iterator<String[]> iterator = reader.iterator();
         iterator.next(); // skip first line
-        while(iterator.hasNext() && count < 5000000) {
+        while(iterator.hasNext() && count < 10000000) {
             String[] lines = iterator.next();
             String assignee = lines[0].toUpperCase();
             String inventor = lines[1].toUpperCase();
