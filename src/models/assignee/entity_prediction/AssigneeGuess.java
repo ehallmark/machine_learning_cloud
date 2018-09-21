@@ -61,10 +61,10 @@ public class AssigneeGuess {
         long count = 0L;
         Iterator<String[]> iterator = reader.iterator();
         iterator.next(); // skip first line
-        while(iterator.hasNext()) {
+        while(iterator.hasNext() && count < 1000000) {
             String[] lines = iterator.next();
-            String assignee = lines[0];
-            String inventor = lines[1];
+            String assignee = lines[0].toUpperCase();
+            String inventor = lines[1].toUpperCase();
             LocalDate date = LocalDate.parse(lines[2], DateTimeFormatter.ISO_DATE);
             assigneeAndDateMap.putIfAbsent(inventor, new HashMap<>());
             assigneeAndDateMap.get(inventor).put(date, assignee);
