@@ -27,8 +27,8 @@ public class AssigneeGuess {
             if(assigneeAndDates != null) {
                 assigneeAndDates.forEach((date, assignee)->{
                     scoreMap.putIfAbsent(assignee, new AtomicDouble(0));
-                    double dateDiff = Math.abs(filingDate.getYear() * 12 + filingDate.getMonthValue() - (date.getYear() * 12 + date.getMonthValue()));
-                    if(dateDiff < 24) {
+                    double dateDiff = Math.abs((double)filingDate.getYear() + ((double)filingDate.getMonthValue()-1.0)/12.0 - ((double)date.getYear() + ((double)date.getMonthValue()-1.0)/12.0));
+                    if(dateDiff < 2.0) {
                         scoreMap.get(assignee).getAndAdd(1.0 / (1.0 + dateDiff));
                     }
                 });
@@ -43,7 +43,7 @@ public class AssigneeGuess {
 
         if(totalScore > 0 && bestEntry!=null) {
             final double score = bestEntry.getValue() / totalScore;
-            if (score > 0.25) {
+            if (score > 0.5) {
                 return new Pair<>(bestEntry.getKey(), score);
             }
         }
