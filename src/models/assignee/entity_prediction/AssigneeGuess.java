@@ -2,7 +2,6 @@ package models.assignee.entity_prediction;
 
 import com.opencsv.CSVReader;
 import graphical_modeling.util.Pair;
-import lombok.Getter;
 import org.nd4j.linalg.primitives.AtomicDouble;
 import seeding.Database;
 
@@ -14,25 +13,28 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AssigneeGuess {
 
-    private static Pair<String, Double> bestGuessAssignee(String[] inventors, LocalDate filingDate, Map<String, List<AssigneeAndDate>> assigneeAndDateMap) {
+    private static Pair<String, Double> bestGuessAssignee(String[] inventors, LocalDate filingDate, Map<String, Map<LocalDate, String>> assigneeAndDateMap) {
         Map<String, Map<String,AtomicDouble>> inventorScoreMaps = new HashMap<>();
         for(String inventor : inventors) {
             Map<String,AtomicDouble> scoreMap = new HashMap<>();
             inventorScoreMaps.put(inventor, scoreMap);
-            List<AssigneeAndDate> assigneeAndDates = assigneeAndDateMap.get(inventor);
+            Map<LocalDate, String> assigneeAndDates = assigneeAndDateMap.get(inventor);
             if(assigneeAndDates != null) {
-                for(AssigneeAndDate assigneeAndDate : assigneeAndDates) {
-                    scoreMap.putIfAbsent(assigneeAndDate.getAssignee(), new AtomicDouble(0));
-                    double dateDiff = Math.abs((double) filingDate.getYear() + ((double) filingDate.getMonthValue() - 1.0) / 12.0 - ((double) assigneeAndDate.getDate().getYear() + ((double) assigneeAndDate.getDate().getMonthValue() - 1.0) / 12.0));
+                assigneeAndDates.forEach((date, assignee)->{
+                    scoreMap.putIfAbsent(assignee, new AtomicDouble(0));
+                    double dateDiff = Math.abs((double) filingDate.getYear() + ((double) filingDate.getMonthValue() - 1.0) / 12.0 - ((double) date.getYear() + ((double) date.getMonthValue() - 1.0) / 12.0));
                     if (dateDiff < 1.0) {
-                        scoreMap.get(assigneeAndDate.getAssignee()).getAndAdd(1.0 / (1.0 + dateDiff));
+                        scoreMap.get(assignee).getAndAdd(1.0 / (1.0 + dateDiff));
                     }
-                }
+                });
             }
         }
 
@@ -50,7 +52,7 @@ public class AssigneeGuess {
     }
 
     public static void main(String[] args) throws Exception {
-        Map<String, List<AssigneeAndDate>> assigneeAndDateMap = new HashMap<>();
+        Map<String, Map<LocalDate, String>> assigneeAndDateMap = new HashMap<>(50000);
 
         Connection conn = Database.getConn();
         CSVReader reader = new CSVReader(new BufferedReader(new FileReader(new File("assignees_inventors.csv"))));
@@ -64,9 +66,8 @@ public class AssigneeGuess {
             String assignee = lines[0];
             String inventor = lines[1];
             LocalDate date = LocalDate.parse(lines[2], DateTimeFormatter.ISO_DATE);
-            AssigneeAndDate assigneeAndDate = new AssigneeAndDate(assignee, date);
-            assigneeAndDateMap.putIfAbsent(inventor, new ArrayList<>());
-            assigneeAndDateMap.get(inventor).add(assigneeAndDate);
+            assigneeAndDateMap.putIfAbsent(inventor, new HashMap<>());
+            assigneeAndDateMap.get(inventor).put(date, assignee);
             if(count%10000==9999) {
                 System.out.println("Loaded "+count);
             }
@@ -104,17 +105,5 @@ public class AssigneeGuess {
         rs.close();
         ps.close();
 
-    }
-}
-
-
-class AssigneeAndDate {
-    @Getter
-    private String assignee;
-    @Getter
-    private LocalDate date;
-    public AssigneeAndDate(String assignee, LocalDate date) {
-        this.assignee=assignee;
-        this.date=date;
     }
 }
