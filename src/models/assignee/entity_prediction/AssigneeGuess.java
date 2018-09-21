@@ -28,7 +28,7 @@ public class AssigneeGuess {
                 assigneeAndDates.forEach((date, assignee)->{
                     scoreMap.putIfAbsent(assignee, new AtomicDouble(0));
                     double dateDiff = Math.abs((double)filingDate.getYear() + ((double)filingDate.getMonthValue()-1.0)/12.0 - ((double)date.getYear() + ((double)date.getMonthValue()-1.0)/12.0));
-                    if(dateDiff < 1.0) {
+                    if(dateDiff < 2.0) {
                         scoreMap.get(assignee).getAndAdd(1.0 / (1.0 + dateDiff));
                     }
                 });
@@ -41,9 +41,9 @@ public class AssigneeGuess {
         Map.Entry<String,Double> bestEntry = inventorScoreMaps.values().stream().flatMap(map->map.entrySet().stream()).collect(Collectors.groupingBy(e->e.getKey(), Collectors.summingDouble(e->e.getValue().get())))
         .entrySet().stream().max(Comparator.comparingDouble(e->e.getValue())).orElse(null);
 
-        if(totalScore > 3 && bestEntry!=null) {
+        if(totalScore > 4 && bestEntry!=null) {
             final double score = bestEntry.getValue() / totalScore;
-            if (score > 0.5) {
+            if (score > 0.25) {
                 return new Pair<>(bestEntry.getKey(), score);
             }
         }
