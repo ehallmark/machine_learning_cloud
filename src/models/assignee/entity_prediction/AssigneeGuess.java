@@ -94,7 +94,7 @@ public class AssigneeGuess {
                 insertStatement.executeUpdate();
                 try {
                     String[] assignees = (String[]) rs.getArray(4).getArray();
-                    if(assignees!=null) {
+                    if(assignees!=null && assignees.length>0) {
                         // System.out.println("Actual assignees: "+String.join("; ", assignees));
                         boolean found = false;
                         for(String assignee : assignees) {
