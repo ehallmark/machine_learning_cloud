@@ -28,9 +28,7 @@ public class AssigneeGuess {
                 assigneeAndDates.forEach((date, assignee)->{
                     scoreMap.putIfAbsent(assignee, new AtomicDouble(0));
                     double dateDiff = Math.abs(filingDate.getYear() * 12 + filingDate.getMonthValue() - (date.getYear() * 12 + date.getMonthValue()));
-                    if (dateDiff < 24) {
-                        scoreMap.get(assignee).getAndAdd(1.0 / Math.exp(dateDiff));
-                    }
+                    scoreMap.get(assignee).getAndAdd(1.0 / Math.exp(dateDiff));
                 });
             }
         }
@@ -38,12 +36,10 @@ public class AssigneeGuess {
         final double totalScore = inventorScoreMaps.values().stream().flatMap(scoreMap->scoreMap.values().stream())
                 .mapToDouble(d->d.get()).sum();
 
-        final long numSeen = inventorScoreMaps.values().stream().flatMap(scoreMap->scoreMap.values().stream()).count();
-
         Map.Entry<String,Double> bestEntry = inventorScoreMaps.values().stream().flatMap(map->map.entrySet().stream()).collect(Collectors.groupingBy(e->e.getKey(), Collectors.summingDouble(e->e.getValue().get())))
         .entrySet().stream().max(Comparator.comparingDouble(e->e.getValue())).orElse(null);
 
-        if(totalScore > 0 && numSeen >= 5 && bestEntry!=null) {
+        if(totalScore > 0 && bestEntry!=null) {
             final double score = bestEntry.getValue() / totalScore;
             if (score > 0.7) {
                 return new Pair<>(bestEntry.getKey(), score);
@@ -62,7 +58,7 @@ public class AssigneeGuess {
         long count = 0L;
         Iterator<String[]> iterator = reader.iterator();
         iterator.next(); // skip first line
-        while(iterator.hasNext()) {
+        while(iterator.hasNext() && count < 5000000) {
             String[] lines = iterator.next();
             String assignee = lines[0].toUpperCase();
             String inventor = lines[1].toUpperCase();
