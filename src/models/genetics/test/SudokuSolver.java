@@ -144,7 +144,7 @@ public class SudokuSolver implements Solution{
         double probMutation = 0.1;
         double probCrossover = 0.1;
         SolutionCreator creator = new SudokuCreator();
-        GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,maxPopulationSize,new SudokuListener(),10);
+        GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,maxPopulationSize,new SudokuListener());
         algorithm.simulate(100000,probMutation,probCrossover);
     }
 

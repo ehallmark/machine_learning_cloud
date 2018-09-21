@@ -19,11 +19,12 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class AssigneeGuess {
 
-    static Pair<String, Double> bestGuessAssignee(String[] inventors, LocalDate filingDate, Map<String, Map<LocalDate, String>> assigneeAndDateMap, final double maxDateDiff, final double minScore, final double minTotalScore) {
+    static Pair<String, Double> bestGuessAssignee(String[] inventors, LocalDate filingDate, Map<String, Map<LocalDate, String>> assigneeAndDateMap, final double maxDateDiff, final double minScore, final double minTotalScore, final Function<Double, Double> dateDiffFunc) {
         Map<String, Map<String,AtomicDouble>> inventorScoreMaps = new HashMap<>();
         for(String inventor : inventors) {
             Map<String,AtomicDouble> scoreMap = new HashMap<>();
@@ -34,7 +35,7 @@ public class AssigneeGuess {
                     scoreMap.putIfAbsent(assignee, new AtomicDouble(0));
                     double dateDiff = Math.abs((double)filingDate.getYear() + ((double)filingDate.getMonthValue()-1.0)/12.0 - ((double)date.getYear() + ((double)date.getMonthValue()-1.0)/12.0));
                     if(dateDiff < maxDateDiff) {
-                        scoreMap.get(assignee).getAndAdd(1.0 / (1.0 + dateDiff));
+                        scoreMap.get(assignee).getAndAdd(dateDiffFunc.apply(dateDiff));
                     }
                 });
             }
@@ -65,7 +66,7 @@ public class AssigneeGuess {
         long count = 0L;
         Iterator<String[]> iterator = reader.iterator();
         iterator.next(); // skip first line
-        while(iterator.hasNext() && count < 5000000) {
+        while(iterator.hasNext()) {
             String[] lines = iterator.next();
             String assignee = lines[0].toUpperCase();
             String inventor = lines[1].toUpperCase();
@@ -83,14 +84,10 @@ public class AssigneeGuess {
         ps = Database.newSeedConn().prepareStatement("select publication_number_full, filing_date, inventor_harmonized, assignee_harmonized from patents_global where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null");
         ps.setFetchSize(10);
         rs = ps.executeQuery();
-        PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee_guess) values (?, ?) on conflict (publication_number_full) do update set assignee_guess=excluded.assignee_guess");
+       // PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee_guess) values (?, ?) on conflict (publication_number_full) do update set assignee_guess=excluded.assignee_guess");
         count = 0L;
-        long correctCount = 0L;
-        long wrongCount = 0L;
-        long available = 0L;
-
         Map<String, Object[]> data = new HashMap<>();
-        while(rs.next() && count < 100000) {
+        while(rs.next() && count < 5000000) {
             String publicationNumberFull = rs.getString(1);
             LocalDate date = rs.getDate(2).toLocalDate();
             String[] inventors = (String[]) rs.getArray(3).getArray();
@@ -106,12 +103,8 @@ public class AssigneeGuess {
             }
 
             if(count%10000==9999) {
-                long missing = count - available;
-                conn.commit();
-                final double accuracy = ((double)correctCount)/(wrongCount+correctCount);
-                final double predictPercent = ((double)available) / count;
-                final double score = accuracy * predictPercent;
-                System.out.println("Score: "+score+", Seen "+count+", Predicted: "+available+", Prediction %: "+predictPercent+", Correct: "+correctCount+", Wrong: "+wrongCount + ", Missing: "+missing+", Accuracy: "+accuracy);
+                // conn.commit();
+                System.out.println("Seen "+count);
             }
             count ++;
         }
@@ -136,27 +129,38 @@ public class AssigneeGuess {
                 System.out.println("Solution: "+solution.toString());
             }
         };
-        GeneticAlgorithm<Solution> algorithm = new GeneticAlgorithm<>(solutionCreator, 5, listener, 3);
+        GeneticAlgorithm<Solution> algorithm = new GeneticAlgorithm<>(solutionCreator, 5, listener);
         algorithm.simulate(Long.MAX_VALUE, 0.5, 0.5);
 
 
-        insertStatement.close();
-        conn.commit();
+       // insertStatement.close();
+       // conn.commit();
         conn.close();
 
     }
 }
 
 class AssigneeSolution implements Solution {
+    private static final List<Function<Double,Double>> dateDiffFunctions = Arrays.asList(
+            d -> (1.0 / (1.0 + d)),
+            d -> (1.0 / Math.exp(d)),
+            d -> (1.0 / (1.0 + Math.sqrt(d))),
+            d -> (1.0 / (1.0 + Math.exp(d))),
+            d -> (1.0 / (Math.log(Math.E + d)))
+    );
+    private static final double TOTAL_SCORE_RANGE = 25.0;
+    private static final double DATE_DIFF_RANGE = 5;
     private static final Random random = new Random(235928);
     private double score;
     private final double maxDateDiff;
     private final double minScore;
     private final double minTotalScore;
+    private final Function<Double,Double> dateDiffFunc;
     private Map<String,Object[]> data;
     private Map<String, Map<LocalDate, String>> assigneeAndDateMap;
-    public AssigneeSolution(final double maxDateDiff, final double minScore, final double minTotalScore, Map<String,Object[]> data, Map<String, Map<LocalDate, String>> assigneeAndDateMap) {
+    public AssigneeSolution(final double maxDateDiff, final double minScore, final double minTotalScore, Function<Double,Double> dateDiffFunc, Map<String,Object[]> data, Map<String, Map<LocalDate, String>> assigneeAndDateMap) {
         this.maxDateDiff=maxDateDiff;
+        this.dateDiffFunc=dateDiffFunc;
         this.assigneeAndDateMap = assigneeAndDateMap;
         this.data=data;
         this.minScore=minScore;
@@ -164,7 +168,7 @@ class AssigneeSolution implements Solution {
     }
 
     public AssigneeSolution(Map<String,Object[]> data, Map<String, Map<LocalDate, String>> assigneeAndDateMap) {
-        this(random.nextDouble()*4, random.nextDouble(), random.nextDouble()*10.0, data, assigneeAndDateMap);
+        this(random.nextDouble()*DATE_DIFF_RANGE, random.nextDouble(), random.nextDouble()*TOTAL_SCORE_RANGE, dateDiffFunctions.get(random.nextInt(dateDiffFunctions.size())), data, assigneeAndDateMap);
     }
 
     @Override
@@ -179,7 +183,7 @@ class AssigneeSolution implements Solution {
             LocalDate date = (LocalDate) e.getValue()[0];
             String[] inventors = (String[])e.getValue()[1];
             String[] assignees = (String[])e.getValue()[2];
-            Pair<String, Double> bestGuessAssignee = AssigneeGuess.bestGuessAssignee(inventors, date, assigneeAndDateMap, maxDateDiff, minScore, minTotalScore);
+            Pair<String, Double> bestGuessAssignee = AssigneeGuess.bestGuessAssignee(inventors, date, assigneeAndDateMap, maxDateDiff, minScore, minTotalScore, dateDiffFunc);
             if(bestGuessAssignee!=null) {
                 //System.out.println(publicationNumberFull+": Found "+bestGuessAssignee._1+" with score: "+bestGuessAssignee._2);
 
@@ -201,9 +205,10 @@ class AssigneeSolution implements Solution {
     @Override
     public Solution mutate() {
         return new AssigneeSolution(
-                random.nextBoolean() ? maxDateDiff : random.nextDouble() * 4,
+                random.nextBoolean() ? maxDateDiff : random.nextDouble() * DATE_DIFF_RANGE,
                 random.nextBoolean() ? minScore : random.nextDouble(),
-                random.nextBoolean() ? minTotalScore : random.nextDouble() * 10.0,
+                random.nextBoolean() ? minTotalScore : random.nextDouble() * TOTAL_SCORE_RANGE,
+                random.nextBoolean() ? dateDiffFunc : dateDiffFunctions.get(random.nextInt(dateDiffFunctions.size())),
                 data,
                 assigneeAndDateMap
         );
@@ -216,6 +221,7 @@ class AssigneeSolution implements Solution {
                 random.nextBoolean() ? maxDateDiff : other.maxDateDiff,
                 random.nextBoolean() ? minScore : other.minScore,
                 random.nextBoolean() ? minTotalScore : other.minTotalScore,
+                random.nextBoolean() ? dateDiffFunc : other.dateDiffFunc,
                 data,
                 assigneeAndDateMap
         );
@@ -228,6 +234,6 @@ class AssigneeSolution implements Solution {
 
     @Override
     public String toString() {
-        return "Score: "+fitness()+"; Params: maxDateDiff: "+maxDateDiff+", minScore: "+minScore+", minTotalScore: "+minTotalScore;
+        return "Score: "+fitness()+"; Params: maxDateDiff: "+maxDateDiff+", minScore: "+minScore+", minTotalScore: "+minTotalScore+", Function idx: "+dateDiffFunctions.indexOf(dateDiffFunc);
     }
 }

@@ -16,16 +16,14 @@ public class GeneticAlgorithm<T extends Solution> {
     private int maxPopulationSize;
     private static Random random = new Random(69);
     private final double startingScore;
-    private final int numThreads;
     private T bestSolutionSoFar;
     private double currentScore;
     private Listener listener;
     private AtomicInteger mutationCounter = new AtomicInteger(0);
     private AtomicInteger crossoverCounter = new AtomicInteger(0);
 
-    public GeneticAlgorithm(SolutionCreator<T> creator, int maxPopulationSize, Listener listener, int numThreads) {
+    public GeneticAlgorithm(SolutionCreator<T> creator, int maxPopulationSize, Listener listener) {
         this.maxPopulationSize=maxPopulationSize;
-        this.numThreads=numThreads;
         this.listener=listener;
         population=new ArrayList<>(maxPopulationSize);
         population.addAll(creator.nextRandomSolutions(maxPopulationSize));
@@ -103,7 +101,6 @@ public class GeneticAlgorithm<T extends Solution> {
         AtomicInteger mutationCounter = new AtomicInteger(0);
         AtomicInteger crossoverCounter = new AtomicInteger(0);
 
-        ForkJoinPool pool = new ForkJoinPool(numThreads);
 
         Collection<T> children = Collections.synchronizedList(new ArrayList<>());
         // mutate
@@ -127,7 +124,7 @@ public class GeneticAlgorithm<T extends Solution> {
                         }
                     }
                 };
-                pool.execute(action);
+                action.invoke();
             }
         }
 
@@ -156,15 +153,8 @@ public class GeneticAlgorithm<T extends Solution> {
                         }
                     }
                 };
-                pool.execute(action);
+                action.invoke();
             }
-        }
-
-        pool.shutdown();
-        try {
-            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
-        } catch(Exception e) {
-            e.printStackTrace();
         }
         System.out.println();
         System.out.println();
@@ -180,7 +170,6 @@ public class GeneticAlgorithm<T extends Solution> {
 
 
     private void calculateSolutionsAndKillOfTheWeak() {
-        ForkJoinPool pool = new ForkJoinPool(numThreads);
         population.forEach(solution->{
             RecursiveAction action = new RecursiveAction() {
                 @Override
@@ -188,15 +177,8 @@ public class GeneticAlgorithm<T extends Solution> {
                     solution.calculateFitness();
                 }
             };
-            pool.execute(action);
+            action.invoke();
         });
-
-        pool.shutdown();
-        try {
-            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
 
         population=population.stream().sorted().limit(maxPopulationSize).collect(Collectors.toList());
         calculateAveragePopulationScores();
