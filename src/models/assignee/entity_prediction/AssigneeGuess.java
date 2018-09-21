@@ -28,7 +28,9 @@ public class AssigneeGuess {
                 assigneeAndDates.forEach((date, assignee)->{
                     scoreMap.putIfAbsent(assignee, new AtomicDouble(0));
                     double dateDiff = Math.abs(filingDate.getYear() * 12 + filingDate.getMonthValue() - (date.getYear() * 12 + date.getMonthValue()));
-                    scoreMap.get(assignee).getAndAdd(1.0 / Math.exp(dateDiff));
+                    if(dateDiff < 24) {
+                        scoreMap.get(assignee).getAndAdd(1.0 / (1.0 + dateDiff));
+                    }
                 });
             }
         }
@@ -41,7 +43,7 @@ public class AssigneeGuess {
 
         if(totalScore > 0 && bestEntry!=null) {
             final double score = bestEntry.getValue() / totalScore;
-            if (score > 0.7) {
+            if (score > 0.25) {
                 return new Pair<>(bestEntry.getKey(), score);
             }
         }
@@ -80,6 +82,7 @@ public class AssigneeGuess {
         count = 0L;
         long correctCount = 0L;
         long wrongCount = 0L;
+        long available = 0L;
         while(rs.next()) {
             String publicationNumberFull = rs.getString(1);
             LocalDate date = rs.getDate(2).toLocalDate();
@@ -111,11 +114,12 @@ public class AssigneeGuess {
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
+                available++;
             }
             if(count%10000==9999) {
-                long missing = count - correctCount - wrongCount;
+                long missing = count - available;
                 conn.commit();
-                System.out.println("Predicted "+count+", Correct: "+correctCount+", Wrong: "+wrongCount + ", Missing: "+missing+", Accuracy: "+((double)correctCount)/(wrongCount+correctCount));
+                System.out.println("Seen "+count+", Predicted: "+available+", Correct: "+correctCount+", Wrong: "+wrongCount + ", Missing: "+missing+", Accuracy: "+((double)correctCount)/(wrongCount+correctCount));
             }
             count ++;
         }
