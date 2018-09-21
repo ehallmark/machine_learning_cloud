@@ -75,7 +75,7 @@ public class AssigneeGuess {
         reader.close();
 
 
-        ps = conn.prepareStatement("select publication_number_full, filing_date, inventor_harmonized, assignee_harmonized from patents_global where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null");
+        ps = Database.newSeedConn().prepareStatement("select publication_number_full, filing_date, inventor_harmonized, assignee_harmonized from patents_global where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null");
         ps.setFetchSize(10);
         rs = ps.executeQuery();
         PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee_guess) values (?, ?) on conflict (publication_number_full) do update set assignee_guess=excluded.assignee_guess");
@@ -93,19 +93,21 @@ public class AssigneeGuess {
                 insertStatement.setString(2, bestGuessAssignee._1);
                 insertStatement.executeUpdate();
                 try {
-                    String[] assignees = (String[]) rs.getArray(4).getArray();
-                    if(assignees!=null && assignees.length>0) {
-                        // System.out.println("Actual assignees: "+String.join("; ", assignees));
-                        boolean found = false;
-                        for(String assignee : assignees) {
-                            if(bestGuessAssignee._1.equals(assignee)) {
-                                found = true;
+                    if(rs.getArray(4)!=null) {
+                        String[] assignees = (String[]) rs.getArray(4).getArray();
+                        if (assignees != null && assignees.length > 0) {
+                            // System.out.println("Actual assignees: "+String.join("; ", assignees));
+                            boolean found = false;
+                            for (String assignee : assignees) {
+                                if (bestGuessAssignee._1.equals(assignee)) {
+                                    found = true;
+                                }
                             }
-                        }
-                        if(found) {
-                            correctCount++;
-                        } else {
-                            wrongCount++;
+                            if (found) {
+                                correctCount++;
+                            } else {
+                                wrongCount++;
+                            }
                         }
                     }
                 } catch(Exception e) {
