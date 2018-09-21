@@ -223,7 +223,7 @@ class AssigneeSolution implements Solution {
 
     @Override
     public int compareTo(@NotNull Solution o) {
-        return Double.compare(fitness(), o.fitness());
+        return Double.compare(o.fitness(), fitness());
     }
 
     @Override

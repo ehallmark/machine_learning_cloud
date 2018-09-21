@@ -66,7 +66,7 @@ public class GeneticAlgorithm<T extends Solution> {
                         System.out.println("Mutations so far:   "+mutationCounter.addAndGet(counts.getFirst()));
                         System.out.println("Crossovers so far:  "+crossoverCounter.addAndGet(counts.getSecond()));
                         listener.print(bestSolutionSoFar);
-                        clearScreen();
+                        //clearScreen();
                     }
 
                     double epsilon = 0.00001;
