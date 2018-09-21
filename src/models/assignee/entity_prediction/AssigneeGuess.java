@@ -41,9 +41,9 @@ public class AssigneeGuess {
         Map.Entry<String,Double> bestEntry = inventorScoreMaps.values().stream().flatMap(map->map.entrySet().stream()).collect(Collectors.groupingBy(e->e.getKey(), Collectors.summingDouble(e->e.getValue().get())))
         .entrySet().stream().max(Comparator.comparingDouble(e->e.getValue())).orElse(null);
 
-        if(totalScore > 3 && bestEntry!=null) {
+        if(totalScore > 5 && bestEntry!=null) {
             final double score = bestEntry.getValue() / totalScore;
-            if (score > 0.5) {
+            if (score > 0.7) {
                 return new Pair<>(bestEntry.getKey(), score);
             }
         }
