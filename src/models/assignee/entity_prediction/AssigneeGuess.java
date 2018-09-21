@@ -62,7 +62,7 @@ public class AssigneeGuess {
         long count = 0L;
         Iterator<String[]> iterator = reader.iterator();
         iterator.next(); // skip first line
-        while(iterator.hasNext() && count < 10000000) {
+        while(iterator.hasNext()) {
             String[] lines = iterator.next();
             String assignee = lines[0].toUpperCase();
             String inventor = lines[1].toUpperCase();
@@ -117,8 +117,9 @@ public class AssigneeGuess {
                 }
             }
             if(count%10000==9999) {
+                long missing = count - correctCount - wrongCount;
                 conn.commit();
-                System.out.println("Predicted "+count+", Correct: "+correctCount+", Wrong: "+wrongCount + ", Accuracy: "+((double)correctCount)/(wrongCount+correctCount));
+                System.out.println("Predicted "+count+", Correct: "+correctCount+", Wrong: "+wrongCount + ", Missing: "+missing+", Accuracy: "+((double)correctCount)/(wrongCount+correctCount));
             }
             count ++;
         }
