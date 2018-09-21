@@ -129,9 +129,9 @@ public class AssigneeGuess {
                 System.out.println("Solution: "+solution.toString());
             }
         };
-        GeneticAlgorithm<Solution> algorithm = new GeneticAlgorithm<>(solutionCreator, 5, listener);
-        algorithm.simulate(Long.MAX_VALUE, 0.5, 0.5);
 
+        GeneticAlgorithm<Solution> algorithm = new GeneticAlgorithm<>(solutionCreator, 30, listener);
+        algorithm.simulate(Long.MAX_VALUE, 0.5, 0.5);
 
        // insertStatement.close();
        // conn.commit();
