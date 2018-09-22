@@ -81,7 +81,7 @@ public class AssigneeGuess {
         reader.close();
 
 
-        ps = Database.newSeedConn().prepareStatement("select publication_number_full, filing_date, inventor_harmonized, assignee_harmonized from patents_global where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null");
+        ps = Database.newSeedConn().prepareStatement("select publication_number_full, filing_date, inventor_harmonized, assignee_harmonized from patents_global where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null tablesample system(10)");
         ps.setFetchSize(10);
         rs = ps.executeQuery();
        // PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee_guess) values (?, ?) on conflict (publication_number_full) do update set assignee_guess=excluded.assignee_guess");
@@ -130,7 +130,7 @@ public class AssigneeGuess {
             }
         };
 
-        GeneticAlgorithm<Solution> algorithm = new GeneticAlgorithm<>(solutionCreator, 10, listener);
+        GeneticAlgorithm<Solution> algorithm = new GeneticAlgorithm<>(solutionCreator, 16, listener);
         algorithm.simulate(Long.MAX_VALUE, 0.5, 0.5);
 
        // insertStatement.close();
@@ -142,14 +142,15 @@ public class AssigneeGuess {
 
 class AssigneeSolution implements Solution {
     private static final List<Function<Double,Double>> dateDiffFunctions = Arrays.asList(
-            d -> (1.0 / (1.0 + d)),
-            d -> (1.0 / Math.exp(d)),
+           // d -> (1.0 / (1.0 + d)),
+           // d -> (1.0 / Math.exp(d)),
             d -> (1.0 / (1.0 + Math.sqrt(d))),
-            d -> (1.0 / (1.0 + Math.exp(d))),
-            d -> (1.0 / (Math.log(Math.E + d)))
+            d -> (1.0 / (1.0 + Math.exp(d)))
+           // d -> (1.0 / (Math.log(Math.E + d)))
     );
-    private static final double TOTAL_SCORE_RANGE = 25.0;
-    private static final double DATE_DIFF_RANGE = 5;
+    private static final double TOTAL_SCORE_RANGE = 1.0;
+    private static final double DATE_DIFF_RANGE = 2.0;
+    private static final double MIN_SCORE_RANGE = 0.1;
     private static final Random random = new Random(235928);
     private double score;
     private final double maxDateDiff;
@@ -168,7 +169,10 @@ class AssigneeSolution implements Solution {
     }
 
     public AssigneeSolution(Map<String,Object[]> data, Map<String, Map<LocalDate, String>> assigneeAndDateMap) {
-        this(random.nextDouble()*DATE_DIFF_RANGE, random.nextDouble(), random.nextDouble()*TOTAL_SCORE_RANGE, dateDiffFunctions.get(random.nextInt(dateDiffFunctions.size())), data, assigneeAndDateMap);
+        this(0.87515933 + (random.nextDouble()*DATE_DIFF_RANGE-DATE_DIFF_RANGE/2),
+                0.035618 + (random.nextDouble()*MIN_SCORE_RANGE-MIN_SCORE_RANGE/2),
+                0.4942404 + (random.nextDouble()*TOTAL_SCORE_RANGE-TOTAL_SCORE_RANGE/2),
+                dateDiffFunctions.get(random.nextInt(dateDiffFunctions.size())), data, assigneeAndDateMap);
     }
 
     @Override
@@ -209,10 +213,10 @@ class AssigneeSolution implements Solution {
     @Override
     public Solution mutate() {
         return new AssigneeSolution(
-                random.nextBoolean() ? maxDateDiff : random.nextDouble() * DATE_DIFF_RANGE,
-                random.nextBoolean() ? minScore : random.nextDouble(),
-                random.nextBoolean() ? minTotalScore : random.nextDouble() * TOTAL_SCORE_RANGE,
-                random.nextBoolean() ? dateDiffFunc : dateDiffFunctions.get(random.nextInt(dateDiffFunctions.size())),
+                (maxDateDiff + (random.nextDouble() * DATE_DIFF_RANGE))/2.0,
+                (minScore + (random.nextDouble() * MIN_SCORE_RANGE))/2.0,
+                (minTotalScore + (random.nextDouble() * TOTAL_SCORE_RANGE))/2,
+                random.nextBoolean() ? dateDiffFunc : (dateDiffFunctions.get(random.nextInt(dateDiffFunctions.size()))),
                 data,
                 assigneeAndDateMap
         );

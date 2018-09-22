@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -44,7 +45,7 @@ public class DownloadPTAs {
 
         final String baseUrl = "http://patents.reedtech.com/downloads/pairdownload/{{PATENT}}.zip";
 
-        ExecutorService service = Executors.newFixedThreadPool(1);
+        ExecutorService service = Executors.newFixedThreadPool(10);
 
         AtomicLong cnt = new AtomicLong(0);
         for(Pair<String,Long> app : applicationNumbers) {
@@ -70,11 +71,14 @@ public class DownloadPTAs {
         conn.close();
     }
 
+    private static AtomicInteger cnt = new AtomicInteger(0);
     private static void handleUrl(String url, String appNum, long bytes, Connection conn)  {
         File file = DownloadPDFsFromReedTech.fileFromApplicationNumber(appNum);
         try {
             if (!file.exists() || file.length() < bytes) {
+                System.out.println("Copying file... "+cnt.getAndIncrement());
                 FileUtils.copyURLToFile(new URL(url), file);
+                System.out.println("Done.");
                 if (file.length() != bytes) {
                     System.out.println("Warning incorrect file size: " + file.length() + " != " + bytes);
                 }
@@ -99,7 +103,7 @@ public class DownloadPTAs {
                             if (cells[0].toLowerCase().contains("total pta adjustments")) {
                                 try {
                                     int pta = Integer.valueOf(cells[1].trim().replaceAll("[^0-9]", ""));
-                                    synchronized (conn) {
+                                    synchronized (DownloadPTAs.class) {
                                         found = true;
                                         PreparedStatement ps = conn.prepareStatement("update big_query_pair set term_adjustments = ? where application_number_formatted = ?");
                                         ps.setInt(1, pta);
@@ -116,7 +120,7 @@ public class DownloadPTAs {
                             }
                         }
                     }
-                    synchronized (conn) {
+                    synchronized (DownloadPTAs.class) {
                         if (!found) {
                             int pta = 0;
                             PreparedStatement ps = conn.prepareStatement("update big_query_pair set term_adjustments = ? where application_number_formatted = ?");
