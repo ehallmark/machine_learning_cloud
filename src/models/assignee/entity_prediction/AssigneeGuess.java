@@ -87,7 +87,7 @@ public class AssigneeGuess {
        // PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee_guess) values (?, ?) on conflict (publication_number_full) do update set assignee_guess=excluded.assignee_guess");
         count = 0L;
         Map<String, Object[]> data = new HashMap<>();
-        while(rs.next() && count < 5000000) {
+        while(rs.next() && count < 500000) {
             String publicationNumberFull = rs.getString(1);
             LocalDate date = rs.getDate(2).toLocalDate();
             String[] inventors = (String[]) rs.getArray(3).getArray();
@@ -130,7 +130,7 @@ public class AssigneeGuess {
             }
         };
 
-        GeneticAlgorithm<Solution> algorithm = new GeneticAlgorithm<>(solutionCreator, 30, listener);
+        GeneticAlgorithm<Solution> algorithm = new GeneticAlgorithm<>(solutionCreator, 10, listener);
         algorithm.simulate(Long.MAX_VALUE, 0.5, 0.5);
 
        // insertStatement.close();
@@ -178,6 +178,7 @@ class AssigneeSolution implements Solution {
 
     @Override
     public void calculateFitness() {
+        long t0 = System.currentTimeMillis();
         score = data.entrySet().stream().mapToDouble(e->{
             String publicationNumberFull = e.getKey();
             LocalDate date = (LocalDate) e.getValue()[0];
@@ -200,6 +201,9 @@ class AssigneeSolution implements Solution {
             }
             return 0.0;
         }).sum()/data.size();
+        long t1 = System.currentTimeMillis();
+        System.out.println("Time to calculate fitness: "+ (((double)t1-t0)/1000) + " seconds");
+        System.out.println("\tParams: "+toString());
     }
 
     @Override
