@@ -58,6 +58,7 @@ public class AssigneeGuess {
 
     public static void main(String[] args) throws Exception {
         Map<String, Map<LocalDate, String>> assigneeAndDateMap = new HashMap<>(50000);
+        boolean predict = true;
 
         Connection conn = Database.getConn();
         CSVReader reader = new CSVReader(new BufferedReader(new FileReader(new File("assignees_inventors.csv"))));
@@ -84,26 +85,36 @@ public class AssigneeGuess {
         ps = Database.newSeedConn().prepareStatement("select publication_number_full, filing_date, inventor_harmonized, assignee_harmonized from patents_global where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null");
         ps.setFetchSize(10);
         rs = ps.executeQuery();
-       // PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee_guess) values (?, ?) on conflict (publication_number_full) do update set assignee_guess=excluded.assignee_guess");
+        PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee, score) values (?, ?, ?) on conflict (publication_number_full) do update set (assignee,score)=(excluded.assignee,excluded.score)");
         count = 0L;
         Map<String, Object[]> data = new HashMap<>();
-        while(rs.next() && count < 5000000) {
+        while(rs.next() && (predict || count < 5000000)) {
             String publicationNumberFull = rs.getString(1);
             LocalDate date = rs.getDate(2).toLocalDate();
             String[] inventors = (String[]) rs.getArray(3).getArray();
-            try {
-                if(rs.getArray(4)!=null) {
-                    String[] assignees = (String[]) rs.getArray(4).getArray();
-                    if (assignees != null && assignees.length > 0) {
-                        data.put(publicationNumberFull, new Object[]{date, inventors, assignees});
-                    }
+            if(predict) {
+                Pair<String, Double> bestGuessAssignee = AssigneeGuess.bestGuessAssignee(inventors, date, assigneeAndDateMap, 0.2375, 0.01323, 0.06689, AssigneeSolution.dateDiffFunctions.get(1));
+                if(bestGuessAssignee!=null) {
+                    ps.setString(1, publicationNumberFull);
+                    ps.setString(2, bestGuessAssignee._1);
+                    ps.setDouble(3, bestGuessAssignee._2);
+                    ps.executeUpdate();
                 }
-            } catch(Exception e) {
-                e.printStackTrace();
+            } else {
+                try {
+                    if (rs.getArray(4) != null) {
+                        String[] assignees = (String[]) rs.getArray(4).getArray();
+                        if (assignees != null && assignees.length > 0) {
+                            data.put(publicationNumberFull, new Object[]{date, inventors, assignees});
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             if(count%10000==9999) {
-                // conn.commit();
+                conn.commit();
                 System.out.println("Seen "+count);
             }
             count ++;
@@ -112,36 +123,38 @@ public class AssigneeGuess {
         rs.close();
         ps.close();
 
-        SolutionCreator solutionCreator = new SolutionCreator() {
-            @Override
-            public Collection<Solution> nextRandomSolutions(int n) {
-                List<Solution> solutions = new ArrayList<>();
-                for(int i = 0; i < n; i++) {
-                    solutions.add(new AssigneeSolution(data, assigneeAndDateMap));
+        if(predict) {
+            insertStatement.close();
+            conn.commit();
+        } else {
+            SolutionCreator solutionCreator = new SolutionCreator() {
+                @Override
+                public Collection<Solution> nextRandomSolutions(int n) {
+                    List<Solution> solutions = new ArrayList<>();
+                    for(int i = 0; i < n; i++) {
+                        solutions.add(new AssigneeSolution(data, assigneeAndDateMap));
+                    }
+                    return solutions;
                 }
-                return solutions;
-            }
-        };
+            };
+            Listener listener = new Listener() {
+                @Override
+                public void print(Solution solution) {
+                    System.out.println("Solution: "+solution.toString());
+                }
+            };
 
-        Listener listener = new Listener() {
-            @Override
-            public void print(Solution solution) {
-                System.out.println("Solution: "+solution.toString());
-            }
-        };
+            GeneticAlgorithm<Solution> algorithm = new GeneticAlgorithm<>(solutionCreator, 16, listener);
+            algorithm.simulate(Long.MAX_VALUE, 0.5, 0.5);
+        }
 
-        GeneticAlgorithm<Solution> algorithm = new GeneticAlgorithm<>(solutionCreator, 16, listener);
-        algorithm.simulate(Long.MAX_VALUE, 0.5, 0.5);
-
-       // insertStatement.close();
-       // conn.commit();
         conn.close();
 
     }
 }
 
 class AssigneeSolution implements Solution {
-    private static final List<Function<Double,Double>> dateDiffFunctions = Arrays.asList(
+    static final List<Function<Double,Double>> dateDiffFunctions = Arrays.asList(
            // d -> (1.0 / (1.0 + d)),
            // d -> (1.0 / Math.exp(d)),
             d -> (1.0 / (1.0 + Math.sqrt(d))),
@@ -184,7 +197,6 @@ class AssigneeSolution implements Solution {
     public void calculateFitness() {
         long t0 = System.currentTimeMillis();
         score = data.entrySet().stream().mapToDouble(e->{
-            String publicationNumberFull = e.getKey();
             LocalDate date = (LocalDate) e.getValue()[0];
             String[] inventors = (String[])e.getValue()[1];
             String[] assignees = (String[])e.getValue()[2];

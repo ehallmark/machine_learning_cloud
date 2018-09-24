@@ -18,5 +18,6 @@ insert into assignees_inventors (
 
 create table assignee_guesses (
     publication_number_full varchar(32) primary key,
-    assignee_guess text not null
+    assignee_guess text not null,
+    score double precision not null
 );
