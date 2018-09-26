@@ -16,7 +16,7 @@ public class ColumnChart extends AbstractChart {
         return "column";
     }
 
-    public ColumnChart(Options _options, String title, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String subTitle, int yDecimals, List<String> categories, Type collectorType) {
+    public ColumnChart(Options _options, String title, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String subTitle, int yDecimals, List<String> categories, Type collectorType, boolean drilldown) {
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         SeriesType type = SeriesType.COLUMN;
         options=_options;
@@ -44,7 +44,7 @@ public class ColumnChart extends AbstractChart {
                 .setShowFirstLabel(true)
                 .setShowLastLabel(true));
         options.setyAxis(new Axis().setTitle(new Title(capitalize(yLabel))));
-        options.getSingleXAxis().setLabels(new Labels().setFormat("{value}"+xAxisSuffix).setAlign(HorizontalAlignment.CENTER).setRotation(0)).setCategories(categories).setType(AxisType.CATEGORY);
+        options.getSingleXAxis().setLabels(new Labels().setFormat((drilldown?"{name}":("{value}"+xAxisSuffix))).setAlign(HorizontalAlignment.CENTER).setRotation(0)).setCategories(categories).setType(AxisType.CATEGORY);
         options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+yAxisSuffix)).setType(AxisType.LINEAR);
         for(Series<?> series : options.getSeries()) {
             series.setPointPadding(0f);

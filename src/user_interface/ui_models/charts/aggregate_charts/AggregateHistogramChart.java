@@ -66,7 +66,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
                 series.setShowInLegend(isGrouped);
             });
         }
-        return Collections.singletonList(new ColumnChart(parentOptions, title, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories, collectorType));
+        return Collections.singletonList(new ColumnChart(parentOptions, title, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories, collectorType, drilldown));
     }
 
     @Override
