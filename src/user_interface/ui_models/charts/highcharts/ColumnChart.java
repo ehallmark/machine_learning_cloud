@@ -16,11 +16,19 @@ public class ColumnChart extends AbstractChart {
         return "column";
     }
 
-    public ColumnChart(Options _options, String title, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String subTitle, int yDecimals, List<String> categories, Type collectorType, boolean drilldown) {
+    public ColumnChart(Options _options, String title, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String subTitle, int yDecimals, List<String> categories, Type collectorType, boolean drilldown, boolean swapAxes, boolean isGrouped) {
+        {   // set show chart in legend field
+            List<? extends Series> data = _options.getSeries();
+            if (!drilldown) {
+                data.forEach(series -> {
+                    series.setShowInLegend(isGrouped);
+                });
+            }
+        }
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         SeriesType type = SeriesType.COLUMN;
         options=_options;
-        String xFormatStr = options.getSeries().size()>1 ? "{series.name}" : ("{point.key}"+ (drilldown ? "" : xAxisSuffix));
+        String xFormatStr = options.getSeries().size()>1 ? "{series.name}" : ("{point.key}"+ (drilldown &&!swapAxes ? "" : xAxisSuffix));
         options = options
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
@@ -32,7 +40,7 @@ public class ColumnChart extends AbstractChart {
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setPlotOptions(new PlotOptionsChoice().setSeries(
                         new PlotOptions()
-                                .setGroupPadding(0f)
+                                .setGroupPadding(0.1f)
                                 .setPointPadding(0f)
                                 .setPointPlacement(null)
                 ));
@@ -44,7 +52,7 @@ public class ColumnChart extends AbstractChart {
                 .setShowFirstLabel(true)
                 .setShowLastLabel(true));
         options.setyAxis(new Axis().setTitle(new Title(capitalize(yLabel))));
-        options.getSingleXAxis().setLabels(new Labels().setFormat((drilldown?"{key}":("{value}"+xAxisSuffix))).setAlign(HorizontalAlignment.CENTER).setRotation(0));
+        options.getSingleXAxis().setLabels(new Labels().setFormat((drilldown?"{value}":("{value}"+xAxisSuffix))).setAlign(HorizontalAlignment.CENTER).setRotation(0));
         options.getSingleXAxis().setCategories(categories).setType(AxisType.CATEGORY);
 
         options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+yAxisSuffix)).setType(AxisType.LINEAR);

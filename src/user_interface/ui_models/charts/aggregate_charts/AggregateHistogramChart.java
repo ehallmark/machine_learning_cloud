@@ -1,7 +1,6 @@
 package user_interface.ui_models.charts.aggregate_charts;
 
 import com.googlecode.wickedcharts.highcharts.options.Options;
-import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import data_pipeline.helpers.Function2;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
@@ -59,14 +58,9 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         Options parentOptions = new Options();
         boolean drilldown = attrToDrilldownMap.getOrDefault(attrName, false);
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
+        boolean swapAxes = attrToSwapAxesMap.getOrDefault(attrName, false);
         parentOptions = createDataForAggregationChart(parentOptions,aggregations,attrName,attribute,groupByAttribute,collectByAttribute,title,null,drilldown,includeBlank);
-        List<? extends Series> data = parentOptions.getSeries();
-        if(!drilldown) {
-            data.forEach(series -> {
-                series.setShowInLegend(isGrouped);
-            });
-        }
-        return Collections.singletonList(new ColumnChart(parentOptions, title, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories, collectorType, drilldown));
+        return Collections.singletonList(new ColumnChart(parentOptions, title, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories, collectorType, drilldown, swapAxes));
     }
 
     @Override
