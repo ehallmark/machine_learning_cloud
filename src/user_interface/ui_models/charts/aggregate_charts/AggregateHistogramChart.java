@@ -60,7 +60,7 @@ public class AggregateHistogramChart extends AggregationChart<ColumnChart> {
         boolean includeBlank = attrNameToIncludeBlanksMap.getOrDefault(attrName, false);
         boolean swapAxes = attrToSwapAxesMap.getOrDefault(attrName, false);
         parentOptions = createDataForAggregationChart(parentOptions,aggregations,attrName,attribute,groupByAttribute,collectByAttribute,title,null,drilldown,includeBlank);
-        return Collections.singletonList(new ColumnChart(parentOptions, title, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories, collectorType, drilldown, swapAxes));
+        return Collections.singletonList(new ColumnChart(parentOptions, title, 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, subtitle, 0, categories, collectorType, drilldown, swapAxes, isGrouped));
     }
 
     @Override
