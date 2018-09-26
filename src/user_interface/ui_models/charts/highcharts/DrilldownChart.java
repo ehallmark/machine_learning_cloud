@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts.highcharts;
 
+import com.googlecode.wickedcharts.highcharts.options.Axis;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
@@ -49,6 +50,7 @@ public class DrilldownChart {
         drilldownOptions.setDrilldownData(drilldownSeries);
         drilldownOptions.setSeries(Collections.singletonList(groupesSeries));
         if(isHistogram) {
+            if(drilldownOptions.getSingleXAxis()==null) drilldownOptions.setxAxis(new Axis());
             drilldownOptions.getSingleXAxis().setCategories(categories).setType(AxisType.CATEGORY);
         }
         return drilldownOptions;
