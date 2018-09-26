@@ -1,5 +1,6 @@
 package user_interface.ui_models.charts.highcharts;
 
+import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import com.googlecode.wickedcharts.highcharts.options.color.ColorReference;
 import com.googlecode.wickedcharts.highcharts.options.color.RgbaColor;
@@ -24,6 +25,7 @@ public class DrilldownChart {
         drilldownOptions.copyFrom(baseOptions);
         List<ColorReference> outerColors = new ArrayList<>();
         int i = 0;
+        List<String> categories = new ArrayList<>();
         for(Pair<Number,ArraySeries> seriesPair : baseSeries) {
             int[] color = AbstractChart.getColor(i, 0);
             if(colorGroupBySeriesByPoint) {
@@ -37,6 +39,7 @@ public class DrilldownChart {
             ArraySeries series = seriesPair.getRight();
             String seriesName = series.getName();
             groupesSeries.addPoint(new DrilldownParentPoint(seriesName, seriesPair.getFirst(),id));
+            categories.add(seriesName);
             drilldownSeries.add(createDrilldownSeries(color, series, id, colorPointSeriesByPoint, isHistogram));
             i++;
         }
@@ -45,6 +48,9 @@ public class DrilldownChart {
         }
         drilldownOptions.setDrilldownData(drilldownSeries);
         drilldownOptions.setSeries(Collections.singletonList(groupesSeries));
+        if(isHistogram) {
+            drilldownOptions.getSingleXAxis().setCategories(categories).setType(AxisType.CATEGORY);
+        }
         return drilldownOptions;
     }
 
