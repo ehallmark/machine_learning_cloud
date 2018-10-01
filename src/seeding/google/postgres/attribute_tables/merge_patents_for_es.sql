@@ -33,6 +33,7 @@ create table patents_global_merged (
     assignee_harmonized text[],
     assignee_harmonized_cc varchar(8)[],
     assignee_count integer,
+    assignee_guess text,
     -- priority claims
     pc_publication_number_full varchar(32)[],
     pc_publication_number_with_country varchar(32)[],
@@ -183,6 +184,7 @@ insert into patents_global_merged (
         assignee_harmonized,
         assignee_harmonized_cc,
         assignee_count,
+        assignee_guess,
         -- priority claims
         pc_publication_number_full,
         pc_publication_number_with_country,
@@ -330,6 +332,7 @@ insert into patents_global_merged (
         p.assignee_harmonized,
         p.assignee_harmonized_cc,
         coalesce(array_length(p.assignee_harmonized,1),0),
+        coalesce(assignee_guess.assignee_guess, coalesce(latest_assignee_fam.first_assignee, p.assignee_harmonized[1])),
         -- priority claims
         pc.pc_publication_number_full,
         pc.pc_publication_number_with_country,
@@ -474,6 +477,7 @@ insert into patents_global_merged (
     left outer join big_query_ptab_by_pub as ptab on (p.publication_number_full=ptab.publication_number_full)
     left outer join big_query_granted as granted on (p.publication_number_full=granted.publication_number_full)
     left outer join big_query_priority_and_expiration as p_and_e on (p_and_e.publication_number_full=p.publication_number_full)
+    left outer join assignee_guesses as assignee_guess on (assignee_guess.publication_number_full=p.publication_number_full)
 );
 
 vacuum;
