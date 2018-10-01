@@ -88,7 +88,7 @@ public class AssigneeGuess {
         ps = Database.newSeedConn().prepareStatement("select publication_number_full, filing_date, inventor_harmonized, assignee_harmonized from patents_global where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null");
         ps.setFetchSize(10);
         rs = ps.executeQuery();
-        PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee, score) values (?, ?, ?) on conflict (publication_number_full) do update set (assignee,score)=(excluded.assignee,excluded.score)");
+        PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee_guess, score) values (?, ?, ?) on conflict (publication_number_full) do update set (assignee_guess,score)=(excluded.assignee_guess,excluded.score)");
         long count = 0L;
         Map<String, Object[]> data = new HashMap<>();
         while(rs.next() && (predict || count < 5000000)) {
