@@ -98,10 +98,10 @@ public class AssigneeGuess {
             if(predict) {
                 Pair<String, Double> bestGuessAssignee = AssigneeGuess.bestGuessAssignee(inventors, date, AssigneeGuess::selectDateMapForInventor, 0.2375, 0.01323, 0.06689, AssigneeSolution.dateDiffFunctions.get(1));
                 if(bestGuessAssignee!=null) {
-                    ps.setString(1, publicationNumberFull);
-                    ps.setString(2, bestGuessAssignee._1);
-                    ps.setDouble(3, bestGuessAssignee._2);
-                    ps.executeUpdate();
+                    insertStatement.setString(1, publicationNumberFull);
+                    insertStatement.setString(2, bestGuessAssignee._1);
+                    insertStatement.setDouble(3, bestGuessAssignee._2);
+                    insertStatement.executeUpdate();
                 }
             } else {
                 try {
@@ -117,7 +117,9 @@ public class AssigneeGuess {
             }
 
             if(count%10000==9999) {
-                conn.commit();
+                if(predict) {
+                    conn.commit();
+                }
                 System.out.println("Seen "+count);
             }
             count ++;
