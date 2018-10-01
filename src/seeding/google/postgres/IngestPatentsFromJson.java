@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -21,6 +22,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -88,6 +90,21 @@ public class IngestPatentsFromJson {
 
     public static void main(String[] args) throws SQLException {
         final File dataDir = new File("/usb/data/google-big-query/patents/");
+
+        Set<String> allExistingPublicationNumbers = Collections.synchronizedSet(new HashSet<>());
+        {
+            Connection conn = Database.newSeedConn();
+            PreparedStatement ps = conn.prepareStatement("select publication_number_full from patents_global");
+            ps.setFetchSize(1000);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                allExistingPublicationNumbers.add(rs.getString(1));
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        }
+        AtomicLong seen = new AtomicLong(0L);
 
         String[] fields = new String[]{
                 SeedingConstants.FULL_PUBLICATION_NUMBER,
@@ -276,7 +293,13 @@ public class IngestPatentsFromJson {
                         List<Object> data = transformer.apply(new Document(map));
                         if(data!=null) {
                             try {
-                                queryStream.ingest(data, null, ps);
+                                String publicationNumberFull = (String)map.get(SeedingConstants.FULL_PUBLICATION_NUMBER);
+                                if(publicationNumberFull!=null) {
+                                    if (!allExistingPublicationNumbers.contains(publicationNumberFull)) {
+                                        queryStream.ingest(data, null, ps);
+                                        seen.getAndIncrement();
+                                    }
+                                }
                             } catch(Exception e2) {
                                 e2.printStackTrace();
                                 System.exit(1);
@@ -299,6 +322,7 @@ public class IngestPatentsFromJson {
         } catch(Exception e) {
             e.printStackTrace();
         }
+        System.out.println("Seen "+seen.get()+" new documents...");
     }
 
 }
