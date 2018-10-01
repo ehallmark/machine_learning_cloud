@@ -281,7 +281,7 @@ public class IngestPatentsFromJson {
             }
         };
 
-        ExecutorService service = Executors.newFixedThreadPool(8);
+        ExecutorService service = Executors.newFixedThreadPool(2);
         Stream.of(dataDir.listFiles()).forEach(file-> {
             service.execute(() -> {
                 try (InputStream stream = new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(file)))) {
