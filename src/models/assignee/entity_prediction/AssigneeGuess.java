@@ -1,6 +1,5 @@
 package models.assignee.entity_prediction;
 
-import com.opencsv.CSVReader;
 import graphical_modeling.util.Pair;
 import models.genetics.GeneticAlgorithm;
 import models.genetics.Listener;
@@ -10,26 +9,21 @@ import org.jetbrains.annotations.NotNull;
 import org.nd4j.linalg.primitives.AtomicDouble;
 import seeding.Database;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class AssigneeGuess {
 
-    static Pair<String, Double> bestGuessAssignee(String[] inventors, LocalDate filingDate, Map<String, Map<LocalDate, String>> assigneeAndDateMap, final double maxDateDiff, final double minScore, final double minTotalScore, final Function<Double, Double> dateDiffFunc) {
+    static Pair<String, Double> bestGuessAssignee(String[] inventors, LocalDate filingDate, Function<String, Map<LocalDate, String>> assigneeAndDateMap, final double maxDateDiff, final double minScore, final double minTotalScore, final Function<Double, Double> dateDiffFunc) {
         Map<String, Map<String,AtomicDouble>> inventorScoreMaps = new HashMap<>();
         for(String inventor : inventors) {
             Map<String,AtomicDouble> scoreMap = new HashMap<>();
             inventorScoreMaps.put(inventor, scoreMap);
-            Map<LocalDate, String> assigneeAndDates = assigneeAndDateMap.get(inventor);
+            Map<LocalDate, String> assigneeAndDates = assigneeAndDateMap.apply(inventor);
             if(assigneeAndDates != null) {
                 assigneeAndDates.forEach((date, assignee)->{
                     scoreMap.putIfAbsent(assignee, new AtomicDouble(0));
@@ -56,44 +50,53 @@ public class AssigneeGuess {
         return null;
     }
 
-    public static void main(String[] args) throws Exception {
-        Map<String, Map<LocalDate, String>> assigneeAndDateMap = new HashMap<>(50000);
-        boolean predict = true;
+    static PreparedStatement dateMapSelect;
+    static {
+        try {
+            Connection conn = Database.newSeedConn();
+            dateMapSelect = conn.prepareStatement("select date, assignee from assignees_inventors_grouped where inventor = ?");
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private synchronized static Map<LocalDate, String> selectDateMapForInventor(String inventor) {
+        try {
+            dateMapSelect.setString(1, inventor);
+            ResultSet rs = dateMapSelect.executeQuery();
+            Map<LocalDate, String> dateMap = new HashMap<>();
+            if (rs.next()) {
+                String[] assignees = (String[]) rs.getArray(1).getArray();
+                Date[] dates = (Date[]) rs.getArray(2).getArray();
+                for (int i = 0; i < assignees.length; i++) {
+                    String assignee = assignees[i];
+                    LocalDate date = dates[i].toLocalDate();
+                    dateMap.put(date, assignee);
+                }
+            }
+            rs.close();
+            return dateMap;
+        } catch(Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    public static void main(String[] args) throws Exception {
+        boolean predict = true;
         Connection conn = Database.getConn();
-        CSVReader reader = new CSVReader(new BufferedReader(new FileReader(new File("assignees_inventors.csv"))));
         PreparedStatement ps;
         ResultSet rs;
-        long count = 0L;
-        Iterator<String[]> iterator = reader.iterator();
-        iterator.next(); // skip first line
-        while(iterator.hasNext()) {
-            String[] lines = iterator.next();
-            String assignee = lines[0].toUpperCase();
-            String inventor = lines[1].toUpperCase();
-            LocalDate date = LocalDate.parse(lines[2], DateTimeFormatter.ISO_DATE);
-            assigneeAndDateMap.putIfAbsent(inventor, new HashMap<>());
-            assigneeAndDateMap.get(inventor).put(date, assignee);
-            if(count%10000==9999) {
-                System.out.println("Loaded "+count);
-            }
-            count ++;
-        }
-        reader.close();
-
-
         ps = Database.newSeedConn().prepareStatement("select publication_number_full, filing_date, inventor_harmonized, assignee_harmonized from patents_global where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null");
         ps.setFetchSize(10);
         rs = ps.executeQuery();
         PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee, score) values (?, ?, ?) on conflict (publication_number_full) do update set (assignee,score)=(excluded.assignee,excluded.score)");
-        count = 0L;
+        long count = 0L;
         Map<String, Object[]> data = new HashMap<>();
         while(rs.next() && (predict || count < 5000000)) {
             String publicationNumberFull = rs.getString(1);
             LocalDate date = rs.getDate(2).toLocalDate();
             String[] inventors = (String[]) rs.getArray(3).getArray();
             if(predict) {
-                Pair<String, Double> bestGuessAssignee = AssigneeGuess.bestGuessAssignee(inventors, date, assigneeAndDateMap, 0.2375, 0.01323, 0.06689, AssigneeSolution.dateDiffFunctions.get(1));
+                Pair<String, Double> bestGuessAssignee = AssigneeGuess.bestGuessAssignee(inventors, date, AssigneeGuess::selectDateMapForInventor, 0.2375, 0.01323, 0.06689, AssigneeSolution.dateDiffFunctions.get(1));
                 if(bestGuessAssignee!=null) {
                     ps.setString(1, publicationNumberFull);
                     ps.setString(2, bestGuessAssignee._1);
@@ -132,7 +135,7 @@ public class AssigneeGuess {
                 public Collection<Solution> nextRandomSolutions(int n) {
                     List<Solution> solutions = new ArrayList<>();
                     for(int i = 0; i < n; i++) {
-                        solutions.add(new AssigneeSolution(data, assigneeAndDateMap));
+                        solutions.add(new AssigneeSolution(data, AssigneeGuess::selectDateMapForInventor));
                     }
                     return solutions;
                 }
@@ -171,8 +174,8 @@ class AssigneeSolution implements Solution {
     private final double minTotalScore;
     private final Function<Double,Double> dateDiffFunc;
     private Map<String,Object[]> data;
-    private Map<String, Map<LocalDate, String>> assigneeAndDateMap;
-    public AssigneeSolution(final double maxDateDiff, final double minScore, final double minTotalScore, Function<Double,Double> dateDiffFunc, Map<String,Object[]> data, Map<String, Map<LocalDate, String>> assigneeAndDateMap) {
+    private Function<String, Map<LocalDate, String>> assigneeAndDateMap;
+    public AssigneeSolution(final double maxDateDiff, final double minScore, final double minTotalScore, Function<Double,Double> dateDiffFunc, Map<String,Object[]> data, Function<String, Map<LocalDate, String>> assigneeAndDateMap) {
         this.maxDateDiff=maxDateDiff;
         this.dateDiffFunc=dateDiffFunc;
         this.assigneeAndDateMap = assigneeAndDateMap;
@@ -181,7 +184,7 @@ class AssigneeSolution implements Solution {
         this.minTotalScore=minTotalScore;
     }
 
-    public AssigneeSolution(Map<String,Object[]> data, Map<String, Map<LocalDate, String>> assigneeAndDateMap) {
+    public AssigneeSolution(Map<String,Object[]> data, Function<String, Map<LocalDate, String>> assigneeAndDateMap) {
         this(0.87515933 + (random.nextDouble()*DATE_DIFF_RANGE-DATE_DIFF_RANGE/2),
                 0.035618 + (random.nextDouble()*MIN_SCORE_RANGE-MIN_SCORE_RANGE/2),
                 0.4942404 + (random.nextDouble()*TOTAL_SCORE_RANGE-TOTAL_SCORE_RANGE/2),

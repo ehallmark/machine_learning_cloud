@@ -21,3 +21,14 @@ create table assignee_guesses (
     assignee_guess text not null,
     score double precision not null
 );
+
+create table assignees_inventors_grouped (
+    inventor text primary key,
+    assignee text[] not null,
+    date date[] not null
+);
+
+insert into assignees_inventors_grouped (
+    select inventor, array_agg(assignee), array_agg(date)
+    from assignees_inventors group by inventor
+);
