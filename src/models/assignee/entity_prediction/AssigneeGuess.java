@@ -54,7 +54,7 @@ public class AssigneeGuess {
     static {
         try {
             Connection conn = Database.newSeedConn();
-            dateMapSelect = conn.prepareStatement("select date, assignee from assignees_inventors_grouped where inventor = ?");
+            dateMapSelect = conn.prepareStatement("select assignee, date from assignees_inventors_grouped where inventor = ?");
         } catch(Exception e) {
             e.printStackTrace();
         }
