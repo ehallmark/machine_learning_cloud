@@ -61,6 +61,7 @@ insert into big_query_family_counterparts (
     array_agg(substring(publication_number_full from 1 for 2)),
     array_agg(kind_code)
     from big_query_family_id
+    where family_id != '-1'
     group by family_id
 );
 
