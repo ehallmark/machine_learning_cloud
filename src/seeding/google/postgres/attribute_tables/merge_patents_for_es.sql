@@ -34,6 +34,13 @@ create table patents_global_merged (
     assignee_harmonized_cc varchar(8)[],
     assignee_count integer,
     assignee_guess text,
+    counterpart_publication_number_full text[] not null,
+    counterpart_publication_number_with_country text[] not null,
+    counterpart_publication_number text[] not null,
+    counterpart_application_number_formatted_with_country text[] not null,
+    counterpart_application_number_formatted text[] not null,
+    counterpart_country text[] not null,
+    counterpart_kind text[] not null,
     -- priority claims
     pc_publication_number_full varchar(32)[],
     pc_publication_number_with_country varchar(32)[],
@@ -185,6 +192,14 @@ insert into patents_global_merged (
         assignee_harmonized_cc,
         assignee_count,
         assignee_guess,
+        -- counterparts
+        counterpart_publication_number_full,
+        counterpart_publication_number_with_country,
+        counterpart_publication_number,
+        counterpart_application_number_formatted_with_country,
+        counterpart_application_number_formatted,
+        counterpart_country,
+        counterpart_kind,
         -- priority claims
         pc_publication_number_full,
         pc_publication_number_with_country,
@@ -333,6 +348,13 @@ insert into patents_global_merged (
         p.assignee_harmonized_cc,
         coalesce(array_length(p.assignee_harmonized,1),0),
         coalesce(assignee_guess.assignee_guess, coalesce(latest_assignee_fam.first_assignee, p.assignee_harmonized[1])),
+        counter.counterpart_publication_number_full,
+        counter.counterpart_publication_number_with_country,
+        counter.counterpart_publication_number,
+        counter.counterpart_application_number_formatted_with_country,
+        counter.counterpart_application_number_formatted,
+        counter.counterpart_country,
+        counter.counterpart_kind,
         -- priority claims
         pc.pc_publication_number_full,
         pc.pc_publication_number_with_country,
@@ -478,6 +500,7 @@ insert into patents_global_merged (
     left outer join big_query_granted as granted on (p.publication_number_full=granted.publication_number_full)
     left outer join big_query_priority_and_expiration as p_and_e on (p_and_e.publication_number_full=p.publication_number_full)
     left outer join assignee_guesses as assignee_guess on (assignee_guess.publication_number_full=p.publication_number_full)
+    left outer join big_query_family_counterparts as counter on (counter.family_id=p.family_id)
 );
 
 vacuum;

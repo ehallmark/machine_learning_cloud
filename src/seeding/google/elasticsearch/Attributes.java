@@ -28,10 +28,19 @@ public class Attributes {
     public static final String LATEST_ASSIGNEE_COUNT = "latest_assignee_count";
     public static final String LATEST_FAM_ASSIGNEE_COUNT = "latest_fam_assignee_count";
     public static final String COMPDB_COUNT = "compdb_count";
+    public static final String GUESSED_ASSIGNEE = "assignee_guess";
     public static final String STANDARD_COUNT = "standard_count";
     public static final String PTAB_COUNT = "ptab_count";
     public static final String SECURITY_INTEREST_FAM = "security_interest_fam";
     public static final String SECURITY_INTEREST = "security_interest";
+    public static final String COUNTERPARTS = "counterparts";
+    public static final String COUNTERPART_PUBLICATION_NUMBER_FULL = "counterpart_publication_number_full";
+    public static final String COUNTERPART_PUBLICATION_NUMBER = "counterpart_publication_number";
+    public static final String COUNTERPART_PUBLICATION_NUMBER_WITH_COUNTRY = "counterpart_publication_number_with_country";
+    public static final String COUNTERPART_APPLICATION_NUMBER_FORMATTED = "counterpart_application_number_formatted";
+    public static final String COUNTERPART_APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY = "counterpart_application_number_formatted_with_country";
+    public static final String COUNTERPART_KIND_CODE = "counterpart_kind";
+    public static final String COUNTERPART_COUNTRY_CODE = "counterpart_country";
     // helper
     public static final String PRIORITY_DATE_ESTIMATED = "priority_date_est";
     public static final String EXPIRED = "expired";
@@ -222,7 +231,9 @@ public class Attributes {
                 new PTABCount(),
                 new Granted(),
                 new SecurityInterest(),
-                new SecurityInterestFam()
+                new SecurityInterestFam(),
+                new Counterparts(),
+                new GuessedAssigneeName()
         );
     }
 
