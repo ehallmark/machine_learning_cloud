@@ -54,10 +54,35 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         )   ;
     }
 
+    private ContainerTag getAdditionalTagPerAttr(String attrName) {
+        return div().withClass("row").with(
+                div().withClass("col-4").with(
+                        label("Max Rows").attr("title", "The maximum number of rows for this pivot chart (defaults to the maximum: 10,000).").attr("style","width: 100%;").with(
+                                br(),
+                                input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).withType("number").withClass("form-control").withValue("")
+                        )
+                ), div().withClass("col-4").with(
+                        label("Include Remaining").attr("title", "Including remaining counts in the pivot table.").with(
+                                br(),
+                                input().withId(getIncludeRemainingField(attrName)).withName(getIncludeRemainingField(attrName)).withType("checkbox").withValue("off")
+                        )
+                )
+        );
+    }
+
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
-        return super.getOptionsTag(userRoleFunction,null,null,DEFAULT_COMBINE_BY_FUNCTION,true,loadChildren,idToTagMap);
+        Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDrilldownAttrFieldName(attrName),getIncludeRemainingField(attrName),getMaxSlicesField(attrName));
+        Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
+                div().withClass("col-9").with(
+                        tag1
+                ),div().withClass("col-3").with(
+                        tag2
+                )
+        );
+        return super.getOptionsTag(userRoleFunction,additionalTagFunction,additionalInputIdsFunction,combineFunction,true,loadChildren,idToTagMap);
     }
 
 

@@ -395,6 +395,8 @@ public abstract class AggregationChart<T> extends AbstractChartAttribute {
             maxSlices = ((AggregateWordCloudChart) this).attrToLimitMap.getOrDefault(attrName, AggregatePieChart.DEFAULT_MAX_SLICES);
             if(maxSlices > AggregatePieChart.MAXIMUM_AGGREGATION_SIZE) maxSlices = AggregatePieChart.MAXIMUM_AGGREGATION_SIZE;
             System.out.println("Max slices: " + maxSlices);
+        } else if(this instanceof AggregatePivotChart) {
+            maxSlices = attrToLimitMap.getOrDefault(attrName, AggregatePieChart.MAXIMUM_AGGREGATION_SIZE);
         }
         if (maxSlices == null) {
             maxSlices = AggregatePieChart.DEFAULT_MAX_SLICES;
