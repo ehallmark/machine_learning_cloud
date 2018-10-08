@@ -61,11 +61,6 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                                 br(),
                                 input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).withType("number").withClass("form-control").withValue("")
                         )
-                ), div().withClass("col-4").with(
-                        label("Include Remaining").attr("title", "Including remaining counts in the pivot table.").with(
-                                br(),
-                                input().withId(getIncludeRemainingField(attrName)).withName(getIncludeRemainingField(attrName)).withType("checkbox").withValue("off")
-                        )
                 )
         );
     }
@@ -74,11 +69,11 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction, boolean loadChildren, Map<String,String> idToTagMap) {
         Function<String,ContainerTag> additionalTagFunction = this::getAdditionalTagPerAttr;
-        Function<String,List<String>> additionalInputIdsFunction = attrName -> Arrays.asList(getDrilldownAttrFieldName(attrName),getIncludeRemainingField(attrName),getMaxSlicesField(attrName));
+        Function<String,List<String>> additionalInputIdsFunction = attrName -> Collections.singletonList(getMaxSlicesField(attrName));
         Function2<ContainerTag,ContainerTag,ContainerTag> combineFunction = (tag1, tag2) -> div().withClass("row").with(
-                div().withClass("col-9").with(
+                div().withClass("col-10").with(
                         tag1
-                ),div().withClass("col-3").with(
+                ),div().withClass("col-2").with(
                         tag2
                 )
         );
