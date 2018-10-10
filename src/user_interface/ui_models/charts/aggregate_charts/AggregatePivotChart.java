@@ -56,7 +56,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
 
     private ContainerTag getAdditionalTagPerAttr(String attrName) {
         return div().withClass("row").with(
-                div().withClass("col-4").with(
+                div().withClass("col-12").with(
                         label("Max Rows").attr("title", "The maximum number of rows for this pivot chart (defaults to the maximum: 10,000).").attr("style","width: 100%;").with(
                                 br(),
                                 input().withId(getMaxSlicesField(attrName)).withName(getMaxSlicesField(attrName)).withType("number").withClass("form-control").withValue("")
