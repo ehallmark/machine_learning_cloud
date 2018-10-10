@@ -11,6 +11,8 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
+import user_interface.ui_models.charts.aggregate_charts.AggregatePivotChart;
+import user_interface.ui_models.charts.aggregate_charts.AggregationChart;
 import user_interface.ui_models.charts.aggregations.Type;
 import user_interface.ui_models.filters.AbstractFilter;
 
@@ -260,7 +262,7 @@ public abstract class AbstractChartAttribute extends NestedAttribute implements 
                 if(collectByType==null) collectByType = Type.Count.toString();
                 System.out.println("Found type: "+collectByType);
                 attrToCollectTypeMap.put(attr,Type.valueOf(collectByType));
-                Integer limit = SimilarPatentServer.extractInt(params, getMaxSlicesField(attr), DEFAULT_MAX_SLICES);
+                Integer limit = SimilarPatentServer.extractInt(params, getMaxSlicesField(attr), this instanceof AggregatePivotChart ? AggregationChart.MAXIMUM_AGGREGATION_SIZE : DEFAULT_MAX_SLICES);
                 if(limit!=null) attrToLimitMap.put(attr,limit);
                 boolean includeRemaining = SimilarPatentServer.extractBool(params, getIncludeRemainingField(attr));
                 attrToIncludeRemainingMap.put(attr, includeRemaining);
