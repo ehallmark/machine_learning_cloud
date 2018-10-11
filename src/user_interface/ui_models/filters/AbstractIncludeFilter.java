@@ -79,7 +79,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
         final String preReq;
         boolean termQuery;
         if(!attribute.getType().equals("keyword")) {
-            if (fieldType.equals(FieldType.Multiselect)&&attribute.getNestedFields() != null) {
+            if ((forceTermQuery||fieldType.equals(FieldType.Multiselect))&&attribute.getNestedFields() != null) {
                 preReq = getFullPrerequisite()+".raw";
                 termQuery = true;
             } else {
