@@ -819,14 +819,6 @@ $(document).ready(function() {
                             });
                         };
                    }($table, headers))
-                   .bind("dynatable:ajax:success", function(response) {
-                     if(response.hasOwnProperty('totals')) {
-                        var totals = response.totals;
-                        for(var i = 0; i < totals.length; i++) {
-                            $('#table-'+tableId.toString()+"-totals-"+i.toString()).text(totals[i].toString());
-                        }
-                     }
-                   })
                    .dynatable({
                      dataset: {
                        ajax: true,
@@ -837,8 +829,16 @@ $(document).ready(function() {
                      features: {
                         pushState: false
                      }
+                   })
+                   .bind("dynatable:ajax:success", function(response) {
+                     if(response.hasOwnProperty('totals')) {
+                        var totals = response.totals;
+                        for(var t = 0; t < totals.length; t++) {
+                            $('#table-'+i.toString()+"-totals-"+t.toString()).text(totals[t].toString());
+                        }
+                        return response;
+                     }
                    });
-
                 }
             }
        }
