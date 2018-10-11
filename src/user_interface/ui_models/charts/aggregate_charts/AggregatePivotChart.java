@@ -168,25 +168,13 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                         Aggregations nestedAggs = bucket.getAggregations();
                         List<Pair<String,Number>> nestedBucketData = extractValuesFromAggregation(nestedAggs,attribute,attrName,subAggregationHandler);
                         Map<String,Number> pairsByGroup = new HashMap<>();
+                        double total = 0L;
                         for(int j = 0; j < nestedBucketData.size(); j++) {
                             Pair<String,Number> nestedBucket = nestedBucketData.get(j);
                             Number val = nestedBucket.getSecond();
                             Object label = dataSets == null ? nestedBucket.getFirst() : dataSets.get(j);
                             pairsByGroup.put(label.toString(),val);
                             allEntries.add(label.toString());
-                        }
-                        groupedData.put(group.toString(),pairsByGroup);
-                        allGroups.add(group.toString());
-                    }
-                    // invert groups
-                    allEntries.forEach(entry-> {
-                        Map<String, String> point = new HashMap<>();
-                        point.put(attrName,entry);
-                        double total = 0L;
-                        for(String group : allGroups) {
-                            Map<String, Number> groupData = groupedData.get(group);
-                            Number val = groupData.getOrDefault(entry,0);
-                            point.put(group, val.toString());
                             switch(collectorType) {
                                 case Count: {
 
@@ -222,6 +210,18 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                             total /= allGroups.size();
                         }
                         totals.add(total);
+                        groupedData.put(group.toString(),pairsByGroup);
+                        allGroups.add(group.toString());
+                    }
+                    // invert groups
+                    allEntries.forEach(entry-> {
+                        Map<String, String> point = new HashMap<>();
+                        point.put(attrName,entry);
+                        for(String group : allGroups) {
+                            Map<String, Number> groupData = groupedData.get(group);
+                            Number val = groupData.getOrDefault(entry,0);
+                            point.put(group, val.toString());
+                        }
                         data.add(point);
                     });
                     return new Pair<>(data, totals);
