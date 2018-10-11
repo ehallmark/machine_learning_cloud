@@ -34,11 +34,17 @@ public class AbstractIncludeFilter extends AbstractFilter {
     protected Collection<String> labels;
     protected FieldType fieldType;
     protected int minimumShouldMatch;
-    public AbstractIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
+    protected boolean forceTermQuery;
+    public AbstractIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels, boolean forceTermQuery) {
         super(attribute, filterType);
         this.fieldType=fieldType;
+        this.forceTermQuery = forceTermQuery;
         this.labels = labels;
 
+    }
+
+    public AbstractIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
+        this(attribute, filterType, fieldType, labels, false);
     }
 
     public String getMinShouldMatchId() {
@@ -71,7 +77,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
     @Override
     public QueryBuilder getFilterQuery() {
         final String preReq;
-        final boolean termQuery;
+        boolean termQuery;
         if(!attribute.getType().equals("keyword")) {
             if (fieldType.equals(FieldType.Multiselect)&&attribute.getNestedFields() != null) {
                 preReq = getFullPrerequisite()+".raw";
@@ -82,6 +88,9 @@ public class AbstractIncludeFilter extends AbstractFilter {
             }
         } else {
             preReq = getFullPrerequisite();
+            termQuery = true;
+        }
+        if(forceTermQuery) {
             termQuery = true;
         }
 

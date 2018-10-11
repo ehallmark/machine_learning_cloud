@@ -169,7 +169,16 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Independent Claim", "ICLM");
             humanAttrToJavaAttrMap.put("Kind Code", Attributes.KIND_CODE);
             humanAttrToJavaAttrMap.put("Dependent Claim", "DCLM");
+            humanAttrToJavaAttrMap.put("Counterparts", Attributes.COUNTERPARTS);
+            humanAttrToJavaAttrMap.put("Counterpart Country", Attributes.COUNTERPART_COUNTRY_CODE);
+            humanAttrToJavaAttrMap.put("Counterpart Application Number", Attributes.COUNTERPART_APPLICATION_NUMBER_FORMATTED);
+            humanAttrToJavaAttrMap.put("Counterpart Application Number w/ Coutnry", Attributes.COUNTERPART_APPLICATION_NUMBER_FORMATTED_WITH_COUNTRY);
+            humanAttrToJavaAttrMap.put("Counterpart Publication Number", Attributes.COUNTERPART_PUBLICATION_NUMBER);
+            humanAttrToJavaAttrMap.put("Counterpart Full Publication Number", Attributes.COUNTERPART_PUBLICATION_NUMBER_FULL);
+            humanAttrToJavaAttrMap.put("Counterpart Publication Number w/ Country", Attributes.COUNTERPART_PUBLICATION_NUMBER_WITH_COUNTRY);
+            humanAttrToJavaAttrMap.put("Counterpart Kind Code", Attributes.COUNTERPART_KIND_CODE);
             humanAttrToJavaAttrMap.put("Title + Abstract + Claims", "TAC");
+            humanAttrToJavaAttrMap.put("Assignee (Estimated)", Attributes.GUESSED_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Maintenance Fee Event Code", Attributes.MAINTENANCE_EVENT);
             humanAttrToJavaAttrMap.put("Similarity", Attributes.SIMILARITY);
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
@@ -2274,7 +2283,7 @@ public class BigQueryServer extends SimilarPatentServer {
                         return null;
                     }
                 }
-                filter = new AbstractIncludeFilter(attribute, AbstractFilter.FilterType.Include, attribute.getFieldType(), Collections.singleton(value));
+                filter = new AbstractIncludeFilter(attribute, AbstractFilter.FilterType.Include, attribute.getFieldType(), Collections.singleton(value), true);
             }
             // construct possible nested filter
             if(attribute instanceof AbstractScriptAttribute) {
