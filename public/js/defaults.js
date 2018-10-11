@@ -781,6 +781,8 @@ $(document).ready(function() {
 
        if(data.hasOwnProperty('tableCnt')) {
             var tableCnt = data.tableCnt;
+            var totals = null;
+            if(data.hasOwnProperty(''))
             for(var i = 0; i < tableCnt; i++) {
                 var tableId = 'table-'.concat(String(i));
                 var $table = $('#'+tableId);
@@ -817,6 +819,14 @@ $(document).ready(function() {
                             });
                         };
                    }($table, headers))
+                   .bind("dynatable:ajax:success", function(response) {
+                     if(response.hasOwnProperty('totals')) {
+                        var totals = response.totals;
+                        for(int i = 0; i < totals.length; i++) {
+                            $('#table-'+tableId.toString()+"-totals-"+i.toString()).text(totals[i].toString());
+                        }
+                     }
+                   })
                    .dynatable({
                      dataset: {
                        ajax: true,
