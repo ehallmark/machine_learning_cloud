@@ -1406,7 +1406,8 @@ public class BigQueryServer extends SimilarPatentServer {
                 TableResponse tableResponse = req.session(false).attribute("table-"+paramIdx);
                 if(tableResponse!=null) {
                     System.out.println("Found tableResponse...");
-                    data = tableResponse.computeAttributesTask.join();
+                    Pair<List<Map<String, String>>, List<Double>> pair = tableResponse.computeAttributesTask.join();
+                    data = pair.getFirst();
                     headers = tableResponse.headers;
                     title = tableResponse.title;
                     nonHumanAttrs = tableResponse.nonHumanAttrs;
@@ -1484,6 +1485,7 @@ public class BigQueryServer extends SimilarPatentServer {
         final String paramIdx = req.queryParamOrDefault("tableId","");
         long timeLimit = 180 * 1000;
         Lock lock;
+        List<Double> totals = null;
         try {
 
             // try to get custom data
@@ -1512,7 +1514,9 @@ public class BigQueryServer extends SimilarPatentServer {
                     System.out.println("Found tableResponse...");
                     lock=tableResponse.lock;
                     try {
-                        data = tableResponse.computeAttributesTask.get(timeLimit, TimeUnit.MILLISECONDS);
+                        Pair<List<Map<String, String>>, List<Double>> pair = tableResponse.computeAttributesTask.join();
+                        data = pair.getFirst();
+                        totals = pair.getSecond();
                         headers = tableResponse.headers;
                         lock = tableResponse.lock;
 
@@ -1624,6 +1628,9 @@ public class BigQueryServer extends SimilarPatentServer {
                 response.put("totalRecordCount",totalCount);
                 response.put("queryRecordCount",queriedCount);
                 response.put("records", dataPage);
+                if(totals!=null) {
+                    response.put("totals", totals);
+                }
 
             } catch(Exception e) {
                 e.printStackTrace();

@@ -49,7 +49,16 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                                 tr().with(
                                         IntStream.range(0,humanHeaders.size()).mapToObj(i->th(humanHeaders.get(i)).attr("data-dynatable-column", response.headers.get(i))).collect(Collectors.toList())
                                 )
-                        ), tbody()
+                        ), tbody(),
+                        tfoot().with(
+                                tr().with(
+                                        td("Overall "+response.collectorType.toString())
+                                ).with(
+                                        humanHeaders.size()>0 ? IntStream.range(0, humanHeaders.size()-1).mapToObj(i->td().withId("table-"+tableIdx+"-totals-"+i))
+                                                .collect(Collectors.toList())
+                                                : Collections.emptyList()
+                                )
+                        )
                 )
         )   ;
     }
@@ -103,6 +112,7 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
         numericAttrNames.add(collectorType.toString());
 
         TableResponse response = new TableResponse();
+        response.collectorType = collectorType;
         response.attribute=attribute;
         List<String> nonHumanAttrs = new ArrayList<>(0);
         List<String> groupByDatasets;
@@ -139,9 +149,10 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             }
             yTitle += " grouped by "+SimilarPatentServer.fullHumanAttributeFor(groupedByAttrName);
 
-            response.computeAttributesTask = new RecursiveTask<List<Map<String, String>>>() {
+            response.computeAttributesTask = new RecursiveTask<Pair<List<Map<String, String>>, List<Double>>>() {
                 @Override
-                protected List<Map<String, String>> compute() {
+                protected Pair<List<Map<String, String>>, List<Double>> compute() {
+                    List<Double> totals = new ArrayList<>();
                     List<Map<String, String>> data = new ArrayList<>();
                     Map<String,Map<String,Number>> groupedData = new HashMap<>();
                     List<String> allGroups = new ArrayList<>();
@@ -171,13 +182,49 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                     allEntries.forEach(entry-> {
                         Map<String, String> point = new HashMap<>();
                         point.put(attrName,entry);
-                        allGroups.forEach(group -> {
+                        double total = 0L;
+                        for(String group : allGroups) {
                             Map<String, Number> groupData = groupedData.get(group);
-                            point.put(group, groupData.getOrDefault(entry,0).toString());
-                        });
+                            Number val = groupData.getOrDefault(entry,0);
+                            point.put(group, val.toString());
+                            switch(collectorType) {
+                                case Count: {
+
+                                }
+                                case Cardinality: {
+
+                                }
+                                case Average: {
+                                    // will need to divide by n at the end
+                                }
+                                case Sum: {
+                                    total += val.doubleValue();
+                                    break;
+                                }
+                                case Max: {
+                                    total = Math.max(total, val.doubleValue());
+                                    break;
+                                }
+                                case Min: {
+                                    total = Math.min(total, val.doubleValue());
+                                    break;
+                                }
+                                case StdDeviation: {
+
+                                }
+                                case Variance: {
+
+                                }
+
+                            }
+                        }
+                        if(collectorType.equals(Type.Average)) {
+                            total /= allGroups.size();
+                        }
+                        totals.add(total);
                         data.add(point);
                     });
-                    return data;
+                    return new Pair<>(data, totals);
                 }
             };
 
@@ -192,21 +239,56 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
             headers.add(firstHeader);
             numericAttrNames.add(firstHeader);
 
-            response.computeAttributesTask = new RecursiveTask<List<Map<String, String>>>() {
+            response.computeAttributesTask = new RecursiveTask<Pair<List<Map<String, String>>, List<Double>>>() {
                 @Override
-                protected List<Map<String, String>> compute() {
+                protected Pair<List<Map<String, String>>, List<Double>> compute() {
                     List<Pair<String,Number>> bucketData = extractValuesFromAggregation(aggregations,attribute,attrName,subAggregationHandler);
                     List<Map<String, String>> data = new ArrayList<>();
+                    double total = 0L;
                     for (int i = 0; i < bucketData.size(); i++) {
                         Pair<String,Number> bucket = bucketData.get(i);
                         String label = bucket.getFirst();
                         if (label == null || label.isEmpty()) label = "(empty)";
                         Map<String, String> entry = new HashMap<>();
-                        entry.put(collectorType.toString(), bucket.getSecond().toString());
+                        Number val = bucket.getSecond();
+                        switch(collectorType) {
+                            case Count: {
+
+                            }
+                            case Cardinality: {
+
+                            }
+                            case Average: {
+                                // will need to divide by n at the end
+                            }
+                            case Sum: {
+                                total += val.doubleValue();
+                                break;
+                            }
+                            case Max: {
+                                total = Math.max(total, val.doubleValue());
+                                break;
+                            }
+                            case Min: {
+                                total = Math.min(total, val.doubleValue());
+                                break;
+                            }
+                            case StdDeviation: {
+
+                            }
+                            case Variance: {
+
+                            }
+
+                        }
+                        entry.put(collectorType.toString(), val.toString());
                         entry.put(attrName, label);
                         data.add(entry);
                     }
-                    return data;
+                    if(collectorType.equals(Type.Average)) {
+                        total /= bucketData.size();
+                    }
+                    return new Pair<>(data, Collections.singletonList(total));
                 }
             };
 
