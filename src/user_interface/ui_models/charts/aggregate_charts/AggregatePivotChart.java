@@ -52,9 +52,9 @@ public class AggregatePivotChart extends AggregationChart<TableResponse> {
                         ), tbody(),
                         tfoot().with(
                                 tr().with(
-                                        td("Overall "+response.collectorType.toString())
+                                        td().with(b("Overall "+response.collectorType.toString()))
                                 ).with(
-                                        humanHeaders.size()>0 ? IntStream.range(0, humanHeaders.size()-1).mapToObj(i->td().withId("table-"+tableIdx+"-totals-"+i))
+                                        humanHeaders.size()>0 ? IntStream.range(0, humanHeaders.size()-1).mapToObj(i->td().with(b().withId("table-"+tableIdx+"-totals-"+i)))
                                                 .collect(Collectors.toList())
                                                 : Collections.emptyList()
                                 )
