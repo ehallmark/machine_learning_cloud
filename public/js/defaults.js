@@ -822,7 +822,7 @@ $(document).ready(function() {
                    .bind("dynatable:ajax:success", function(response) {
                      if(response.hasOwnProperty('totals')) {
                         var totals = response.totals;
-                        for(int i = 0; i < totals.length; i++) {
+                        for(var i = 0; i < totals.length; i++) {
                             $('#table-'+tableId.toString()+"-totals-"+i.toString()).text(totals[i].toString());
                         }
                      }
