@@ -828,7 +828,7 @@ $(document).ready(function() {
                         pushState: false
                      }
                    })
-                   .bind("dynatable:ajax:success", function(response) {
+                   .bind("dynatable:ajax:success", function(e, response) {
                      if(response.hasOwnProperty('totals')) {
                         var totals = response.totals;
                         for(var t = 0; t < totals.length; t++) {
