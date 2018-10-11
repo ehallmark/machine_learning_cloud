@@ -781,8 +781,6 @@ $(document).ready(function() {
 
        if(data.hasOwnProperty('tableCnt')) {
             var tableCnt = data.tableCnt;
-            var totals = null;
-            if(data.hasOwnProperty(''))
             for(var i = 0; i < tableCnt; i++) {
                 var tableId = 'table-'.concat(String(i));
                 var $table = $('#'+tableId);
