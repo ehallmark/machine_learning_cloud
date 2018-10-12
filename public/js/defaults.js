@@ -834,8 +834,14 @@ $(document).ready(function() {
                         for(var t = 0; t < totals.length; t++) {
                             $('#'+tableId+"-totals-"+t.toString()).text(totals[t].toString());
                         }
-                        return response;
                      }
+                     if(response.hasOwnProperty('filteredTotals')) {
+                        var filteredTotals = response.filteredTotals;
+                        for(var t = 0; t < filteredTotals.length; t++) {
+                            $('#'+tableId+"-totals-filtered-"+t.toString()).text(filteredTotals[t].toString());
+                        }
+                     }
+                     return response;
                    };}(tableId));
                 }
             }

@@ -1486,6 +1486,7 @@ public class BigQueryServer extends SimilarPatentServer {
         long timeLimit = 180 * 1000;
         Lock lock;
         List<Double> totals = null;
+        List<Double> filteredTotals = null;
         try {
 
             // try to get custom data
@@ -1625,11 +1626,31 @@ public class BigQueryServer extends SimilarPatentServer {
                 } else {
                     dataPage = Collections.emptyList();
                 }
+                if(totals!=null) {
+                    // try to get filtered totals
+                    filteredTotals = new ArrayList<>(totals.size());
+                    for(int i = 0; i < totals.size(); i++) {
+                        filteredTotals.add(0d);
+                    }
+                    for(int i = 1; i < headers.size(); i++) {
+                        String header = headers.get(i);
+                        for(Map<String,String> row : dataPage) {
+                            try {
+                                filteredTotals.set(i-1, filteredTotals.get(i-1) + Double.valueOf(row.get(header)));
+                            } catch(Exception e) {
+
+                            }
+                        }
+                    }
+                }
                 response.put("totalRecordCount",totalCount);
                 response.put("queryRecordCount",queriedCount);
                 response.put("records", dataPage);
                 if(totals!=null) {
                     response.put("totals", totals);
+                }
+                if(filteredTotals!=null) {
+                    response.put("filteredTotals", filteredTotals);
                 }
 
             } catch(Exception e) {
