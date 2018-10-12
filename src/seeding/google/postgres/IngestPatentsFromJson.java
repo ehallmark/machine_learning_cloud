@@ -89,7 +89,7 @@ public class IngestPatentsFromJson {
     );
 
     public static void main(String[] args) throws SQLException {
-        final File dataDir = new File("/usb/data/google-big-query/patents/");
+        final File dataDir = new File("/usb2/data/google-big-query/patents/");
 
         Set<String> allExistingPublicationNumbers = Collections.synchronizedSet(new HashSet<>());
         {
