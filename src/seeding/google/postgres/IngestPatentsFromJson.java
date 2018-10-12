@@ -104,6 +104,8 @@ public class IngestPatentsFromJson {
             ps.close();
             conn.close();
         }
+        System.out.println("Total existing publication numbers: "+allExistingPublicationNumbers.size());
+        AtomicLong valid = new AtomicLong(0L);
         AtomicLong seen = new AtomicLong(0L);
 
         String[] fields = new String[]{
@@ -297,9 +299,10 @@ public class IngestPatentsFromJson {
                                 if(publicationNumberFull!=null) {
                                     if (!allExistingPublicationNumbers.contains(publicationNumberFull)) {
                                         queryStream.ingest(data, null, ps);
-                                        seen.getAndIncrement();
+                                        valid.getAndIncrement();
                                     }
                                 }
+                                seen.getAndIncrement();
                             } catch(Exception e2) {
                                 e2.printStackTrace();
                                 System.exit(1);
@@ -309,6 +312,7 @@ public class IngestPatentsFromJson {
                     ps.close();
                     conn.commit();
                     conn.close();
+                    System.out.println("Seen "+valid.get()+"/"+seen.get()+" new documents...");
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.exit(1);
@@ -322,7 +326,7 @@ public class IngestPatentsFromJson {
         } catch(Exception e) {
             e.printStackTrace();
         }
-        System.out.println("Seen "+seen.get()+" new documents...");
+        System.out.println("Seen "+valid.get()+"/"+seen.get()+" new documents...");
     }
 
 }
