@@ -14,7 +14,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -91,20 +90,6 @@ public class IngestPatentsFromJson {
     public static void main(String[] args) throws SQLException {
         final File dataDir = new File("/usb2/data/google-big-query/patents/");
 
-        Set<String> allExistingPublicationNumbers = Collections.synchronizedSet(new HashSet<>());
-        {
-            Connection conn = Database.newSeedConn();
-            PreparedStatement ps = conn.prepareStatement("select publication_number_full from patents_global");
-            ps.setFetchSize(1000);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                allExistingPublicationNumbers.add(rs.getString(1));
-            }
-            rs.close();
-            ps.close();
-            conn.close();
-        }
-        System.out.println("Total existing publication numbers: "+allExistingPublicationNumbers.size());
         AtomicLong valid = new AtomicLong(0L);
         AtomicLong seen = new AtomicLong(0L);
 
@@ -297,10 +282,10 @@ public class IngestPatentsFromJson {
                             try {
                                 String publicationNumberFull = (String)map.get(SeedingConstants.FULL_PUBLICATION_NUMBER);
                                 if(publicationNumberFull!=null) {
-                                    if (!allExistingPublicationNumbers.contains(publicationNumberFull)) {
+                                  //  if (!allExistingPublicationNumbers.contains(publicationNumberFull)) {
                                         queryStream.ingest(data, null, ps);
                                         valid.getAndIncrement();
-                                    }
+                                  //  }
                                 }
                                 seen.getAndIncrement();
                             } catch(Exception e2) {
