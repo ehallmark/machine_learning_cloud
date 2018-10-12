@@ -838,7 +838,7 @@ $(document).ready(function() {
                      if(response.hasOwnProperty('filteredTotals')) {
                         var filteredTotals = response.filteredTotals;
                         for(var t = 0; t < filteredTotals.length; t++) {
-                            $('#'+tableId+"-totals-filtered-"+t.toString()).text(filteredTotals[t].toString());
+                            $('#'+tableId+"-filtered-totals-"+t.toString()).text(filteredTotals[t].toString());
                         }
                      }
                      return response;
