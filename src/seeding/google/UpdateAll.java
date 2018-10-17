@@ -1,6 +1,7 @@
 package seeding.google;
 
 import cpc_normalization.CPCHierarchy;
+import models.assignee.entity_prediction.AssigneeGuess;
 import seeding.Database;
 import seeding.ai_db_updater.UpdateBasePatentData;
 import seeding.ai_db_updater.UpdateClassificationHash;
@@ -284,7 +285,7 @@ public class UpdateAll {
             System.out.println("Failed to execute patent_keyword_aggs...");
             System.exit(1);
         }
-        
+
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignment_aggs.sql"));
         } catch(Exception e) {
@@ -299,6 +300,15 @@ public class UpdateAll {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute latest_assignees...");
+            System.exit(1);
+        }
+
+        // assignee guesses
+        try {
+            AssigneeGuess.main(args);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Error during assignee guessing...");
             System.exit(1);
         }
 
