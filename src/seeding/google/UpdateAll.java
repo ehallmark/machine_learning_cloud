@@ -15,7 +15,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.sql.Connection;
-import java.time.LocalDate;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -285,14 +284,7 @@ public class UpdateAll {
             System.out.println("Failed to execute patent_keyword_aggs...");
             System.exit(1);
         }
-
-        try {
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignee_table.sql"));
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute assignee_table...");
-            System.exit(1);
-        }
+        
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignment_aggs.sql"));
         } catch(Exception e) {
