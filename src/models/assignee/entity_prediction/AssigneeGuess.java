@@ -85,7 +85,7 @@ public class AssigneeGuess {
         Connection conn = Database.getConn();
         PreparedStatement ps;
         ResultSet rs;
-        ps = Database.newSeedConn().prepareStatement("select publication_number_full, filing_date, inventor_harmonized, assignee_harmonized from patents_global as p full outer join assignee_guesses as a on (p.publication_number_full=a.publication_number_full) where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null and a.publication_number_full is null");
+        ps = Database.newSeedConn().prepareStatement("select p.publication_number_full, p.filing_date, p.inventor_harmonized, p.assignee_harmonized from patents_global as p full outer join assignee_guesses as a on (p.publication_number_full=a.publication_number_full) where inventor_harmonized is not null and array_length(inventor_harmonized, 1) > 0 and filing_date is not null and a.publication_number_full is null");
         ps.setFetchSize(10);
         rs = ps.executeQuery();
         PreparedStatement insertStatement = conn.prepareStatement("insert into assignee_guesses (publication_number_full, assignee_guess, score) values (?, ?, ?) on conflict (publication_number_full) do update set (assignee_guess,score)=(excluded.assignee_guess,excluded.score)");
