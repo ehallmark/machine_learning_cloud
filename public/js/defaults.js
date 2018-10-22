@@ -807,6 +807,7 @@ $(document).ready(function() {
                                     //menu.find('ul').html('<li value="view">View Assets</li>');
                                     //menu.find('li')
                                 .click(function(e) {
+                                    var $td = $(this)
                                     var index2 = $td.index() - 1;
                                     var group2 = null;
                                     var group1 = null;
