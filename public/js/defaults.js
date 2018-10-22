@@ -794,26 +794,32 @@ $(document).ready(function() {
                                 var $tr = $(this);
                                 $tr.find('td:not(:eq(0))')
                                 .css('cursor', 'pointer')
-                                .contextmenu(function(e) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    var $td = $(this);
-                                    var menu = newContextMenu(e);
-                                    menu.find('ul').html('<li value="view">View Assets</li>');
-                                    menu.find('li').click(function(e) {
-                                        var index2 = $td.index() - 1;
-                                        var group2 = null;
-                                        var group1 = null;
-                                        if(index2 >= 0) {
-                                            group2 = headers.eq(index2).attr('data-dynatable-column');
-                                            if(!group2) {
-                                                group2 = headers.get(index2).nodeValue.trim();
-                                            }
+                                .hover(function () {
+                                    $(this).css('text-decoration', 'underline');
+                                }, function() {
+                                    $(this).css('text-decoration', 'none');
+                                })
+                                //.contextmenu(function(e) {
+                                    //e.preventDefault();
+                                    //e.stopPropagation();
+                                    //var $td = $(this);
+                                    //var menu = newContextMenu(e);
+                                    //menu.find('ul').html('<li value="view">View Assets</li>');
+                                    //menu.find('li')
+                                .click(function(e) {
+                                    var index2 = $td.index() - 1;
+                                    var group2 = null;
+                                    var group1 = null;
+                                    if(index2 >= 0) {
+                                        group2 = headers.eq(index2).attr('data-dynatable-column');
+                                        if(!group2) {
+                                            group2 = headers.get(index2).nodeValue.trim();
                                         }
-                                        group1 = $td.parent().children().eq(0).text();
-                                        handlePreviewAssetsAjax($table.parent().attr('id'), group1, group2);
-                                    });
+                                    }
+                                    group1 = $td.parent().children().eq(0).text();
+                                    handlePreviewAssetsAjax($table.parent().attr('id'), group1, group2);
                                 });
+                                //});
                             });
                         };
                    }($table, headers))
