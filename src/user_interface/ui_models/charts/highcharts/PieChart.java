@@ -27,7 +27,7 @@ public class PieChart extends AbstractChart {
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
                 .setSubtitle(new Title(subTitle))
-                .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>"+collectorType+": <b> {point.y} "+yLabel+"</b><br/>"))
+                .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>"+collectorType+": <b> {point.y} "+yLabel+"</b><br/>Total: <b> {point.total} </b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setyAxis(new Axis());
         if(applyPieChartCenterFill) {
