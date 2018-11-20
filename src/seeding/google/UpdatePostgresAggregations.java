@@ -190,6 +190,21 @@ public class UpdatePostgresAggregations {
             System.exit(1);
         }
 
+        // wipo prediction
+        try {
+            System.out.println("Predicting wipo technologies for missing vectors...");
+            runProcess(". "+new File("scripts/production/update_wipo.sh"));
+            //if(monthUpdate) {
+            //    runProcess(". "+new File("scripts/production/update_cpc_similarity.sh"));
+            //    IngestAssigneeEmbeddingsToPostgres.main(args);
+            //}
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to execute BuildPatentEncodings...");
+            System.exit(1);
+        }
+
         // must run tech tagger after similarity model
         try {
             System.out.println("Predicting tech tags...");
