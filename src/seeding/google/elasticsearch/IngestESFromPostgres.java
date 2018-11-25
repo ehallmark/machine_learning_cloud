@@ -6,6 +6,7 @@ import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import seeding.Database;
@@ -35,6 +36,7 @@ public class IngestESFromPostgres {
         TransportClient client = MyClient.get();
         SearchResponse response = client.prepareSearch(IngestPatents.INDEX_NAME)
                 .setTypes(IngestPatents.TYPE_NAME)
+                .setScroll(new TimeValue(120000))
                 .setFetchSource(false)
                 .setSize(10000)
                 .setQuery(QueryBuilders.matchAllQuery()).get();
