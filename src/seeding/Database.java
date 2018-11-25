@@ -5,6 +5,7 @@ import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 import elasticsearch.DataSearcher;
+import lombok.NonNull;
 import models.assignee.normalization.name_correction.AssigneeTrimmer;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -115,6 +116,22 @@ public class Database {
 	public static void saveObject(Object obj, File file) {
 		trySaveObject(obj,file);
 	}
+
+	public static void saveUserSignedIn(@NonNull String username) throws SQLException {
+		PreparedStatement ps = conn.prepareStatement("insert into user_logins (username) values (?)");
+		ps.setString(1, username);
+		ps.executeUpdate();
+		ps.close();
+	}
+
+	public static void saveUserSearchedRequest(@NonNull String username) throws SQLException {
+		PreparedStatement ps = conn.prepareStatement("insert into user_searches (username) values (?)");
+		ps.setString(1, username);
+		ps.executeUpdate();
+		ps.close();
+	}
+
+
 
 
 	public static Collection<String> getAllPatentsAndApplications() {

@@ -38,25 +38,42 @@ public class IngestESFromPostgres {
                 .setTypes(IngestPatents.TYPE_NAME)
                 .setScroll(new TimeValue(120000))
                 .setFetchSource(false)
+                .storedFields(new String[]{})
                 .setSize(10000)
                 .setQuery(QueryBuilders.matchAllQuery()).get();
         System.out.println("Starting to find existing ids...");
-        final List<String> ids = Collections.synchronizedList(new ArrayList<>(1000));
         AtomicLong exCnt = new AtomicLong(0);
+
+        PreparedStatement toExcludePs = conn.prepareStatement("insert into patents_global_exclude (exclude_id) values (?) on conflict do nothing;");
         Function<SearchHit,Item> hitTransformer = hit -> {
-            ids.add(hit.getId());
-            if(exCnt.getAndIncrement()%10000==9999) {
-                System.out.println("Found exclusions: "+exCnt.get());
+            try {
+                synchronized (conn) {
+                    toExcludePs.setString(1, hit.getId());
+                    toExcludePs.executeUpdate();
+                }
+                if(exCnt.getAndIncrement()%10000==9999) {
+                    System.out.println("Found exclusions: "+exCnt.get());
+                    synchronized (conn) {
+                        conn.commit();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             return null;
         };
 
-        System.out.println("Found "+ids.size()+" ids...");
+        PreparedStatement joinTableCreate = conn.prepareStatement("truncate table patents_global_exclude;");
+        joinTableCreate.executeUpdate();
+        joinTableCreate.close();
+        conn.commit();
+
         DataSearcher.iterateOverSearchResults(response, hitTransformer, -1,false);
 
+        toExcludePs.close();
+        conn.commit();
 
         BulkProcessor bulkProcessor = MyClient.getBulkProcessor();
-
         Collection<AbstractAttribute> attributes = Attributes.buildAttributes();
 
         final String attrString = String.join(", ", attributes.stream()
@@ -66,25 +83,7 @@ public class IngestESFromPostgres {
                 .collect(Collectors.toList())
         );
 
-        PreparedStatement joinTableCreate = conn.prepareStatement("truncate table patents_global_exclude;");
-        joinTableCreate.executeUpdate();
-        joinTableCreate.close();
         conn.commit();
-
-        PreparedStatement toExcludePs = conn.prepareStatement("insert into patents_global_exclude (exclude_id) values (?) on conflict do nothing");
-        System.out.println("Starting to add exclusion ids...");
-        int c = 0;
-        for(String id : ids) {
-            toExcludePs.setString(1, id);
-            toExcludePs.executeUpdate();
-            if(c % 10000==9999) {
-                System.out.println("Exclusion count: "+c);
-                conn.commit();
-            }
-        }
-        toExcludePs.close();
-        conn.commit();
-
 
         PreparedStatement ps = conn.prepareStatement("select "+attrString+" from patents_global_merged as p full outer join patents_global_exclude as e on (p.publication_number_full=e.exclude_id) where e.exclude_id is null");
         ps.setFetchSize(100);
@@ -103,6 +102,7 @@ public class IngestESFromPostgres {
         rs.close();
         ps.close();
         conn.close();
+
         MyClient.closeBulkProcessor();
         MyClient.get().close();
     }

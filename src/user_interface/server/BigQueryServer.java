@@ -608,6 +608,7 @@ public class BigQueryServer extends SimilarPatentServer {
             session.attribute("role", role);
             String userGroup = passwordHandler.getUserGroup(username);
             session.attribute("userGroup", userGroup);
+            Database.saveUserSignedIn(username);
             res.status(200);
             res.redirect(HOME_URL);
             return null;
@@ -1017,6 +1018,10 @@ public class BigQueryServer extends SimilarPatentServer {
 
         post(REPORT_URL, (req, res) -> {
             authorize(req,res);
+            final String username = req.session().attribute("username");
+            if(username!=null) {
+                Database.saveUserSearchedRequest(username);
+            }
             return handleReport(req,res);
         });
 
