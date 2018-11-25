@@ -66,6 +66,7 @@ public class IngestESFromPostgres {
 
         PreparedStatement joinTableCreate = conn.prepareStatement("truncate table patents_global_exclude;");
         joinTableCreate.executeUpdate();
+        joinTableCreate.close();
         conn.commit();
 
         PreparedStatement toExcludePs = conn.prepareStatement("insert into patents_global_exclude (exclude_id) values (?) on conflict do nothing");
@@ -79,6 +80,7 @@ public class IngestESFromPostgres {
                 conn.commit();
             }
         }
+        toExcludePs.close();
         conn.commit();
 
 
