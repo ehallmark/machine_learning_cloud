@@ -1,8 +1,13 @@
 package seeding.google.elasticsearch;
 
+import elasticsearch.DataSearcher;
 import elasticsearch.MyClient;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import seeding.Database;
 import seeding.google.elasticsearch.attributes.ConvenienceAttribute;
 import seeding.google.elasticsearch.attributes.SimilarityAttribute;
@@ -11,12 +16,14 @@ import user_interface.server.BigQueryServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
+import user_interface.ui_models.portfolios.items.Item;
 
 import java.sql.*;
 import java.sql.Date;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,6 +31,28 @@ public class IngestESFromPostgres {
 
     public static void main(String[] args) throws Exception {
         Connection conn = Database.getConn();
+
+        TransportClient client = MyClient.get();
+        SearchResponse response = client.prepareSearch(IngestPatents.INDEX_NAME)
+                .setTypes(IngestPatents.TYPE_NAME)
+                .setFetchSource(false)
+                .setSize(10000)
+                .setQuery(QueryBuilders.matchAllQuery()).get();
+        System.out.println("Starting to find existing ids...");
+        final List<String> ids = Collections.synchronizedList(new ArrayList<>(1000));
+        AtomicLong exCnt = new AtomicLong(0);
+        Function<SearchHit,Item> hitTransformer = hit -> {
+            ids.add(hit.getId());
+            if(exCnt.getAndIncrement()%10000==9999) {
+                System.out.println("Found exclusions: "+exCnt.get());
+            }
+            return null;
+        };
+
+        System.out.println("Found "+ids.size()+" ids...");
+        DataSearcher.iterateOverSearchResults(response, hitTransformer, -1,false);
+
+
         BulkProcessor bulkProcessor = MyClient.getBulkProcessor();
 
         Collection<AbstractAttribute> attributes = Attributes.buildAttributes();
@@ -35,7 +64,25 @@ public class IngestESFromPostgres {
                 .collect(Collectors.toList())
         );
 
-        PreparedStatement ps = conn.prepareStatement("select "+attrString+" from patents_global_merged");
+        PreparedStatement joinTableCreate = conn.prepareStatement("truncate table patents_global_exclude;");
+        joinTableCreate.executeUpdate();
+        conn.commit();
+
+        PreparedStatement toExcludePs = conn.prepareStatement("insert into patents_global_exclude (exclude_id) values (?) on conflict do nothing");
+        System.out.println("Starting to add exclusion ids...");
+        int c = 0;
+        for(String id : ids) {
+            toExcludePs.setString(1, id);
+            toExcludePs.executeUpdate();
+            if(c % 10000==9999) {
+                System.out.println("Exclusion count: "+c);
+                conn.commit();
+            }
+        }
+        conn.commit();
+
+
+        PreparedStatement ps = conn.prepareStatement("select "+attrString+" from patents_global_merged as p full outer join patents_global_exclude as e on (p.publication_number_full=e.exclude_id) where e.exclude_id is null");
         ps.setFetchSize(100);
 
         final String idField = Attributes.PUBLICATION_NUMBER_FULL;
