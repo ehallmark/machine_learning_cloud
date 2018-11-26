@@ -158,7 +158,8 @@ public class UpdateAll {
                 }
             }
         }
-        UpdatePostgresAggregations.main(args);
+        UpdatePostgresAggregationsInitial.main(args);
+        UpdatePostgresAggregationsPost.main(args);
     }
 
 }
