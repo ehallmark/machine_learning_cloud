@@ -98,7 +98,6 @@ public class BigQueryServer extends SimilarPatentServer {
     public static final String FORM_ELEMENT_BY_ID_URL = GLOBAL_PREFIX+"/form_elem_by_id";
     public static final String EDIT_USER_GROUP_URL = GLOBAL_PREFIX+"/edit_user_group";
     public static final String EDIT_USER_URL = GLOBAL_PREFIX+"/edit_user";
-    public static final String SYNONYM_FINDER_URL = PROTECTED_URL_PREFIX+"/synonym_finder";
     public static final String NEW_USER_GROUP_URL = GLOBAL_PREFIX+"/new_user_group";
     public static final String USER_GROUPS_URL = GLOBAL_PREFIX+"/user_groups";
     public static final String UPDATE_USER_URL = GLOBAL_PREFIX+"/update_user";
@@ -612,33 +611,6 @@ public class BigQueryServer extends SimilarPatentServer {
             res.status(200);
             res.redirect(HOME_URL);
             return null;
-        });
-
-        post(SYNONYM_FINDER_URL, (req,res) -> {
-            authorize(req,res);
-            Map<String, Object> results = new HashMap<>();
-
-            String words = extractString(req, "words", "").toLowerCase();
-            double minSimilarity = extractDouble(req, "min_similarity", Constants.DEFAULT_MIN_SIMILARITY);
-            int maxSynonyms = extractInt(req, "max_synonyms", Constants.DEFAULT_MAX_SYNONYMS);
-            String[] wordArr = words.split("\\s+");
-            if(wordArr.length!=0) {
-                Map<String,Collection<String>> synonymMap = Word2VecManager.synonymsFor(Arrays.asList(wordArr), maxSynonyms, minSimilarity);
-                ContainerTag tag = div().withClass("row");
-                for(String word: wordArr) {
-                    Collection<String> synonyms = synonymMap.getOrDefault(word, Collections.emptyList());
-                    tag = tag.with(div().withClass("col-12").with(
-                            p("Synonyms for: "+word)
-                    )).with(ol().with(synonyms.stream().map(synonym->new Pair<>(synonym, Word2VecManager.getOrLoadManager().similarity(word.toLowerCase(),synonym)))
-                            .sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond()))
-                            .map(p-> li(p.getFirst()+" ("+p.getSecond()+")")).collect(Collectors.toList())));
-                }
-                results.put("results", tag.render());
-
-            } else {
-                results.put("results", "No synonyms found.");
-            }
-            return new Gson().toJson(results);
         });
 
         get(GLOBAL_PREFIX+"/logout", (req,res)->{
@@ -2691,20 +2663,7 @@ public class BigQueryServer extends SimilarPatentServer {
                         long timeEnd = System.currentTimeMillis();
                         double timeSeconds = new Double(timeEnd - timeStart) / 1000;
 
-                        Map<String,Collection<String>> synonymMap = engine.getSynonymMap();
                         ContainerTag results = div();
-                        if(synonymMap.size()>0) {
-                            results = results.with(
-                                    div().withClass("col-12").with(
-                                            br(),
-                                            p("Synonyms Used")
-                                    ).with(
-                                            synonymMap.entrySet().stream().map(e->{
-                                                return div().withText(e.getKey()+": " + String.join("; ", e.getValue()));
-                                            }).collect(Collectors.toList())
-                                    )
-                            );
-                        }
                         results = results.with(
                                 div().withClass("col-12").with(
                                         br(),
@@ -3201,9 +3160,6 @@ public class BigQueryServer extends SimilarPatentServer {
                                         ), li().withClass("nav-item").with(
                                                 a("Visualizations").withId("chart-tab-link").withClass("nav-link").attr("data-toggle","tab").withHref("#chart-tab").attr("role","tab")
                                         )
-                                        //, li().withClass("nav-item").with(
-                                        //        a("Synonym Helper").withId("synonym-tab-link").withClass("nav-link").attr("data-toggle", "tab").withHref("#synonym-tab").attr("role","tab")
-                                        // )
                                         , li().withClass("nav-item").with(
                                                 a("Results").withId("results-link").withClass("nav-link").attr("data-toggle","tab").withHref("#results").attr("role","tab")
                                         )
@@ -3252,14 +3208,6 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                                                 label("List Item Separator").attr("style","width: 100%;").with(
                                                                                                         input().withId("main-options-"+LIST_ITEM_SEPARATOR_FIELD).withClass("form-control").withType("text").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder("; ").withName(LIST_ITEM_SEPARATOR_FIELD)
                                                                                                 )
-                                                                                        ), div().withClass("col-12 attributeElement").with(
-                                                                                                label("Maximum Synonyms").attr("title", "This setting determines the maximum number of synonyms to accept for a given search term. Values must be non-negative.").attr("style", "width:100%;").with(
-                                                                                                        input().attr("min", "0").withId(Constants.MAX_SYNONYMS_FIELD_ID).withClass("form-control").attr("step", "1").withType("number").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder(String.valueOf(Constants.DEFAULT_MAX_SYNONYMS)).withName(Constants.MAX_SYNONYMS_FIELD_ID)
-                                                                                                )
-                                                                                        ), div().withClass("col-12 attributeElement").with(
-                                                                                                label("Minimum Synonym Similarity").attr("title", "This setting determines the minimum similarity required to accept a synonym. Values range of [0-1].").attr("style", "width:100%;").with(
-                                                                                                        input().attr("min", "0").attr("max", "1").withId(Constants.MIN_SIMILARITY_FIELD_ID).withClass("form-control").attr("step", "0.1").withType("number").attr("style","margin-top: 5px; margin-left: auto; width: 100px; margin-right: auto;").withPlaceholder(String.valueOf(Constants.DEFAULT_MIN_SIMILARITY)).withName(Constants.MIN_SIMILARITY_FIELD_ID)
-                                                                                                )
                                                                                         )
                                                                                 )
                                                                         )
@@ -3273,34 +3221,7 @@ public class BigQueryServer extends SimilarPatentServer {
                                                                 customFormRow("charts",allCharts, userRoleFunction)
                                                         ),buttons, br(), br(), br(), br()
                                                 )
-                                        ), div().withClass("col-12 tab-pane fade").withId("synonym-tab").attr("role", "tabpanel").with(
-                                                div().withClass("row").attr("style", "padding-bottom: 250px;").with(
-                                                        loaderTag(),
-                                                        div().withClass("col-12").withId("synonymForm").attr("data-url", SYNONYM_FINDER_URL).with(
-                                                                div().withClass("row").attr("style", "padding-top: 30px;").with(
-                                                                        div().withClass("col-6").with(
-                                                                                label("Search synonyms of ").attr("style", "width: 80%;").with(
-                                                                                        br(),
-                                                                                        input().attr("style", "width: 100%;").withId("synonym-test-word").withClass("form-control").withType("text")
-                                                                                ), br(),
-                                                                                label("Maximum number of synonyms ").attr("style", "width: 80%;").attr("title", "The maximum number of synonyms to return. Values must be non-negative.").with(
-                                                                                        br(),
-                                                                                        input().attr("min", "0").attr("style", "width: 100%;").withType("number").attr("step", "1").withValue("10").withId("synonym-test-max").withClass("form-control")
-                                                                                ), br(),
-                                                                                label("Minimum similarity").attr("style", "width: 80%;").attr("title", "The minimum allowed similarity for a synonym. Values must be between 0 and 1.").with(
-                                                                                        br(),
-                                                                                        input().attr("min", "0").attr("max", "1").attr("style", "width: 100%;").withType("number").attr("step", "0.1").withValue("0.5").withId("synonym-test-min").withClass("form-control")
-                                                                                ), br(),br(),
-                                                                                div().withClass("btn btn-outline-secondary div-button").attr("style", "width: 100%").withId("synonym-finder-button").withText("Find Synonyms")
-                                                                        ), div().withClass("col-6").attr("style", "max-height: 800px; overflow-y: auto;").withId("synonym-test-results").with(
-
-                                                                        )
-                                                                )
-                                                        ), br(), br(), br(), br()
-                                                )
-                                        )
-
-                                        , div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("results").with(
+                                        ), div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("results").with(
                                                 div().withClass("row").attr("style", "padding-bottom: 250px;").with(
                                                         div().withClass("col-12 content").with(
 
@@ -3538,12 +3459,6 @@ public class BigQueryServer extends SimilarPatentServer {
         Database.getConn().setAutoCommit(true);
 
         HelpPage.helpPage(false);
-        (new RecursiveAction() {
-            @Override
-            protected void compute() {
-                System.out.println("Starting to load word2vec...");
-                Word2VecManager.getOrLoadManager();
-            }
-        }).fork();
+
     }
 }
