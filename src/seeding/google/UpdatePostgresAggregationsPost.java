@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class UpdatePostgresAggregationsPost {
     public static void main(String[] args) {
         final Mailer emailer = new Mailer();
-        final String DEFAULT_MAIL_SUBJECT = "PSP Pre Aggregations Error";
+        final String DEFAULT_MAIL_SUBJECT = "PSP Post Aggregations Error";
         try {
             System.out.println("Predicting keywords...");
             PredictKeywords.main(args);
