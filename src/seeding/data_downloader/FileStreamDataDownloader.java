@@ -79,6 +79,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
                     dateToUse = date;
                 }
             } catch(Exception e2) {
+                e2.printStackTrace();
                 throw new RuntimeException("Unable to parse date from current files...");
             }
         }
