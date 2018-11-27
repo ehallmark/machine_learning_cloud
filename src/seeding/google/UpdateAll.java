@@ -1,6 +1,7 @@
 package seeding.google;
 
 import cpc_normalization.CPCHierarchy;
+import mailer.Mailer;
 import seeding.Database;
 import seeding.ai_db_updater.UpdateBasePatentData;
 import seeding.ai_db_updater.UpdateClassificationHash;
@@ -14,7 +15,9 @@ public class UpdateAll {
     public static void main(String[] args) {
         boolean updateGoogleJsons = false;
         boolean monthUpdate = false;
-        boolean aggsOnly = true;
+        boolean aggsOnly = false;
+        final Mailer emailer = new Mailer();
+        final String DEFAULT_MAIL_SUBJECT = "PSP Update Error";
 
         if (updateGoogleJsons) {
             /*
@@ -32,6 +35,7 @@ public class UpdateAll {
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Exited during stage IngestPatentsFromJson...");
+                emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage IngestPatentsFromJson... ", e);
                 System.exit(1);
             }
 
@@ -40,6 +44,7 @@ public class UpdateAll {
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Exited during stage IngestCPCDefinitionFromJson...");
+                emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage IngestCPCDefinitionFromJson...", e);
                 System.exit(1);
             }
 
@@ -48,6 +53,7 @@ public class UpdateAll {
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Exited during stage CPCHierarchy...");
+                emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage CPCHierarchy...", e);
                 System.exit(1);
             }
 
@@ -57,6 +63,7 @@ public class UpdateAll {
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Exited during stage IngestSEPFromJson...");
+                emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage IngestSEPFromJson...", e);
                 System.exit(1);
             }
 
@@ -73,6 +80,7 @@ public class UpdateAll {
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Exited during stage UpdateBasePatentData...");
+                emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage UpdateBasePatentData...", e);
                 System.exit(1);
             }
 
@@ -86,6 +94,7 @@ public class UpdateAll {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Exited during stage ScrapeEPO...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage ScrapeEPO...", e);
                     System.exit(1);
                 }
 
@@ -94,6 +103,7 @@ public class UpdateAll {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Exited during stage IngestScrapedXMLIntoPostgres...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage IngestScrapedXMLIntoPostgres...", e);
                     System.exit(1);
                 }
 
@@ -103,6 +113,7 @@ public class UpdateAll {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Exited during stage IngestAssignmentData...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage IngestAssignmentData...", e);
                     System.exit(1);
                 }
 
@@ -113,18 +124,20 @@ public class UpdateAll {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Exited during stage IngestMaintenanceFeeData...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage IngestMaintenanceFeeData...", e);
                     System.exit(1);
                 }
 
                 // pair data
                 try {
-                    //if (monthUpdate) {
-                    DownloadLatestPAIR.main(args);
-                    //}
-                    IngestPairData.main(args);
+                    if (monthUpdate) {
+                        DownloadLatestPAIR.main(args);
+                        IngestPairData.main(args);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Exited during stage IngestPairData...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage IngestPairData...", e);
                     System.exit(1);
                 }
 
@@ -135,6 +148,7 @@ public class UpdateAll {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Exited during stage IngestPTABData...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage IngestPTABData...", e);
                     System.exit(1);
                 }
 
@@ -144,6 +158,7 @@ public class UpdateAll {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Exited during stage IngestWIPOTechnologies...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage IngestWIPOTechnologies...", e);
                     System.exit(1);
                 }
 
@@ -154,6 +169,7 @@ public class UpdateAll {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Exited during stage UpdateClassificationHash...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage UpdateClassificationHash...", e);
                     System.exit(1);
                 }
             }

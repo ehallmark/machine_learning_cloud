@@ -1,5 +1,6 @@
 package seeding.google;
 
+import mailer.Mailer;
 import models.assignee.entity_prediction.AssigneeGuess;
 import seeding.Database;
 import seeding.google.tech_tag.FilterKeywordsByTFIDF;
@@ -15,7 +16,8 @@ import java.util.concurrent.TimeUnit;
 
 public class UpdatePostgresAggregationsPost {
     public static void main(String[] args) {
-
+        final Mailer emailer = new Mailer();
+        final String DEFAULT_MAIL_SUBJECT = "PSP Pre Aggregations Error";
         try {
             System.out.println("Predicting keywords...");
             PredictKeywords.main(args);
@@ -24,6 +26,7 @@ public class UpdatePostgresAggregationsPost {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute patent_keyword_aggs...");
+            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute patent_keyword_aggs...", e);
             System.exit(1);
         }
 
@@ -31,8 +34,8 @@ public class UpdatePostgresAggregationsPost {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignment_aggs.sql"));
         } catch(Exception e) {
             e.printStackTrace();
-
             System.out.println("Failed to execute assignment_aggs...");
+            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute assignment_aggs...", e);
             System.exit(1);
         }
 
@@ -41,6 +44,7 @@ public class UpdatePostgresAggregationsPost {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute latest_assignees...");
+            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute latest_assignees...", e);
             System.exit(1);
         }
 
@@ -50,6 +54,7 @@ public class UpdatePostgresAggregationsPost {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Error during assignee guessing...");
+            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute assignee guessing...", e);
             System.exit(1);
         }
 
@@ -58,6 +63,7 @@ public class UpdatePostgresAggregationsPost {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute granted...");
+            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute granted...", e);
             System.exit(1);
         }
 
@@ -67,6 +73,7 @@ public class UpdatePostgresAggregationsPost {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute ai_value...");
+            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute ai_value...", e);
             System.exit(1);
         }
 
@@ -83,6 +90,7 @@ public class UpdatePostgresAggregationsPost {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute BuildPatentEncodings...");
+            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute BuildPatentEncodings...", e);
             System.exit(1);
         }
 
@@ -97,7 +105,8 @@ public class UpdatePostgresAggregationsPost {
 
         } catch(Exception e) {
             e.printStackTrace();
-            System.out.println("Failed to execute BuildPatentEncodings...");
+            System.out.println("Failed to execute Predicting wipo technologies...");
+            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute Predicting wipo technologies...", e);
             System.exit(1);
         }
 
@@ -109,6 +118,7 @@ public class UpdatePostgresAggregationsPost {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute tech_tags_aggs...");
+            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute Predicting tech tags...", e);
             System.exit(1);
         }
 
@@ -121,6 +131,7 @@ public class UpdatePostgresAggregationsPost {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute merge_patents_for_es...");
+            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute Merging final results...", e);
             System.exit(1);
         }
     }

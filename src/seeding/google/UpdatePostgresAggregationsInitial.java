@@ -1,5 +1,6 @@
 package seeding.google;
 
+import mailer.Mailer;
 import models.assignee.entity_prediction.AssigneeGuess;
 import seeding.Database;
 import seeding.google.tech_tag.FilterKeywordsByTFIDF;
@@ -16,11 +17,14 @@ import java.util.concurrent.TimeUnit;
 public class UpdatePostgresAggregationsInitial {
     public static void main(String[] args) {
         // run helper sql commands to build dependent tables
+        final Mailer emailer = new Mailer();
+        final String DEFAULT_MAIL_SUBJECT = "PSP Pre Aggregations Error";
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/family_id_idx.sql"));
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Failed to execute family_id_idx...");
+            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute family_id_idx...", e);
             System.exit(1);
         }
 
@@ -33,6 +37,7 @@ public class UpdatePostgresAggregationsInitial {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Failed to execute cpc_tree...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute cpc_tree...", e);
                     System.exit(1);
                 }
             });
@@ -44,15 +49,18 @@ public class UpdatePostgresAggregationsInitial {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Failed to execute citations_and_pclaims...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute citations_and_pclaims...", e);
                     System.exit(1);
                 }
 
                 try {
                     // NOTE: Must be run after priority claim aggregations...
                     runSqlTable(new File("src/seeding/google/postgres/attribute_tables/reissue.sql"));
+
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Failed to execute reissue...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute reissue...", e);
                     System.exit(1);
                 }
             });
@@ -63,6 +71,7 @@ public class UpdatePostgresAggregationsInitial {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Failed to execute maintenance_codes_aggs...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute maintenance_codes_aggs...", e);
                     System.exit(1);
                 }
             });
@@ -74,6 +83,7 @@ public class UpdatePostgresAggregationsInitial {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Failed to execute pair_aggs...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute pair_aggs...", e);
                     System.exit(1);
                 }
             });
@@ -85,6 +95,7 @@ public class UpdatePostgresAggregationsInitial {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Failed to execute wipo_aggs...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute wipo_aggs...", e);
                     System.exit(1);
                 }
             });
@@ -95,6 +106,7 @@ public class UpdatePostgresAggregationsInitial {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Failed to execute ptab_aggs...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute ptab_aggs...", e);
                     System.exit(1);
                 }
             });
@@ -106,6 +118,7 @@ public class UpdatePostgresAggregationsInitial {
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Failed to execute patent_text_aggs...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute patent_text_aggs...", e);
                     System.exit(1);
                 }
             });
