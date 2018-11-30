@@ -153,7 +153,7 @@ public class AssigneeGuess {
             algorithm.simulate(Long.MAX_VALUE, 0.5, 0.5);
         }
 
-        conn.close();
+        //conn.close();
 
     }
 }
