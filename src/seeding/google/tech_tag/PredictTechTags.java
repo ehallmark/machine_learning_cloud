@@ -245,7 +245,7 @@ public class PredictTechTags {
         ps.setFetchSize(10);
         ResultSet rs = ps.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
-        Connection conn = Database.getConn();
+        Connection conn = Database.newSeedConn();
 
         AtomicLong totalCnt = new AtomicLong(0);
         PreparedStatement insertDesign = conn.prepareStatement("insert into "+technologyTable+" (family_id,publication_number_full,technology,technology2) values (?,?,'DESIGN','DESIGN') on conflict (family_id) do update set (technology,technology2)=('DESIGN','DESIGN')");
