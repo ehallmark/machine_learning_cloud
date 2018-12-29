@@ -1725,52 +1725,6 @@ $(document).ready(function() {
         return false;
     };
 
-    $('#synonym-test-word,#synonym-test-max,#synonym-test-word').keyup(function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        if (e.keyCode === 13) {
-           $('#synonym-finder-button').trigger('click');
-        }
-    });
-
-    $('#synonym-finder-button').click(function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var $button = $(this);
-        if($button.hasClass('disabled')) {
-            return false;
-        }
-        $button.addClass('disabled');
-        var $text = $button.text();
-        $button.text('Finding...');
-        var $container = $('#synonymForm');
-        var words = $('#synonym-test-word').val();
-        var max_synonyms = $('#synonym-test-max').val();
-        var min_similarity = $('#synonym-test-min').val();
-        $('#miniTip').hide();
-
-        $.ajax({
-            dataType: 'json',
-            type: 'POST',
-            url: $container.attr('data-url'),
-            success: function(data) {
-                $('#synonym-test-results').html(data.results);
-            },
-            data: {
-                min_similarity: min_similarity,
-                max_synonyms: max_synonyms,
-                words: words
-            },
-            error: function() {
-                $('#synonym-test-results').html('An unknown error occurred.');
-            },
-            complete: function() {
-                $button.removeClass('disabled');
-                $button.text($text);
-            }
-        });
-    })
-
 
     // prevent bug with text editor and sortable lists
     $('.CodeMirror-wrap').parent().mousedown(function(e) {
