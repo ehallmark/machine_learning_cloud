@@ -759,8 +759,14 @@ public class BigQueryServer extends SimilarPatentServer {
                 String confPassword = extractString(req, "confirm_password", null);
                 if (username != null && password != null && confPassword != null) {
                     if (password.equals(confPassword)) {
-                        passwordHandler.forceChangePassword(username, confPassword);
-                        message = "Changed password.";
+                        try {
+                            passwordHandler.forceChangePassword(username, confPassword);
+                            message = "Successfully updated user.";
+                        } catch (Exception e) {
+                            System.out.println("Error while updating user...");
+                            e.printStackTrace();
+                            message = e.getMessage();
+                        }
                     } else {
                         message = "Passwords do not match.";
                     }
