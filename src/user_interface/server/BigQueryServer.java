@@ -101,6 +101,7 @@ public class BigQueryServer extends SimilarPatentServer {
     public static final String NEW_USER_GROUP_URL = GLOBAL_PREFIX+"/new_user_group";
     public static final String USER_GROUPS_URL = GLOBAL_PREFIX+"/user_groups";
     public static final String UPDATE_USER_URL = GLOBAL_PREFIX+"/update_user";
+    public static final String OVERRIDE_PASSWORD_URL = GLOBAL_PREFIX+"/override_password";
     public static final String UPDATE_USER_GROUP_URL = GLOBAL_PREFIX+"/update_user_group";
     public static final String REMOVE_USER_URL = GLOBAL_PREFIX+"/remove_user";
     public static final String CREATE_USER_URL = GLOBAL_PREFIX+"/create_user";
@@ -747,6 +748,33 @@ public class BigQueryServer extends SimilarPatentServer {
             return null;
         });
 
+        post(OVERRIDE_PASSWORD_URL, (req, res)->{
+            authorize(req,res);
+            String role = req.session().attribute("role");
+            String message;
+            final boolean isSuperUser = role != null && role.equals(SUPER_USER);
+            if (isSuperUser) {
+                String username = extractString(req, "username", null);
+                String password = extractString(req, "password", null);
+                String confPassword = extractString(req, "confirm_password", null);
+                if (username != null && password != null && confPassword != null) {
+                    if (password.equals(confPassword)) {
+                        passwordHandler.forceChangePassword(username, confPassword);
+                        message = "Changed password.";
+                    } else {
+                        message = "Passwords do not match.";
+                    }
+                } else {
+                    message = "Username, password or password confirmation was not found.";
+                }
+            } else {
+                message = "Unable to change password.";
+            }
+            req.session().attribute("message", message);
+            res.redirect(OVERRIDE_PASSWORD_URL);
+            return null;
+        });
+
         get(EDIT_USER_GROUP_URL, (req, res)->{
             authorize(req,res);
             String role = req.session().attribute("role");
@@ -866,6 +894,30 @@ public class BigQueryServer extends SimilarPatentServer {
                     ), br(), br(), label("New Password").with(
                             input().withType("password").withClass("form-control").withName("new_password")
                     ), br(), br(), button("Change Password").withClass("btn btn-outline-secondary")
+            );
+            return templateWrapper(passwordHandler,true, req, res, form, false);
+        });
+
+        get(OVERRIDE_PASSWORD_URL, (req, res)->{
+            authorize(req,res);
+            String ownerRole = req.session().attribute("role");
+            if (!ownerRole.equals(SUPER_USER)) {
+                return null;
+            }
+            String message = req.session().attribute("message");
+            req.session().removeAttribute("message");
+            Tag form = form().withId("override-user-form").withAction(OVERRIDE_PASSWORD_URL).withMethod("POST").attr("style","margin-top: 100px;").with(
+                    (message == null ? span() : div().withClass("not-implemented").withText(
+                            message
+                    )),br(),
+                    label("User").with(
+                            input().withType("text").withClass("form-control").withName("username")
+                    ), br(), br(),
+                    label("Password").with(
+                            input().withType("password").withClass("form-control").withName("password")
+                    ), br(), br(), label("New Password").with(
+                            input().withType("password").withClass("form-control").withName("confirm_password")
+                    ), br(), br(), button("Confirm Password").withClass("btn btn-outline-secondary")
             );
             return templateWrapper(passwordHandler,true, req, res, form, false);
         });
@@ -3001,6 +3053,7 @@ public class BigQueryServer extends SimilarPatentServer {
             if(role.equals(SUPER_USER)) {
                 menuItems.add(a("Change User Group").withClass("btn btn-outline-secondary").withHref(EDIT_USER_GROUP_URL));
                 menuItems.add(a("Remove Users").withClass("btn btn-outline-secondary").withHref(DELETE_USER_URL));
+                menuItems.add(a("Update Password").withClass("btn btn-outline-secondary").withHref(OVERRIDE_PASSWORD_URL));
             }
             menuItems.add(a("Change Password").withClass("btn btn-outline-secondary").withHref(EDIT_USER_URL));
 

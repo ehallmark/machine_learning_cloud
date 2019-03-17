@@ -118,7 +118,7 @@ public class PasswordHandler {
     public synchronized void forceChangePassword(String username, String newPassword) throws PasswordException {
         // validate password
         validatePassword(newPassword);
-        saveUserToFile(username, newPassword,null);
+        saveUserToFile(username, newPassword, null);
     }
 
     public synchronized void createUser(String username, String password, String role) throws PasswordException {
