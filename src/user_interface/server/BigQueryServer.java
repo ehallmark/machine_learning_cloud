@@ -3059,7 +3059,7 @@ public class BigQueryServer extends SimilarPatentServer {
             if(role.equals(SUPER_USER)) {
                 menuItems.add(a("Change User Group").withClass("btn btn-outline-secondary").withHref(EDIT_USER_GROUP_URL));
                 menuItems.add(a("Remove Users").withClass("btn btn-outline-secondary").withHref(DELETE_USER_URL));
-                menuItems.add(a("Update Password").withClass("btn btn-outline-secondary").withHref(OVERRIDE_PASSWORD_URL));
+                menuItems.add(a("Override Passwords").withClass("btn btn-outline-secondary").withHref(OVERRIDE_PASSWORD_URL));
             }
             menuItems.add(a("Change Password").withClass("btn btn-outline-secondary").withHref(EDIT_USER_URL));
 
