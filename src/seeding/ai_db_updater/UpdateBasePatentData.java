@@ -13,6 +13,12 @@ import seeding.data_downloader.PatentDataDownloader;
  */
 public class UpdateBasePatentData {
     public static void ingestData(boolean seedApplications) {
+        try {
+            Database.getConn().setAutoCommit(true);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
         String topLevelTag;
         if (seedApplications) {
             topLevelTag = "us-patent-application";
@@ -28,6 +34,7 @@ public class UpdateBasePatentData {
         System.gc();
         System.gc();
         try {
+            Database.getConn().setAutoCommit(false);
             Database.commit();
         } catch(Exception e) {
             e.printStackTrace();

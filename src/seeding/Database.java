@@ -413,7 +413,9 @@ public class Database {
 
 
 	public static synchronized void commit() throws SQLException {
-		conn.commit();
+		if (!conn.getAutoCommit()) {
+			conn.commit();
+		}
 	}
 
 	public static Object tryLoadObject(File file) {
