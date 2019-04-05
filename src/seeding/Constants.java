@@ -217,7 +217,7 @@ public class Constants {
 	}
 
 	public static final UrlCreator WIPO_TECHNOLOGY_URL_CREATOR = date -> {
-		String baseUrl = "http://s3.amazonaws.com/data.patentsview.org/?/download/?/wipo.tsv.zip";
+		String baseUrl = "http://s3.amazonaws.com/data.patentsview.org/?/download/wipo.tsv.zip";
 		String url = baseUrl.replace("?", date.format(DateTimeFormatter.BASIC_ISO_DATE));
 		return url;
 	};
