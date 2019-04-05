@@ -7,6 +7,7 @@ import seeding.google.postgres.query_helper.QueryStream;
 import seeding.google.postgres.query_helper.appliers.DefaultApplier;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -45,8 +46,14 @@ public class IngestWIPOTechnologies {
         DefaultApplier applier = new DefaultApplier(false, conn, wipoFields);
         QueryStream<List<Object>> queryStream = new QueryStream<>(sql,conn,applier);
 
+        File rootFile = downloader.getDestinationFile();
+        while (rootFile.isDirectory()) {
+            rootFile = rootFile.listFiles()[0];
+        }
+        rootFile = rootFile.getParentFile();
+
         // handle data
-        Arrays.stream(downloader.getDestinationFile().listFiles()).forEach(file->{
+        Arrays.stream(rootFile.listFiles()).forEach(file->{
             try(BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 reader.lines().skip(1).parallel().forEach(line -> {
                     String[] fields = line.split("\t");
