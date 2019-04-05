@@ -66,6 +66,10 @@ public class WIPOTechnologyDownloader extends SingleFileDownloader {
                         throw new RuntimeException("Url does not work: " + baseUrl);
                 }
             }
+            while (wipoDefinitionDestinationFile.isDirectory()) {
+                wipoDefinitionDestinationFile = wipoDefinitionDestinationFile.listFiles()[0];
+            }
+            wipoDefinitionDestinationFile = wipoDefinitionDestinationFile.getParentFile();
 
 
             Arrays.stream(wipoDefinitionDestinationFile.listFiles()).forEach(file->{
