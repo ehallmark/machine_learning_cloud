@@ -44,7 +44,8 @@ public class IngestPTABIterator implements DateIterator {
         List<String> filenames = Collections.synchronizedList(new ArrayList<>());
         List<URL> urls = Collections.synchronizedList(new ArrayList<>());
         try {
-            Document ptabWebsite = Jsoup.connect("https://patents.reedtech.com/pgptab.php").get();
+
+            Document ptabWebsite = Jsoup.connect("https://patents.reedtech.com/pgptab.php").timeout(0).get();
             Elements links = ptabWebsite.select(".bulktable td a[href]");
             for(Element link : links) {
                 if(link.text().startsWith("PTAB_")) {
