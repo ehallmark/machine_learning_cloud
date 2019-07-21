@@ -125,6 +125,13 @@ public class DataSearcher {
             AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             AtomicReference<BoolQueryBuilder> queryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
 
+            if (attributes.stream().anyMatch(attr->attr.getName().equals(Attributes.SIMILARITY)) ||
+                    ( _comparator != null && _comparator.equals(Attributes.SIMILARITY)) ||
+                    filters.stream().anyMatch(filter->filter.getAttribute()!=null && filter.getAttribute().getName().equals(Attributes.SIMILARITY))) {
+                System.out.println("Using similarity...");
+                filterBuilder.set(filterBuilder.get().must(QueryBuilders.existsQuery(Attributes.ENC)));
+            }
+
             // Run elasticsearch
             String comparator = getOrDefaultComparator(_comparator);
             boolean isOverallScore = comparator.equals(Constants.SCORE);
