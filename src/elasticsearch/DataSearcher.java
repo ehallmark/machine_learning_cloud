@@ -129,7 +129,8 @@ public class DataSearcher {
                     ( _comparator != null && _comparator.equals(Attributes.SIMILARITY)) ||
                     filters.stream().anyMatch(filter->filter.getAttribute()!=null && filter.getAttribute().getName().equals(Attributes.SIMILARITY))) {
                 System.out.println("Using similarity...");
-                filterBuilder.set(filterBuilder.get().must(QueryBuilders.scriptQuery(new Script("doc.enc != null && doc.enc.value != null"))));
+                filterBuilder.set(filterBuilder.get().must(QueryBuilders.scriptQuery(new Script("doc.enc != null && doc.enc.value != null")).boost(1000000)));
+                filterBuilder.set(filterBuilder.get().must(QueryBuilders.existsQuery(Attributes.ENC).boost(1000000)));
             }
 
             // Run elasticsearch
