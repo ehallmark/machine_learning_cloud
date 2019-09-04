@@ -43,7 +43,7 @@ public abstract class IngestUSPTOIterator implements DateIterator {
                         for (UrlCreator urlCreator : urlCreators) {
                             try {
                                 URL website = new URL(urlCreator.create(LocalDate.parse(date, DateTimeFormatter.ISO_DATE)));
-                                System.out.println("Trying: " + website.toString());
+                                System.out.println("Trying previously failed: " + website.toString());
                                 ReadableByteChannel rbc = Channels.newChannel(website.openStream());
                                 FileOutputStream fos = new FileOutputStream(zipFilename);
                                 fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
@@ -61,6 +61,9 @@ public abstract class IngestUSPTOIterator implements DateIterator {
             } else {
                 final String zipFilename = zipFilePrefix + startDate;
                 if (!new File(zipFilename).exists()) {
+                    if (new File(zipFilename).getParentFile()!=null) {
+                        new File(zipFilename).getParentFile().mkdirs();
+                    }
                     final LocalDate date = startDate;
                     RecursiveAction action = new RecursiveAction() {
                         @Override

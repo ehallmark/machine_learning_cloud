@@ -67,7 +67,7 @@ public class ZipFileIterator implements WebIterator {
         (parallel ? fileStream.parallelStream() : fileStream.stream()).forEach(zipFile->{
             final String destinationFilename = destinationPrefix + zipFile.getName();
             final File destFile = new File(destinationFilename);
-            if (destFile.getParentFile()==null) {
+            if (destFile.getParentFile()!=null) {
                 destFile.getParentFile().mkdirs();
             }
             AtomicBoolean failed = new AtomicBoolean(false);
