@@ -10,10 +10,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,7 +85,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     }
 
     public Stream<File> zipFileStream(Function<File,Boolean> orFilter) {
-        return Arrays.stream(new File(zipFilePrefix).listFiles()).filter(file->orFilter.apply(file)||!finishedFiles.contains(file.getName()));
+        return Arrays.stream(new File(zipFilePrefix).listFiles()==null?new File[]{}:new File(zipFilePrefix).listFiles()).filter(file->orFilter.apply(file)||!finishedFiles.contains(file.getName()));
     }
 
     public synchronized void save() {
