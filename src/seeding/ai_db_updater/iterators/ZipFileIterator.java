@@ -66,6 +66,10 @@ public class ZipFileIterator implements WebIterator {
         List<File> fileStream = dataDownloader.zipFileStream(orFunction).sorted(Comparator.comparing(e->e.getName())).collect(Collectors.toList());
         (parallel ? fileStream.parallelStream() : fileStream.stream()).forEach(zipFile->{
             final String destinationFilename = destinationPrefix + zipFile.getName();
+            final File destFile = new File(destinationFilename);
+            if (destFile.getParentFile()==null) {
+                destFile.getParentFile().mkdirs();
+            }
             AtomicBoolean failed = new AtomicBoolean(false);
             List<File> xmlFiles = null;
             try {

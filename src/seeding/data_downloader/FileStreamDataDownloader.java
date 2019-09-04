@@ -110,6 +110,10 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
                 backup = new File(backup.getAbsolutePath());
                 // copy to backup
                 FileUtils.copyFile(file, backup);
+            } else {
+                if (file.getParentFile() != null){
+                    file.getParentFile().mkdirs();
+                }
             }
             // write contents
             Database.trySaveObject(obj, file);
