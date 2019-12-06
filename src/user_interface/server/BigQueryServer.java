@@ -1,5 +1,6 @@
 package user_interface.server;
 
+import api.API;
 import ch.qos.logback.classic.Level;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
@@ -3518,6 +3519,6 @@ public class BigQueryServer extends SimilarPatentServer {
         Database.getConn().setAutoCommit(true);
 
         HelpPage.helpPage(false);
-
+        API.main(args);
     }
 }
