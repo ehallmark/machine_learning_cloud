@@ -166,7 +166,7 @@ public class API {
         } catch(Exception e) {
             val = 10;
         }
-        return Math.min(10, val);
+        return Math.min(100, val);
     }
 
     private static int handleOffset(Request req) {
@@ -174,7 +174,7 @@ public class API {
         try {
             val = Integer.valueOf(req.queryParams("offset"));
         } catch(Exception e) {
-            val = 10;
+            val = 0;
         }
         return val;
     }
