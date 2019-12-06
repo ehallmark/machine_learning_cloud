@@ -56,14 +56,14 @@ public class API {
                     PreparedStatement ps = this.connection.prepareStatement(query);
                     statementConsumer.accept(ps);
                     ResultSet rs = ps.executeQuery();
-                    Map<String, Object> item = new HashMap<>(headers.size());
                     while (rs.next()) {
+                        Map<String, Object> item = new HashMap<>(headers.size());
                         for (int i = 0; i < headers.size(); i++) {
                             String header = headers.get(i);
                             item.put(header, rs.getObject(i + 1));
                         }
+                        data.add(item);
                     }
-                    data.add(item);
 
                     rs.close();
                     ps.close();
