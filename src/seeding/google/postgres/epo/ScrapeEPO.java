@@ -217,7 +217,7 @@ public class ScrapeEPO {
         // START PROXIES
         try {
         //    startProxies(10);
-            long timeoutMillisBetweenRequests = 1500;
+            long timeoutMillisBetweenRequests = 2000;
             Connection conn = Database.getConn();
 
             List<String> assets = getAssetsWithoutFamilyIds(conn).stream()
