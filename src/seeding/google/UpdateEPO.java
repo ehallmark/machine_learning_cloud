@@ -15,7 +15,7 @@ public class UpdateEPO {
     public static void main(String[] args) {
         // scrape missing family ids
         try {
-            //IngestScrapedXMLIntoPostgres.main(args); // get pre
+            IngestScrapedXMLIntoPostgres.main(args); // get pre
             System.out.println("Finished loading pre scraped xmls...");
             ScrapeEPO.main(args);
         } catch (Exception e) {
