@@ -51,6 +51,7 @@ import user_interface.ui_models.attributes.RangeAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute;
 import user_interface.ui_models.attributes.dataset_lookup.DatasetAttribute2;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
+import user_interface.ui_models.attributes.script_attributes.FastSimilarityAttribute;
 import user_interface.ui_models.charts.AbstractChartAttribute;
 import user_interface.ui_models.charts.aggregate_charts.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
@@ -526,6 +527,22 @@ public class BigQueryServer extends SimilarPatentServer {
             _vector[i]=vector[i].floatValue();
         }
         return TestNewFastVectors.vectorToHex(_vector);
+    }
+
+    public static String getRandomFastVector() {
+        float[] vector = new float[FastSimilarityAttribute.vectorSize];
+        Random r = new Random(System.currentTimeMillis());
+        float t = 0f;
+        for (int i = 0; i < vector.length; i++) {
+            float f = r.nextFloat();
+            vector[i] = f;
+            t += f*f;
+        }
+        double d = Math.sqrt(t);
+        for (int i = 0; i < vector.length; i++) {
+            vector[i] /= d;
+        }
+        return TestNewFastVectors.vectorToHex(vector);
     }
 
     private static boolean canCreateUser(String creatorRole, String childRole) {

@@ -17,6 +17,7 @@ import user_interface.server.BigQueryServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
+import user_interface.ui_models.attributes.script_attributes.FastSimilarityAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.sql.*;
@@ -195,6 +196,10 @@ public class IngestESFromPostgres {
                     doc.put(fieldName,val);
                 }
             }
+        }
+        Object enc = doc.get("enc");
+        if (enc == null || enc.toString().length() == 0) {
+            doc.put("enc", BigQueryServer.getRandomFastVector());
         }
         IndexRequest request = new IndexRequest(IngestPatents.INDEX_NAME,IngestPatents.TYPE_NAME,id);
         request = request.source(doc);
