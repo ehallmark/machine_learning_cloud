@@ -143,14 +143,14 @@ public class UpdateAll {
 
 
                 // ptab data
-                try {
+                /* try {
                     IngestPTABData.main(args);
                 } catch (Exception e) {
                     e.printStackTrace();
                     System.out.println("Exited during stage IngestPTABData...");
                     emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Exited during stage IngestPTABData...", e);
                     System.exit(1);
-                }
+                } */
 
                 // wipo
                 try {
