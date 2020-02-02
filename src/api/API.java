@@ -153,7 +153,7 @@ public class API {
             }
         };
 
-        String sql = "select id, buyer, seller, asset_size, date_recorded, reel, frame, created_at, updated_at from transactions order by date_recorded desc offset ? limit ?";
+        String sql = "select distinct on (buyer, seller, date_recorded) id, buyer, seller, asset_size, date_recorded, reel, frame, created_at, updated_at from transactions where char_length(coalesce(buyer,'')) > 1 and char_length(coalesce(seller,'')) > 0  order by date_recorded desc, buyer, seller offset ? limit ?";
 
         return TICKER_HANDLER.runQuery(sql, TICKER_HEADERS, psHandler, 3);
     }
