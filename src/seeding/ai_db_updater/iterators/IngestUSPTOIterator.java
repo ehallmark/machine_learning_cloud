@@ -51,6 +51,7 @@ public abstract class IngestUSPTOIterator implements DateIterator {
                                 System.out.println("FOUND!!!!!!!!!!!!");
 
                             } catch (Exception e) {
+                                e.printStackTrace();
                                 System.out.println("... Failed");
                             }
                         }
@@ -79,6 +80,7 @@ public abstract class IngestUSPTOIterator implements DateIterator {
                                     System.out.println("FOUND!!!!!!!!!!!!");
 
                                 } catch (Exception e) {
+                                    e.printStackTrace();
                                     System.out.println("... Failed");
                                 }
                             }
