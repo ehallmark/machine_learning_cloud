@@ -277,7 +277,7 @@ public class PatentDB2 {
                     e.printStackTrace();
                 }
             };
-            List<Map<String,Object>> data = HANDLER.runQuery(pubDateQuery, headers, statementConsumer, 3);
+            List<Map<String,Object>> data = HANDLER.runQuery(pubDateQuery, Collections.singletonList("publication_date"), statementConsumer, 3);
             if (data.size() > 0) {
                 publicationDate = (String)data.get(0).get("publication_date");
             } else {
