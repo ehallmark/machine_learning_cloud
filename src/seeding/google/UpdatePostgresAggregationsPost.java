@@ -18,7 +18,7 @@ public class UpdatePostgresAggregationsPost {
     public static void main(String[] args) {
         final Mailer emailer = new Mailer();
         final String DEFAULT_MAIL_SUBJECT = "PSP Post Aggregations Error";
-        try {
+        /*try {
             System.out.println("Predicting keywords...");
             PredictKeywords.main(args);
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/patent_keywords_aggs.sql"));
@@ -28,7 +28,7 @@ public class UpdatePostgresAggregationsPost {
             System.out.println("Failed to execute patent_keyword_aggs...");
             emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute patent_keyword_aggs...", e);
             System.exit(1);
-        }
+        }*/
 
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignment_aggs.sql"));

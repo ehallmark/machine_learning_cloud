@@ -239,8 +239,8 @@ insert into patents_global_merged (
         -- gtt tech
         technology,
         technology2,
-        keywords,
-        keyword_count,
+        -- keywords,
+        -- keyword_count,
         -- maintenance events
         maintenance_event,
         maintenance_event_count,
@@ -395,8 +395,8 @@ insert into patents_global_merged (
         -- gtt tech
         tech.technology,
         tech.technology2,
-        ke.keywords,
-        coalesce(array_length(ke.keywords,1),0),
+        -- ke.keywords,
+        -- coalesce(array_length(ke.keywords,1),0),
         -- maintenance events
         m_codes.codes,
         coalesce(array_length(m_codes.codes,1),0),
@@ -482,7 +482,7 @@ insert into patents_global_merged (
     left outer join big_query_patent_to_latest_assignee_join_by_pub as latest_assignee on (latest_assignee.publication_number_full=p.publication_number_full)
     left outer join big_query_patent_to_latest_assignee_join_by_family as latest_assignee_fam on (latest_assignee_fam.family_id=p.family_id)
     left outer join big_query_technologies2 as tech on (p.family_id=tech.family_id)
-    left outer join big_query_keywords_tfidf as ke on (p.family_id=ke.family_id)
+    -- left outer join big_query_keywords_tfidf as ke on (p.family_id=ke.family_id)
     left outer join big_query_sep_by_family as sep on (sep.family_id=p.family_id)
     left outer join big_query_wipo_by_pub as wipo on (wipo.publication_number_full=p.publication_number_full)
     left outer join big_query_wipo_prediction as wipo_pred on (wipo_pred.publication_number_full=p.publication_number_full)

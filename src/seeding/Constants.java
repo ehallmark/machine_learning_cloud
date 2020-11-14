@@ -251,7 +251,6 @@ public class Constants {
 			SimilarityAttribute.class,
 			GttTechnology.class,
 			GttTechnology2.class,
-			GttKeywords.class,
 			Description.class
 	);
 

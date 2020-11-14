@@ -23,7 +23,6 @@ public class Attributes {
     public static final String ASSIGNEES_COUNT = "assignee_count";
     public static final String ASSIGNMENTS_COUNT = "assignment_count";
     public static final String CLAIMS_COUNT = "claim_count";
-    public static final String KEYWORD_COUNT = "keyword_count";
     public static final String MAINTENANCE_EVENT_COUNT = "maintenance_event_count";
     public static final String LATEST_ASSIGNEE_COUNT = "latest_assignee_count";
     public static final String LATEST_FAM_ASSIGNEE_COUNT = "latest_fam_assignee_count";
@@ -47,7 +46,6 @@ public class Attributes {
     public static final String EXPIRATION_DATE_ESTIMATED = "expiration_date_est";
     public static final String REMAINING_LIFE = "remaining_life";
     // main
-    public static final String KEYWORDS = "keywords";
     public static final String PUBLICATION_NUMBER_FULL = "publication_number_full";
     public static final String PUBLICATION_NUMBER = "publication_number";
     public static final String PUBLICATION_NUMBER_WITH_COUNTRY = "publication_number_with_country";
@@ -208,8 +206,6 @@ public class Attributes {
                 new WipoTechnology(),
                 new GttTechnology(),
                 new GttTechnology2(),
-                new GttKeywords(),
-                new KeywordCount(),
                 new MaintenanceEvent(),
                 new MaintenanceEventCount(),
                 new Lapsed(),
