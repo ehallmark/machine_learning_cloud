@@ -23,6 +23,11 @@ public class PatentDB2 {
         application
     }
 
+    private static final Set<String> ARRAY_FIELDS = Collections.synchronizedSet(new HashSet<>());
+    static {
+        ARRAY_FIELDS.add("inventors");
+    }
+
     private static final String[] PATENT_FIELDS = new String[]{
             "title",
             "abstract",
@@ -91,7 +96,11 @@ public class PatentDB2 {
                         Map<String, Object> item = new HashMap<>(headers.size());
                         for (int i = 0; i < headers.size(); i++) {
                             String header = headers.get(i);
-                            item.put(header, rs.getObject(i + 1));
+                            if (ARRAY_FIELDS.contains(header)) {
+                                item.put(header, (Object[])rs.getArray(i + 1).getArray());
+                            } else {
+                                item.put(header, rs.getObject(i + 1));
+                            }
                         }
                         data.add(item);
                     }
