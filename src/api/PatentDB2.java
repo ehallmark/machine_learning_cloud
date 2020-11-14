@@ -274,6 +274,7 @@ public class PatentDB2 {
         if (data.size() > 0) {
             String priorityDate = (String)data.get(0).get("priority_date");
             System.out.println("Found updated priority date: "+priorityDate);
+            return priorityDate;
         } else {
             return null;
         }
