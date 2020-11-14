@@ -116,7 +116,7 @@ public class PatentDB2 {
             return Collections.emptyList();
         }
     }
-    private static final String PATENTDB2_URL = "jdbc:postgresql://localhost/patentdb?user=ehallmark&password=evan1122=&tcpKeepAlive=true";
+    private static final String PATENTDB2_URL = "jdbc:postgresql://localhost/patentdb?user=ehallmark&password==&tcpKeepAlive=true";
 
     private static final APIHandler HANDLER = new APIHandler(PATENTDB2_URL);
 
