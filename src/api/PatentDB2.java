@@ -31,7 +31,6 @@ public class PatentDB2 {
             "priority_date",
             "filing_date",
             "publication_date",
-            "issue_date",
             "claims"
     };
 
