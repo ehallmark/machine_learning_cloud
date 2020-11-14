@@ -136,6 +136,9 @@ public class PatentDB2 {
             System.out.println("Looking for " + patentType.toString() + ": " + number);
             try {
                 final Map<String, String> resolved = resolvePatentNumbers(number, patentType);
+                if (resolved.size() <= 1) {
+                    throw new RuntimeException("Not found");
+                }
                 System.out.println("Successfully resolved!");
                 try {
                     final Map<String, Object> data = getData(resolved, includeDescription, includeClaims);
@@ -257,6 +260,25 @@ public class PatentDB2 {
         return ret;
     }
 
+
+    private static String getUpdatedPriorityDateEstimation(String numberFull) {
+        String query = "select priority_date_est::text as priority_date from big_query_priority_and_expiration where publication_number_full=?";
+        Consumer<PreparedStatement> statementConsumer = ps -> {
+            try {
+                ps.setString(1, numberFull);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        };
+        List<Map<String,Object>> data = HANDLER.runQuery(query, Collections.singletonList("priority_date"), statementConsumer, 3);
+        if (data.size() > 0) {
+            String priorityDate = (String)data.get(0).get("priority_date");
+            System.out.println("Found updated priority date: "+priorityDate);
+        } else {
+            return null;
+        }
+    }
+
     public static Map<String, Object> getData(Map<String, String> resolved, boolean includeDescription, boolean includeClaims) {
         String familyId = resolved.get("family_id");
         String publicationNumber = resolved.get("publication_number");
@@ -275,9 +297,9 @@ public class PatentDB2 {
 
         List<String> statements = headers.stream().map(statement->FIELD_TO_SUBSTATEMENT_MAP.getOrDefault(statement, statement)).collect(Collectors.toList());
 
-        String patentType;
         String number;
         String publicationDate = null;
+        String priorityDateEst = null;
 
         if (grantNumberFull != null) {
             // get patent grant data
@@ -291,6 +313,7 @@ public class PatentDB2 {
                     e.printStackTrace();
                 }
             };
+            priorityDateEst = getUpdatedPriorityDateEstimation(grantNumberFull);
             List<Map<String,Object>> data = HANDLER.runQuery(pubDateQuery, Collections.singletonList("publication_date"), statementConsumer, 3);
             if (data.size() > 0) {
                 publicationDate = (String)data.get(0).get("publication_date");
@@ -300,6 +323,7 @@ public class PatentDB2 {
         } else if (publicationNumberFull != null) {
             // get publication data only
             number = publicationNumberFull;
+            priorityDateEst = getUpdatedPriorityDateEstimation(publicationNumberFull);
 
         } else {
             throw new RuntimeException("Invalid state. Resolved: "+new Gson().toJson(resolved));
@@ -322,6 +346,9 @@ public class PatentDB2 {
             if (publicationDate != null) { // was a grant
                 ret.put("issue_date", ret.get("publication_date"));
                 ret.put("publication_date", publicationDate);
+            }
+            if (priorityDateEst != null) {
+                ret.put("priority_date", priorityDateEst);
             }
             ret.put("application_number", applicationNumber);
             return ret;

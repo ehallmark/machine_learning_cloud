@@ -51,7 +51,7 @@ create table big_query_priority_and_expiration (
 insert into big_query_priority_and_expiration (
     select p.publication_number_full,
     coalesce(p.priority_date, p.filing_date),
-    coalesce(p.priority_date, p.filing_date) + interval '1' day * coalesce(pair.term_adjustments,0),
+    coalesce(pct.priority_date, coalesce(p.priority_date, p.filing_date)) + interval '1' day * coalesce(pair.term_adjustments,0),
     case when country_code='US'
         then
             case when p.kind_code like 'S%'
