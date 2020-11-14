@@ -150,6 +150,10 @@ public class PatentDB2 {
     }
 
     public static String resultsFormatter(Map<String, Object> data) {
+        data.forEach((k, v) -> {
+            System.out.println("K: "+k);
+            System.out.println("V: "+new Gson().toJson(v));
+        });
         return new Gson().toJson(data);
     }
 
