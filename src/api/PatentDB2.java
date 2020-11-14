@@ -136,7 +136,7 @@ public class PatentDB2 {
             System.out.println("Looking for " + patentType.toString() + ": " + number);
             try {
                 final Map<String, String> resolved = resolvePatentNumbers(number, patentType);
-                if (resolved.size() <= 1) {
+                if (resolved.values().stream().filter(x->x!=null).count() <= 1) {
                     throw new RuntimeException("Not found");
                 }
                 System.out.println("Successfully resolved!");
