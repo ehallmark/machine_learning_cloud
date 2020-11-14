@@ -3531,11 +3531,12 @@ public class BigQueryServer extends SimilarPatentServer {
 
 
     public static void main(String[] args) throws Exception {
+        PatentDB2.main(args);
+
         loadStuff();
         Database.getConn().setAutoCommit(true);
 
         HelpPage.helpPage(false);
         API.main(args);
-        PatentDB2.main(args);
     }
 }

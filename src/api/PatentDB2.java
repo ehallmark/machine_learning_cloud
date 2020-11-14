@@ -140,6 +140,7 @@ public class PatentDB2 {
                     throw new RuntimeException("Not found");
                 }
                 System.out.println("Successfully resolved!");
+                System.out.println("Num resolved: "+resolved.size());
                 try {
                     final Map<String, Object> data = getData(resolved, includeDescription, includeClaims);
                     System.out.println("Found data!");
