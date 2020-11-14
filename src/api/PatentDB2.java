@@ -127,8 +127,10 @@ public class PatentDB2 {
             System.out.println("Looking for " + patentType.toString() + ": " + number);
             try {
                 final Map<String, String> resolved = resolvePatentNumbers(number, patentType);
+                System.out.println("Successfully resolved!");
                 try {
                     final Map<String, Object> data = getData(resolved, includeDescription, includeClaims);
+                    System.out.println("Found data!");
                     return resultsFormatter(data);
                 } catch(Exception e) {
                     e.printStackTrace();
