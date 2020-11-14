@@ -269,7 +269,7 @@ public class PatentDB2 {
             // get patent grant data
             // find publication date from publication number
             number = grantNumberFull;
-            String pubDateQuery = "select publication_date from patents_global where publication_number_full = ? limit 1";
+            String pubDateQuery = "select publication_date::text as publication_date from patents_global where publication_number_full = ? limit 1";
             Consumer<PreparedStatement> statementConsumer = ps -> {
                 try {
                     ps.setString(1, number);
