@@ -10,6 +10,7 @@ public class ClaimsProcessor {
         if (claimsText==null) {
             return Collections.emptyList();
         }
+        System.out.println("Original claim text: "+claimsText);
 
         String[] claims = (claimsText
                 .trim()
@@ -19,10 +20,11 @@ public class ClaimsProcessor {
                 .replaceAll("\\n(\\d\\))", " $1")
                 .replaceFirst("^([^0-9])*([0-9\\\\.])*", "")
                 .replace("\n", " \n")
+                .replace(" ,", ",")
                 .replace("  ", " ")
                 .replaceFirst("\\\\n$", "")
                 .trim()
-                .split("\\\\n(\\d+)\\.\\s*");
+                .split("\\n(\\d+)\\.\\s*");
 
         List<Map<String,Object>> ret = new ArrayList<>(claims.length);
         for(int i = 0; i < claims.length; i++) {
