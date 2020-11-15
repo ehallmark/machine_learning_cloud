@@ -42,7 +42,15 @@ public class ClaimsProcessor {
     }
 
     private static boolean checkIndependence(String claim) {
-
+        if (claim.contains(" claim")
+                || claim.toLowerCase().matches("recited in*\\s*(\\d+)")
+                || claim.contains("Iaddend..Iadd.")
+                || claim.matches("The.*(?:of|in)\\s*(\\d+)")
+                || claim.contains("(canceled)")
+                || claim.length() < 5
+        ) {
+            return false;
+        }
         return true;
     }
 }
