@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static spark.Spark.get;
@@ -51,6 +52,10 @@ public class PatentDB2 {
         FIELD_TO_SUBSTATEMENT_MAP.put("claims", "claims[array_position(claims_lang,'en')] as claims");
     }
 
+    private static final Map<String, Function<Object, Object>> FIELD_TO_POSTPROCESSOR_MAP = Collections.synchronizedMap(new HashMap<>());
+    static {
+        FIELD_TO_POSTPROCESSOR_MAP.put("claims", claimsText -> ClaimsProcessor.processClaimsString((String)claimsText));
+    }
 
     private static class APIHandler {
         private Connection connection;
@@ -100,6 +105,10 @@ public class PatentDB2 {
                                 item.put(header, (Object[])rs.getArray(i + 1).getArray());
                             } else {
                                 item.put(header, rs.getObject(i + 1));
+                            }
+                            if (FIELD_TO_POSTPROCESSOR_MAP.containsKey(header)) {
+                                System.out.println("Applying postprocessor to field: "+header);
+                                item.put(header, FIELD_TO_POSTPROCESSOR_MAP.get(header).apply(item.get(header)));
                             }
                         }
                         data.add(item);
@@ -263,7 +272,7 @@ public class PatentDB2 {
 
 
     private static String getUpdatedPriorityDateEstimation(String numberFull) {
-        String query = "select priority_date_est::text as priority_date from big_query_priority_and_expiration where publication_number_full=?";
+        String query = "select priority_date_est::text as priority_date_est from big_query_priority_and_expiration where publication_number_full=?";
         Consumer<PreparedStatement> statementConsumer = ps -> {
             try {
                 ps.setString(1, numberFull);
@@ -271,9 +280,9 @@ public class PatentDB2 {
                 e.printStackTrace();
             }
         };
-        List<Map<String,Object>> data = HANDLER.runQuery(query, Collections.singletonList("priority_date"), statementConsumer, 3);
+        List<Map<String,Object>> data = HANDLER.runQuery(query, Collections.singletonList("priority_date_est"), statementConsumer, 3);
         if (data.size() > 0) {
-            String priorityDate = (String)data.get(0).get("priority_date");
+            String priorityDate = (String)data.get(0).get("priority_date_est");
             System.out.println("Found updated priority date: "+priorityDate);
             return priorityDate;
         } else {
