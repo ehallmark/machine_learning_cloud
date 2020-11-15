@@ -1,0 +1,144 @@
+openapi: '3.0.3'
+info:
+  title: PatentDB 2.0
+  description: API specification for PatentDB 2.0
+  version: '0.1'
+servers:
+  - url: https://ai.gttgrp.com/v1/api
+paths:
+  /find_by_{patent_type}:
+    get:
+      summary: Returns patent information for a given patent grant, application, or publication.
+      description: Eg. GET /find_by_grant?number=7654321 or GET /find_by_publication?number=20080156487
+      parameters:
+        - name: patent_type
+          required: true
+          in: path
+          schema:
+            type: string
+            description: 'Should be one of grant, application, or publication'
+            enum:
+              - grant
+              - application
+              - publication
+        - name: number
+          required: true
+          in: query
+          schema:
+            type: string
+            description: 'A valid patent grant, publication, or patent application number'
+            example: '7654321'
+        - name: include_description
+          required: false
+          in: query
+          schema:
+            default: true
+            type: boolean
+            description: 'Whether or not to return description data'
+        - name: include_claims
+          required: false
+          in: query
+          schema:
+            default: true
+            type: boolean
+            description: 'Whether or not to return claims data'
+      responses:
+        '400':
+          description: 'Invalid request parameters'
+        '404':
+          description: 'Patent not found'
+        '500':
+          description: 'Server error'
+        '200':
+          description: 'Patent found'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  grant_number:
+                    type: string
+                    description: 'Patent grant number (sometimes called issued patent number, or just patent number)'
+                    example: '7654321'
+                  publication_number:
+                    type: string
+                    description: 'Patent publication number (sometimes called published application number)'
+                    example: '20080156487'
+                  application_number:
+                    type: string
+                    description: 'Patent application number (sometimes called the filing number, no slashes included)'
+                    example: '11616583'
+                  title:
+                    type: string
+                    description: 'Patent invention title'
+                    example: "Formation fluid sampling apparatus and methods"
+                  abstract:
+                    type: string
+                    description: 'Patent abstract text'
+                    example: "The abstract of the patent"
+                  description:
+                    type: string
+                    description: 'Patent description text'
+                    example: "A potentially very large amount of text"
+                  inventors:
+                    type: array
+                    description: 'List of inventor full names'
+                    items:
+                      type: string
+                      example: "Evan Hallmark"
+                  priority_date:
+                    type: string
+                    format: date
+                    description: 'Estimated priority date in YYYY-MM-DD format'
+                    example: '2006-12-27'
+                  filing_date:
+                    type: string
+                    format: date
+                    description: 'Filing date in YYYY-MM-DD format'
+                    example: '2006-12-27'
+                  publication_date:
+                    type: string
+                    format: date
+                    description: 'Publication date in YYYY-MM-DD format'
+                    example: '2008-07-03'
+                  issue_date:
+                    type: string
+                    format: date
+                    description: 'Issue date in YYYY-MM-DD format'
+                    example: '2010-02-02'
+                  claims:
+                    type: array
+                    description: 'List of patent claim objects'
+                    items:
+                      type: object
+                      properties:
+                        number:
+                          description: 'The claim number'
+                          type: integer
+                          minimum: 1
+                          example: 1
+                        text:
+                          description: 'The text of the claim'
+                          type: string
+                          example: 'A claim of this patent'
+                        independent:
+                          description: 'Whether or not the claim is an independent claim'
+                          type: boolean
+                          example: true
+                      required:
+                        - number
+                        - text
+                        - independent
+                      additionalProperties: false
+                required:
+                  - application_number
+                  - grant_number
+                  - publication_number
+                  - title
+                  - abstract
+                  - inventors
+                  - priority_date
+                  - filing_date
+                  - issue_date
+                  - publication_date
+                additionalProperties: false

@@ -1,6 +1,7 @@
 package user_interface.server;
 
 import api.API;
+import api.PatentDB2;
 import ch.qos.logback.classic.Level;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
@@ -199,7 +200,6 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Deal ID", Attributes.COMPDB_DEAL_ID);
             humanAttrToJavaAttrMap.put("Primary Technology", Attributes.TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Secondary Technology", Attributes.TECHNOLOGY2);
-            humanAttrToJavaAttrMap.put("Significant Keywords", Attributes.KEYWORDS);
             humanAttrToJavaAttrMap.put("Assignee Entity Type", Attributes.ORIGINAL_ENTITY_TYPE);
             humanAttrToJavaAttrMap.put("Acquisition Deal", Attributes.COMPDB_ACQUISITION);
             humanAttrToJavaAttrMap.put("Inactive Deal", Attributes.COMPDB_INACTIVE);
@@ -334,7 +334,6 @@ public class BigQueryServer extends SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Number of Inventors", Attributes.INVENTORS_COUNT);
             humanAttrToJavaAttrMap.put("Number of Assignees", Attributes.ASSIGNEES_COUNT);
             humanAttrToJavaAttrMap.put("Number of Claims", Attributes.CLAIMS_COUNT);
-            humanAttrToJavaAttrMap.put("Number of Keywords", Attributes.KEYWORD_COUNT);
             humanAttrToJavaAttrMap.put("Number of Standards", Attributes.STANDARD_COUNT);
             humanAttrToJavaAttrMap.put("Number of PTAB Cases", Attributes.PTAB_COUNT);
             humanAttrToJavaAttrMap.put("Number of CompDB Deals", Attributes.COMPDB_COUNT);
@@ -3537,5 +3536,6 @@ public class BigQueryServer extends SimilarPatentServer {
 
         HelpPage.helpPage(false);
         API.main(args);
+        PatentDB2.main(args);
     }
 }

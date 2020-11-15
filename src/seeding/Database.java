@@ -179,7 +179,7 @@ public class Database {
 			for(int i = 0; i < assets.size(); i++) {
 				parens.add("?");
 			}
-			PreparedStatement ps = conn.prepareStatement("select family_id from big_query_family_id where "+assetField+" in ("+parens+") where family_id !='-1'");
+			PreparedStatement ps = conn.prepareStatement("select family_id from big_query_family_id where "+assetField+" in ("+parens+") and family_id !='-1'");
 			for(int i = 0; i < assets.size(); i++) {
 				ps.setString(i+1, assets.get(i));
 			}
