@@ -7,3 +7,4 @@
 /data/patentDataFolder/*
 /data/applicationDataFolder
 /data/applicationDataFolder/*
+target/
