@@ -140,6 +140,7 @@ public class PatentDB2 {
     private static String handleRequest(Request req, Response res, PatentType patentType) {
         try {
             res.header("Access-Control-Allow-Origin", "*"); // CORS
+            res.header("Content-Type", "application/json"); // JSON
             final String number = req.queryParams("number");
             final boolean includeDescription = req.queryParamOrDefault("include_description", "true").toLowerCase().startsWith("t");
             final boolean includeClaims = req.queryParamOrDefault("include_claims", "true").toLowerCase().startsWith("t");
