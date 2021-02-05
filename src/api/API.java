@@ -1,8 +1,10 @@
 package api;
 import com.google.gson.Gson;
+import org.apache.commons.io.FileUtils;
 import spark.Request;
 import spark.Response;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -153,7 +155,35 @@ public class API {
             }
         };
 
-        String sql = "select distinct on (buyer, seller, date_recorded) id, buyer, seller, asset_size, date_recorded, reel, frame, created_at, updated_at from transactions where char_length(coalesce(buyer,'')) > 1 and char_length(coalesce(seller,'')) > 0 and seller not ilike '%AKKARAKARAN%' and seller not ilike '%PHILLIP NEAL%' order by date_recorded desc, buyer, seller offset ? limit ?";
+        List<String> invalidPairs;
+        List<String> invalidCompanies;
+        try {
+            invalidPairs = FileUtils.readLines(new File("invalid_ticker_pairs.txt"));
+            invalidCompanies = FileUtils.readLines(new File("invalid_ticker_companies.txt"));
+        } catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        StringJoiner sj = new StringJoiner(") AND (", "(", ")");
+        for (String c : invalidCompanies) {
+            if (c.length() > 0) {
+                sj.add("seller not ilike '%" + c + "%' and buyer not ilike '%" + c + "%'");
+            }
+        }//seller not ilike '%AKKARAKARAN%' and seller not ilike '%PHILLIP NEAL%'
+
+        for (String c : invalidPairs) {
+            if (c.length() > 0) {
+                String buyer = c.split(";")[0].trim();
+                String seller = c.split(";")[1].trim();
+                sj.add("NOT (seller ilike '%" + seller + "%' and buyer ilike '%" + buyer + "%')");
+            }
+        }
+
+        String sql = "select distinct on (buyer, seller, date_recorded) id, buyer, seller, asset_size, date_recorded, reel, frame, created_at, updated_at from transactions where char_length(coalesce(buyer,'')) > 1 and char_length(coalesce(seller,'')) > 0 and "+sj.toString()+" order by date_recorded desc, buyer, seller offset ? limit ?";
+
+        System.out.println("FILTERS: "+sj.toString());
+        System.out.println("API TICKER SQL: "+sql);
 
         return TICKER_HANDLER.runQuery(sql, TICKER_HEADERS, psHandler, 3);
     }
