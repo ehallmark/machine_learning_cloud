@@ -42,7 +42,7 @@ public class UpdateBasePatentData {
     }
 
     public static void main(String[] args) {
-        //ingestData(false);
+        ingestData(false);
         ingestData(true);
     }
 }
