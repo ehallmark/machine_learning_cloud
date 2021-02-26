@@ -26,7 +26,7 @@ insert into big_query_family_id2 (publication_number_full,publication_number_wit
 );
 
 -- update table name
-drop table big_query_family_id;
+drop table if exists big_query_family_id;
 alter table big_query_family_id2 rename to big_query_family_id;
 
 create index big_query_family_id_fam_id2 on big_query_family_id (family_id);
@@ -37,7 +37,6 @@ create index big_query_family_id_app_num_with_country2 on big_query_family_id (a
 create index big_query_family_id_app_num2 on big_query_family_id (application_number);
 create index big_query_family_id_app_num_f2 on big_query_family_id (application_number_formatted);
 create index big_query_family_id_app_num_f_with_country2 on big_query_family_id (application_number_formatted_with_country);
-
 
 drop table big_query_family_counterparts;
 create table big_query_family_counterparts (

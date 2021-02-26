@@ -326,7 +326,7 @@ public class PatentDB2 {
                     e.printStackTrace();
                 }
             };
-            priorityDateEst = getUpdatedPriorityDateEstimation(grantNumberFull);
+            //priorityDateEst = getUpdatedPriorityDateEstimation(grantNumberFull);
             List<Map<String,Object>> data = HANDLER.runQuery(pubDateQuery, Collections.singletonList("publication_date"), statementConsumer, 3);
             if (data.size() > 0) {
                 publicationDate = (String)data.get(0).get("publication_date");
@@ -336,7 +336,7 @@ public class PatentDB2 {
         } else if (publicationNumberFull != null) {
             // get publication data only
             number = publicationNumberFull;
-            priorityDateEst = getUpdatedPriorityDateEstimation(publicationNumberFull);
+            //priorityDateEst = getUpdatedPriorityDateEstimation(publicationNumberFull);
 
         } else {
             throw new RuntimeException("Invalid state. Resolved: "+new Gson().toJson(resolved));
