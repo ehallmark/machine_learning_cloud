@@ -250,5 +250,7 @@ public class API {
         String path = "/api/:resource/latest";
         get(path, API::handleRequest);
         post(path, API::handleRequest);
+
+        PatentDB2.main(args);
     }
 }
