@@ -4,10 +4,7 @@ import com.google.gson.Gson;
 import spark.Request;
 import spark.Response;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -102,7 +99,8 @@ public class PatentDB2 {
                         for (int i = 0; i < headers.size(); i++) {
                             String header = headers.get(i);
                             if (ARRAY_FIELDS.contains(header)) {
-                                item.put(header, (Object[])rs.getArray(i + 1).getArray());
+                                Array array = rs.getArray(i + 1);
+                                item.put(header, array == null ? new Object[]{} : (Object[])array.getArray());
                             } else {
                                 item.put(header, rs.getObject(i + 1));
                             }
