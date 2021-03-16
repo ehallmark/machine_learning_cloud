@@ -29,7 +29,7 @@ public class ScrapeEPO {
     }
     public static final File assetsSeenFile = new File("epo_asset_to_family_assets_seen_so_far.jobj");
 
-    private static String generateNewAuthToken() throws IOException{
+    public static String generateNewAuthToken() throws IOException{
         String key = "AZ42DGb0AeTZ4wwSUWnRoGdGjnP8Gfjc";
         String secret = "O7PG38t4P2uJK2IQ";
 
@@ -73,7 +73,7 @@ public class ScrapeEPO {
     }
 
     private AtomicInteger cnt = new AtomicInteger(0);
-    private String getFamilyMembersForAssetHelper(String asset, String auth_token, ProxyHandler proxyHandler) throws Exception {
+    public String getFamilyMembersForAssetHelper(String asset, String auth_token, ProxyHandler proxyHandler) throws Exception {
         if(auth_token!=null) {
             if(proxyHandler==null) {
                 if(asset == null) return null;

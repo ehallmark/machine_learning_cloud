@@ -135,14 +135,12 @@ public class PatentDB2 {
     private static final APIHandler HANDLER = new APIHandler(PATENTDB2_URL);
 
 
-    private static String handleRequest(Request req, Response res, PatentType patentType) {
+    private static String handleRequest(Request req, Response res, PatentType patentType, boolean findEpo) {
         try {
             res.header("Access-Control-Allow-Origin", "*"); // CORS
             res.header("Content-Type", "application/json"); // JSON
             final String number = req.queryParams("number");
-            final boolean includeDescription = req.queryParamOrDefault("include_description", "true").toLowerCase().startsWith("t");
-            final boolean includeClaims = req.queryParamOrDefault("include_claims", "true").toLowerCase().startsWith("t");
-            System.out.println("Looking for " + patentType.toString() + ": " + number);
+           System.out.println("Looking for " + patentType.toString() + ": " + number);
             try {
                 final Map<String, String> resolved = resolvePatentNumbers(number, patentType);
                 if (resolved.values().stream().filter(x->x!=null).count() <= 1) {
@@ -151,9 +149,21 @@ public class PatentDB2 {
                 System.out.println("Successfully resolved!");
                 System.out.println("Num resolved: "+resolved.size());
                 try {
-                    final Map<String, Object> data = getData(resolved, includeDescription, includeClaims);
-                    System.out.println("Found data!");
-                    return resultsFormatter(data);
+                    if (findEpo) {
+                        String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
+                        if (resolvedNumber.length()==11) {
+                            resolvedNumber = resolvedNumber.substring(0, 4) + resolvedNumber.substring(5);
+                        }
+                        final Map<String, Object> data = EPO.getEpoData("US"+resolvedNumber);
+                        return resultsFormatter(data);
+
+                    } else {
+                        final boolean includeDescription = req.queryParamOrDefault("include_description", "true").toLowerCase().startsWith("t");
+                        final boolean includeClaims = req.queryParamOrDefault("include_claims", "true").toLowerCase().startsWith("t");
+                        final Map<String, Object> data = getData(resolved, includeDescription, includeClaims);
+                        System.out.println("Found data!");
+                        return resultsFormatter(data);
+                    }
                 } catch(Exception e) {
                     e.printStackTrace();
                     res.status(500);
@@ -371,8 +381,11 @@ public class PatentDB2 {
 
 
     public static void main(String[] args) {
-        get("/v1/api/find_by_grant", (req, res) -> PatentDB2.handleRequest(req, res, PatentType.grant));
-        get("/v1/api/find_by_publication", (req, res) -> PatentDB2.handleRequest(req, res, PatentType.publication));
-        get("/v1/api/find_by_application", (req, res) -> PatentDB2.handleRequest(req, res, PatentType.application));
+        get("/v1/api/find_by_grant", (req, res) -> PatentDB2.handleRequest(req, res, PatentType.grant, false));
+        get("/v1/api/find_by_publication", (req, res) -> PatentDB2.handleRequest(req, res, PatentType.publication, false));
+        get("/v1/api/find_by_application", (req, res) -> PatentDB2.handleRequest(req, res, PatentType.application, false));
+        get("/v1/api/family_members_for_grant", (req, res) -> PatentDB2.handleRequest(req, res, PatentType.grant, true));
+        get("/v1/api/family_members_for_publication", (req, res) -> PatentDB2.handleRequest(req, res, PatentType.publication, true));
+        get("/v1/api/family_members_for_application", (req, res) -> PatentDB2.handleRequest(req, res, PatentType.application, true));
     }
 }
