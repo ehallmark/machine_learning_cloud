@@ -74,7 +74,7 @@ public class UpdateClassificationHash {
     public static void setupClassificationsHash(File destinationFile, LineHandler handler) {
         Arrays.stream(destinationFile.listFiles(File::isDirectory)[0].listFiles()).forEach(file -> {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                reader.lines().parallel().forEach(line->{
+                reader.lines().forEach(line->{
                     handler.handleLine(line);
                     if (cnt.getAndIncrement() % 100000 == 99999) {
                         System.out.println("Seen "+destinationFile.getName()+" classifications: " + cnt.get());
