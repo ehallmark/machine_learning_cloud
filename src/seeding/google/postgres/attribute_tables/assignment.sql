@@ -1,7 +1,7 @@
 \connect patentdb
 
 drop table big_query_assignment_documentid;
-drop table big_query_assigments;
+drop table big_query_assignments;
 create table big_query_assignments (
     reel_frame varchar(50) primary key,
     conveyance_text text not null,
