@@ -1,0 +1,33 @@
+version: '2'
+services:
+  elasticsearch1:
+    image: my-elasticsearch
+    container_name: elasticsearch1
+    environment:
+      - cluster.name=elasticsearch
+      - xpack.security.enabled=false
+      - node.name=elasticsearch1
+      - bootstrap.memory_lock=true
+      - node.data=true
+      - node.master=true
+      #- discovery.zen.ping_timeout=60s
+      #- "discovery.zen.ping.unicast.hosts=elasticsearch2,elasticsearch3"
+      - "ES_JAVA_OPTS=-Xms14000m -Xmx14000m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 28g
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - esnet
+volumes:
+  esdata1:
+    driver: local
+
+networks:
+  esnet:
