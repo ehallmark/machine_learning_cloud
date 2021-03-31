@@ -147,7 +147,6 @@ public class IngestAssignmentData {
 
         };
 
-
         // download most recent files and ingest
         FileStreamDataDownloader downloader = new AssignmentDataDownloader("uspto_assignments");
         LocalDate latestDateToStartFrom = LocalDate.of(2018,1,1);

@@ -28,13 +28,13 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
         Integer endDateInt = Integer.valueOf(endDateStr);
 
         // INITIAL OPTIONS TO SET
-        final int backYearDataDate = 151231;
-        final int numFilesForBackYearData = 14;
+        final int backYearDataDate = 20201231;
+        final int numFilesForBackYearData = 18;
         final int backYearDataStartNum = 1;
-        final int startDateNum = 160101;
+        final int startDateNum = 20210101;
         List<String> backYearDates = new ArrayList<>(numFilesForBackYearData);
 
-        if(startDate.getYear()< 2016) {
+        if(startDate.getYear()< 2021) {
             for (int i = backYearDataStartNum; i < backYearDataStartNum + numFilesForBackYearData; i++) {
                 backYearDates.add(String.format("%06d", backYearDataDate) + "-" + String.format("%02d", i));
             }
@@ -56,6 +56,7 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
         System.out.println("Ending with date: " + endDateInt);
         //String base_url = "http://patents.reedtech.com/downloads/PatentAssignmentText/---/ad20";
         String base_url = "https://bulkdata.uspto.gov/data/patent/assignment/ad20";
+        String base_backfile_url = "https://bulkdata.uspto.gov/data/patent/assignment/ad19800101-20";
         while (lastIngestedDate <= endDateInt||backYearDates.size()>0||failedDatesList.size()>0) {
             String finalUrlString;
             String zipDate;
@@ -81,9 +82,9 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
                 System.out.println("Trying zipDate: "+zipDate);
             } else {
                 zipDate = backYearDates.remove(0);
-                finalUrlString = base_url + zipDate + ".zip";
+                finalUrlString = base_backfile_url + zipDate + ".zip";
                 finalUrlString = finalUrlString.replaceFirst("---", "1980-2015");
-
+                System.out.println("Trying backfill: "+zipDate);
             }
             if(wasFailed || ! new File(zipFilePrefix+zipDate).exists()) {
                 try {
