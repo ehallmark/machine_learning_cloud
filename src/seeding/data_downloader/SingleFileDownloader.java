@@ -87,7 +87,7 @@ public abstract class SingleFileDownloader implements DataDownloader {
 
                 found = true;
             } catch (Exception e) {
-                //e.printStackTrace();
+                e.printStackTrace();
                 System.out.println("Not found");
             }
             date = date.minusDays(1);
