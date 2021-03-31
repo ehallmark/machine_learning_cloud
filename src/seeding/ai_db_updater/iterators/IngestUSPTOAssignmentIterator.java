@@ -98,6 +98,7 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
                     System.out.println("FOUND!!!!!!!!!!!!");
 
                 } catch (Exception e) {
+                    e.printStackTrace();
                     System.out.println("Unable to get file");
                     continue;
                 }
