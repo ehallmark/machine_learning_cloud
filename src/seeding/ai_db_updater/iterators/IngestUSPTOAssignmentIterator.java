@@ -56,7 +56,7 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
         System.out.println("Ending with date: " + endDateInt);
         //String base_url = "http://patents.reedtech.com/downloads/PatentAssignmentText/---/ad20";
         String base_url = "https://bulkdata.uspto.gov/data/patent/assignment/ad20";
-        String base_backfile_url = "https://bulkdata.uspto.gov/data/patent/assignment/ad19800101-20";
+        String base_backfile_url = "https://bulkdata.uspto.gov/data/patent/assignment/ad19800101-";
         while (lastIngestedDate <= endDateInt||backYearDates.size()>0||failedDatesList.size()>0) {
             String finalUrlString;
             String zipDate;
