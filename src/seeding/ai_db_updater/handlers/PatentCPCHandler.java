@@ -1,7 +1,9 @@
 package seeding.ai_db_updater.handlers;
 
+import seeding.ai_db_updater.UpdateClassificationHash;
 import tools.ClassCodeHandler;
 
+import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -10,11 +12,9 @@ import java.util.Set;
  * Created by ehallmark on 7/12/17.
  */
 public class PatentCPCHandler implements LineHandler {
-    protected Map<String,Set<String>> patentToClassificationHash;
-    protected Set<String> valid;
-    public PatentCPCHandler(Map<String,Set<String>> patentToClassificationHash, Set<String> valid) {
-        this.patentToClassificationHash=patentToClassificationHash;
-        this.valid=valid;
+    protected Connection conn;
+    public PatentCPCHandler(Connection conn) {
+        this.conn=conn;
     }
 
     @Override
@@ -27,19 +27,12 @@ public class PatentCPCHandler implements LineHandler {
             String kind_code = line.substring(0,2).trim();
             String patNum = line.substring(10, 18).trim();
             String full_publication_number = "US"+patNum+kind_code;
-            if(valid.contains(full_publication_number)) {
-                String cpcSection = line.substring(18, 19);
-                String cpcClass = cpcSection + line.substring(19, 21);
-                String cpcSubclass = cpcClass + line.substring(21, 22);
-                String cpcMainGroup = cpcSubclass + line.substring(22, 26);
-                String cpcSubGroup = cpcMainGroup + line.substring(27, 33);
-                Set<String> data = patentToClassificationHash.get(full_publication_number);
-                if (data == null) {
-                    data = new HashSet<>();
-                    patentToClassificationHash.put(full_publication_number, data);
-                }
-                data.add(ClassCodeHandler.convertToHumanFormat(cpcSubGroup));
-            }
+            String cpcSection = line.substring(18, 19);
+            String cpcClass = cpcSection + line.substring(19, 21);
+            String cpcSubclass = cpcClass + line.substring(21, 22);
+            String cpcMainGroup = cpcSubclass + line.substring(22, 26);
+            String cpcSubGroup = cpcMainGroup + line.substring(27, 33);
+            UpdateClassificationHash.ingestResult(full_publication_number,  ClassCodeHandler.convertToHumanFormat(cpcSubGroup), conn);
         }
     }
 }
