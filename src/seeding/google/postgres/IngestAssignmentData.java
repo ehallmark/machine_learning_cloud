@@ -149,7 +149,7 @@ public class IngestAssignmentData {
 
         // download most recent files and ingest
         FileStreamDataDownloader downloader = new AssignmentDataDownloader("uspto_assignments");
-        LocalDate latestDateToStartFrom = LocalDate.of(2018,1,1);
+        LocalDate latestDateToStartFrom = LocalDate.of(2021,1,1);
         Function<File,Boolean> orFunction = file -> {
             String name = file.getName();
             try {
