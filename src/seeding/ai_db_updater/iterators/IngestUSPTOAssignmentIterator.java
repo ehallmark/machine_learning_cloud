@@ -31,7 +31,7 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
         final int backYearDataDate = 20201231;
         final int numFilesForBackYearData = 18;
         final int backYearDataStartNum = 1;
-        final int startDateNum = 20210101;
+        final int startDateNum = 210101;
         List<String> backYearDates = new ArrayList<>(numFilesForBackYearData);
 
         if(startDate.getYear()< 2021) {
