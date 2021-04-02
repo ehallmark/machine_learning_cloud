@@ -27,12 +27,12 @@ public class UpdateClassificationHash {
         if (!conn.getAutoCommit()) {
             conn.setAutoCommit(true);
         }
-        {
+        /*{
             AppCPCDataDownloader downloader = new AppCPCDataDownloader();
             downloader.pullMostRecentData();
             setupClassificationsHash(downloader.getDestinationFile(), new AppCPCHandler(conn));
             downloader.cleanUp();
-        }
+        }*/
         {
             PatentCPCDataDownloader downloader = new PatentCPCDataDownloader();
             downloader.pullMostRecentData();
