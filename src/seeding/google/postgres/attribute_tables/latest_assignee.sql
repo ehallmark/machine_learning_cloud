@@ -77,43 +77,6 @@ insert into big_query_patent_to_security_interest_by_pub (
     order by publication_number_full,date desc nulls last,publication_date desc nulls last
 );
 
--- latest assignee data by family id
-drop table big_query_patent_to_latest_assignee_by_family;
-create table big_query_patent_to_latest_assignee_by_family (
-    family_id varchar(32) primary key,
-    first_assignee text not null,
-    assignee text[] not null,
-    date date
-);
-
-insert into big_query_patent_to_latest_assignee_by_family (
-    select distinct on (family_id) family_id,(case when la.assignee is not null and array_length(la.assignee, 1) > 0 then la.assignee else p.assignee_harmonized end)[1],(case when la.assignee is not null and array_length(la.assignee, 1) > 0 then la.assignee else p.assignee_harmonized end),coalesce(la.date,case when la.assignee is null OR array_length(la.assignee, 1)=0 then coalesce(p.priority_date,p.filing_date) else null end)
-    from patents_global as p
-    left outer join big_query_patent_to_latest_assignee as la
-    on ('US'||p.application_number_formatted='US'||la.application_number_formatted_with_country)
-    where family_id!='-1' and (case when la.assignee is not null and array_length(la.assignee, 1) > 0 then la.assignee else p.assignee_harmonized end)[1] is not null and p.application_number_formatted is not null
-    order by family_id,date desc nulls last,publication_date desc nulls last
-);
-create index big_query_latest_by_family_first_assignee_idx on big_query_patent_to_latest_assignee_by_family (first_assignee);
-
-
--- security interest data by family id
-drop table big_query_patent_to_security_interest_by_fam;
-create table big_query_patent_to_security_interest_by_fam (
-    publication_number_full varchar(32) primary key,
-    security_interest_holder text not null,
-    date date
-);
-insert into big_query_patent_to_security_interest_by_fam (
-    select distinct on (family_id) family_id,si.security_interest_holder[1],si.date
-    from patents_global as p
-    left outer join big_query_patent_to_security_interest as si
-    on ('US'||p.application_number_formatted='US'||si.application_number_formatted_with_country)
-    where family_id!='-1' and si.security_interest_holder is not null and si.security_interest_holder[1] is not null and p.application_number_formatted is not null
-    order by family_id,date desc nulls last,publication_date desc nulls last
-);
-
-
 drop table big_query_assignee;
 create table big_query_assignee (
     name varchar(256) primary key,
@@ -125,11 +88,10 @@ create table big_query_assignee (
 );
 insert into big_query_assignee (name,country_code,portfolio_size,entity_type,last_filing_date,first_filing_date)
 (
-    select name,mode() within group (order by name_cc),count(distinct family_id),mode() within group (order by original_entity_type), max(filing_date),min(filing_date)
+    select name,mode() within group (order by name_cc),count(*),mode() within group (order by original_entity_type), max(filing_date),min(filing_date)
     from (
-        select a.first_assignee as name, t.country_code as name_cc,family_id,coalesce(m.original_entity_status,pair.original_entity_type) as original_entity_type,filing_date
+        select a.first_assignee as name, t.country_code as name_cc, m.original_entity_status as original_entity_type,filing_date
         from patents_global as t
-        left join big_query_pair_by_pub as pair on (t.publication_number_full=pair.publication_number_full)
         left join big_query_maintenance_by_pub as m on (t.publication_number_full=m.publication_number_full)
         left join big_query_patent_to_latest_assignee_by_pub as a on (a.publication_number_full=t.publication_number_full)
         where a.first_assignee is not null
@@ -167,31 +129,3 @@ insert into big_query_patent_to_latest_assignee_join_by_pub (
     from big_query_patent_to_latest_assignee_by_pub as latest_assignee
     left outer join big_query_assignee as latest_assignee_join on (latest_assignee_join.name=latest_assignee.first_assignee)
 );
-
--- by fam
-drop table big_query_patent_to_latest_assignee_join_by_family;
-create table big_query_patent_to_latest_assignee_join_by_family (
-    family_id varchar(32) primary key,
-    first_assignee text not null,
-    assignee text[] not null,
-    date date,
-    portfolio_size integer,
-    entity_type varchar(32),
-    first_filing_date date,
-    last_filing_date date
-);
-
-insert into big_query_patent_to_latest_assignee_join_by_family (
-    select
-       latest_fam_assignee.family_id,
-       latest_fam_assignee.first_assignee,
-       latest_fam_assignee.assignee,
-       latest_fam_assignee.date,
-       latest_assignee_fam_join.portfolio_size,
-       latest_assignee_fam_join.entity_type,
-       latest_assignee_fam_join.first_filing_date,
-       latest_assignee_fam_join.last_filing_date
-    from big_query_patent_to_latest_assignee_by_family as latest_fam_assignee
-    left outer join big_query_assignee as latest_assignee_fam_join on (latest_assignee_fam_join.name=latest_fam_assignee.first_assignee)
-);
-

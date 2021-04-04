@@ -194,7 +194,7 @@ public class Constants {
 	public static final UrlCreator USPTO_APP_URL_CREATOR = defaultAppUrlCreator(USPTO_APP_URL);
 	public static final UrlCreator PATENT_CPC_URL_CREATOR = maintenanceUrlCreator("https://bulkdata.uspto.gov/data/patent/classification/cpc/US_Grant_CPC_MCF_Text_");
 	public static final UrlCreator APP_CPC_URL_CREATOR = maintenanceUrlCreator("https://bulkdata.uspto.gov/data/patent/classification/cpc/US_PGPub_CPC_MCF_Text_");
-	public static final UrlCreator PAIR_BULK_URL_CREATOR = date -> "https://ped.uspto.gov/api/full-download?format=XML";
+	public static final UrlCreator PAIR_BULK_URL_CREATOR = date -> "https://ped.uspto.gov/api/full-download?fileName=2000-2019-pairbulk-full-20210404-xml";
 
 	public static final LocalDate DEFAULT_ASSIGNMENT_START_DATE = LocalDate.of(2016, Month.JANUARY, 1);
 	public static final LocalDate DEFAULT_START_DATE = LocalDate.of(2005, Month.JANUARY, 1);

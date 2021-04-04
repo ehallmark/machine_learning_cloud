@@ -1,18 +1,5 @@
 \connect patentdb
 
-drop table big_query_wipo_by_family;
-create table big_query_wipo_by_family (
-    family_id varchar(32) primary key,
-    wipo_technology text[] not null
-);
-
-insert into big_query_wipo_by_family (family_id,wipo_technology) (
-    select family_id, array_agg(distinct wipo_technology) from big_query_wipo as w
-    inner join patents_global as p on (w.publication_number=p.publication_number and p.country_code='US')
-    where family_id != '-1' and country_code='US'
-    group by family_id
-);
-
 
 drop table big_query_wipo_by_pub;
 create table big_query_wipo_by_pub (
@@ -22,7 +9,7 @@ create table big_query_wipo_by_pub (
 
 insert into big_query_wipo_by_pub (publication_number_full,wipo_technology) (
     select publication_number_full, array_agg(distinct wipo_technology) from big_query_wipo as w
-    inner join patents_global as p on (w.publication_number=p.publication_number and p.country_code='US')
+    inner join patents_global as p on (w.publication_number='"'||p.publication_number||'"' and p.country_code='US')
     where country_code='US'
     group by publication_number_full
 );
@@ -38,7 +25,7 @@ create table big_query_wipo_by_pub_flat (
 insert into big_query_wipo_by_pub_flat (publication_number_full,wipo_technology) (
     select distinct on (publication_number_full, wipo_technology)
         publication_number_full, wipo_technology from big_query_wipo as w
-    inner join patents_global as p on (w.publication_number=p.publication_number and p.country_code='US')
+    inner join patents_global as p on (w.publication_number='"'||p.publication_number||'"' and p.country_code='US')
     where country_code='US'
     order by publication_number_full, wipo_technology, random()
 );
