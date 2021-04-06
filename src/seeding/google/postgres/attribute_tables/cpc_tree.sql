@@ -1,21 +1,5 @@
 \connect patentdb
 
-drop table big_query_cpc_tree_by_fam;
-create table big_query_cpc_tree_by_fam (
-    family_id varchar(32) primary key,
-    tree varchar(32)[] not null,
-    code varchar(32)[] not null
-);
-
-insert into big_query_cpc_tree_by_fam (family_id,tree,code) (
-    select family_id,array_agg(distinct tr.tree),array_agg(distinct c.code) from
-    patents_global as p,unnest(p.code) with ordinality as c(code,n)
-    join big_query_cpc_definition as t on (c.code=t.code), unnest(t.tree) with ordinality as tr(tree,n)
-    where family_id != '-1'
-    group by family_id
-);
-
-
 drop table big_query_cpc_tree;
 create table big_query_cpc_tree (
     publication_number_full varchar(32) primary key,
@@ -27,7 +11,7 @@ create table big_query_cpc_tree (
 insert into big_query_cpc_tree (publication_number_full,tree,code) (
     select publication_number_full,array_agg(distinct tr.tree), array_agg(distinct c.code) from
     patents_global as p,unnest(p.code) with ordinality as c(code,n)
-    join big_query_cpc_definition as t on (c.code=t.code), unnest(t.tree) with ordinality as tr(tree,n)
+    --join big_query_cpc_definition as t on (c.code=t.code), unnest(t.tree) with ordinality as tr(tree,n)
     group by publication_number_full
 );
 
