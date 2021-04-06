@@ -182,7 +182,7 @@ insert into patents_global_merged (
         abstract,
         claims,
         claim_count,
-        description,
+        --description,
         inventor,
         assignee,
         inventor_harmonized,
@@ -338,7 +338,7 @@ insert into patents_global_merged (
         p.abstract[array_position(p.abstract_lang,'en')],
         p.claims[array_position(p.claims_lang,'en')],
         value_claims.num_claims,
-        null, -- much faster for now... p.description[array_position(p.description_lang,'en')],
+        --null, -- much faster for now... p.description[array_position(p.description_lang,'en')],
         p.inventor,
         p.assignee,
         p.inventor_harmonized,
@@ -503,4 +503,4 @@ insert into patents_global_merged (
     --left outer join big_query_family_counterparts as counter on (counter.family_id=p.family_id)
 );
 
-vacuum;
+--vacuum;
