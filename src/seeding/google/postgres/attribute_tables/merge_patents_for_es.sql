@@ -337,7 +337,7 @@ insert into patents_global_merged (
         p.invention_title[array_position(p.invention_title_lang,'en')],
         p.abstract[array_position(p.abstract_lang,'en')],
         p.claims[array_position(p.claims_lang,'en')],
-        value_claims.num_claims,
+        --value_claims.num_claims,
         --null, -- much faster for now... p.description[array_position(p.description_lang,'en')],
         p.inventor,
         p.assignee,
@@ -474,8 +474,8 @@ insert into patents_global_merged (
     left outer join big_query_pair_by_pub as pair on (p.publication_number_full=pair.publication_number_full)
     left outer join big_query_maintenance_by_pub as m on (m.publication_number_full=p.publication_number_full)
     left outer join big_query_maintenance_codes_by_pub as m_codes on (m_codes.publication_number_full=p.publication_number_full)
-    left outer join big_query_reverse_citations_by_pub as rc on (rc.publication_number_full=p.publication_number_full)
-    left outer join big_query_citations_by_pub as cites on (cites.publication_number_full=p.publication_number_full)
+    --left outer join big_query_reverse_citations_by_pub as rc on (rc.publication_number_full=p.publication_number_full)
+    --left outer join big_query_citations_by_pub as cites on (cites.publication_number_full=p.publication_number_full)
     left outer join big_query_priority_claims_by_pub as pc on (pc.publication_number_full=p.publication_number_full)
     left outer join big_query_patent_to_security_interest_by_pub as security_interest on (security_interest.publication_number_full=p.publication_number_full)
     --left outer join big_query_patent_to_security_interest_by_fam as security_interest_fam on (security_interest_fam.publication_number_full=p.publication_number_full)
