@@ -366,8 +366,8 @@ insert into patents_global_merged (
         --coalesce(array_length(p.pc_publication_number_full,1),0),
         -- cpc
         --coalesce(cpc_tree.code,cpc_tree_by_fam.code),
-        coalesce(array_length(cpc_tree.code,1), coalesce(array_length(cpc_tree_by_fam.code,1), 0)),
-        coalesce(cpc_tree.tree,cpc_tree_by_fam.tree),
+        coalesce(array_length(cpc_tree.code,1), 0),-- coalesce(array_length(cpc_tree_by_fam.code,1), 0)),
+        cpc_tree.tree, --coalesce(cpc_tree.tree,cpc_tree_by_fam.tree),
         -- citations
         --cites.cited_publication_number_full,
         --cites.cited_publication_number_with_country,
