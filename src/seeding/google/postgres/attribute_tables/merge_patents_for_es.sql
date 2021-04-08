@@ -391,7 +391,7 @@ insert into patents_global_merged (
         --sep.standard,
         --coalesce(array_length(sep.standard,1),0),
         -- wipo tech
-        coalesce(coalesce(wipo.wipo_technology,wipo_fam.wipo_technology),case when wipo_pred.wipo_technology is null then null else ARRAY[wipo_pred.wipo_technology] end),
+        wipo.wipo_technology, --coalesce(coalesce(wipo.wipo_technology,wipo_fam.wipo_technology),case when wipo_pred.wipo_technology is null then null else ARRAY[wipo_pred.wipo_technology] end),
         -- gtt tech
         --tech.technology,
         --tech.technology2,
