@@ -411,8 +411,8 @@ insert into patents_global_merged (
         latest_assignee.first_filing_date,
         latest_assignee.last_filing_date,
         coalesce(array_length(latest_assignee.assignee,1),0),
-        security_interest.security_interest_holder,
-        security_interest.date,
+        --security_interest.security_interest_holder,
+        --security_interest.date,
         -- latest assignee by fam
         --latest_assignee_fam.assignee,
         --latest_assignee_fam.date,
