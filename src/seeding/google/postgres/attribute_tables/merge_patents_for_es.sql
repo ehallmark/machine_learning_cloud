@@ -53,7 +53,7 @@ create table patents_global_merged (
     -- cpc
     code varchar(32)[],
     code_count integer,
-    --tree varchar(32)[],
+    tree varchar(32)[],
     -- citations
     --cited_publication_number_full varchar(32)[],
     --cited_publication_number_with_country varchar(32)[],
@@ -212,7 +212,7 @@ insert into patents_global_merged (
         -- cpc
         code,
         code_count,
-        --tree,
+        tree,
         -- citations
         --cited_publication_number_full,
         --cited_publication_number_with_country,
