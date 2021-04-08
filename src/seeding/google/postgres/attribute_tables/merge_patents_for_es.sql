@@ -425,7 +425,7 @@ insert into patents_global_merged (
         --security_interest_fam.security_interest_holder,
         --security_interest_fam.date,
         -- embedding
-        enc.enc,
+        --enc.enc,
         -- assignments
         a.reel_frame,
         a.conveyance_text,
