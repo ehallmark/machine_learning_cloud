@@ -201,14 +201,14 @@ insert into patents_global_merged (
         --counterpart_country,
         --counterpart_kind,
         -- priority claims
-        pc_publication_number_full,
-        pc_publication_number_with_country,
-        pc_publication_number,
-        pc_application_number_formatted_with_country,
-        pc_application_number_formatted,
-        pc_family_id,
-        pc_filing_date,
-        pc_count,
+        --pc_publication_number_full,
+        --pc_publication_number_with_country,
+        --pc_publication_number,
+        --pc_application_number_formatted_with_country,
+        --pc_application_number_formatted,
+        --pc_family_id,
+        --pc_filing_date,
+        --pc_count,
         -- cpc
         code,
         code_count,
@@ -356,14 +356,14 @@ insert into patents_global_merged (
         --coalesce(counter.counterpart_country, ARRAY[p.country_code]),
         --coalesce(counter.counterpart_kind, ARRAY[p.kind_code]),
         -- priority claims
-        pc.pc_publication_number_full,
-        pc.pc_publication_number_with_country,
-        pc.pc_publication_number,
-        pc.pc_application_number_formatted_with_country,
-        pc.pc_application_number_formatted,
-        pc.pc_family_id,
-        pc.pc_filing_date,
-        coalesce(array_length(p.pc_publication_number_full,1),0),
+        --pc.pc_publication_number_full,
+        --pc.pc_publication_number_with_country,
+        --pc.pc_publication_number,
+        --pc.pc_application_number_formatted_with_country,
+        --pc.pc_application_number_formatted,
+        --pc.pc_family_id,
+        --pc.pc_filing_date,
+        --coalesce(array_length(p.pc_publication_number_full,1),0),
         -- cpc
         --coalesce(cpc_tree.code,cpc_tree_by_fam.code),
         coalesce(array_length(cpc_tree.code,1), coalesce(array_length(cpc_tree_by_fam.code,1), 0)),
@@ -476,7 +476,7 @@ insert into patents_global_merged (
     left outer join big_query_maintenance_codes_by_pub as m_codes on (m_codes.publication_number_full=p.publication_number_full)
     --left outer join big_query_reverse_citations_by_pub as rc on (rc.publication_number_full=p.publication_number_full)
     --left outer join big_query_citations_by_pub as cites on (cites.publication_number_full=p.publication_number_full)
-    left outer join big_query_priority_claims_by_pub as pc on (pc.publication_number_full=p.publication_number_full)
+    --left outer join big_query_priority_claims_by_pub as pc on (pc.publication_number_full=p.publication_number_full)
     left outer join big_query_patent_to_security_interest_by_pub as security_interest on (security_interest.publication_number_full=p.publication_number_full)
     --left outer join big_query_patent_to_security_interest_by_fam as security_interest_fam on (security_interest_fam.publication_number_full=p.publication_number_full)
     left outer join big_query_patent_to_latest_assignee_join_by_pub as latest_assignee on (latest_assignee.publication_number_full=p.publication_number_full)
