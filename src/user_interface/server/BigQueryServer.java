@@ -601,10 +601,10 @@ public class BigQueryServer extends SimilarPatentServer {
     public static void server() {
         if(GLOBAL_PREFIX.equals("/global")) {
             System.out.println("Using port 8081");
-            port(8081);
+            //port(8081);
         } else {
             System.out.println("Using port 8080");
-            port(8080);
+            //port(8080);
         }
 
         // HOST ASSETS
@@ -3536,6 +3536,6 @@ public class BigQueryServer extends SimilarPatentServer {
 
         HelpPage.helpPage(false);
         API.main(args);
-        PatentDB2.main(args);
+        //PatentDB2.main(args);
     }
 }
