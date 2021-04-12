@@ -3047,7 +3047,7 @@ public class BigQueryServer extends SimilarPatentServer {
             acclaimAttrs = Collections.emptyList();
         }
         String role = authorized ? req.session().attribute("role") : null;
-        String userGroup = authorized ? "Internal"; //getUserGroupFor(req.session()) : null;
+        String userGroup = authorized ? "Internal" : null; //getUserGroupFor(req.session()) : null;
         boolean showDynamicUserGroups = false; //authorized&&((role.equals(INTERNAL_USER)||role.equals(SUPER_USER)));
         String dynamicUserGroup = showDynamicUserGroups ? req.session().attribute("dynamicUserGroup") : null;
         final boolean canUpdateUserGroup = role == null ? false : (role.equals(SUPER_USER)||role.equals(INTERNAL_USER));
