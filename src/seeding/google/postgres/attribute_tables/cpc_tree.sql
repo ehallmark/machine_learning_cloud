@@ -9,9 +9,9 @@ create table big_query_cpc_tree (
 
 
 insert into big_query_cpc_tree (publication_number_full,tree,code) (
-    select publication_number_full,array_agg(distinct tr.tree), array_agg(distinct c.code) from
-    patents_global as p,unnest(p.code) with ordinality as c(code,n)
-    --join big_query_cpc_definition as t on (c.code=t.code), unnest(t.tree) with ordinality as tr(tree,n)
+    select publication_number_full,array_agg(distinct tr.tree), array_agg(distinct p.code) from
+    big_query_cpc as p
+    join big_query_cpc_definition as t on (p.code=t.code), unnest(t.tree) with ordinality as tr(tree,n)
     group by publication_number_full
 );
 
