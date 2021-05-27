@@ -1,0 +1,8 @@
+[Unit]
+Description=GTT Server
+
+[Service]
+ExecStart=/bin/bash -c "cd /home/ladmin/repos/machine_learning_cloud && java -cp target/classes:"target/dependency/*" -Xms2000m -Xmx2000m user_interface.server.BigQueryServer & disown"
+
+[Install]
+WantedBy=multi-user.target
