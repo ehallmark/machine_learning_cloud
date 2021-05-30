@@ -30,7 +30,7 @@ public class SetupCPCSimForKeras {
     public static void main(String[] args) throws Exception {
         // this file sets up the data table in SQL so that CPCSim.py can run smoothly
         final CPCHierarchy hierarchy = CPCHierarchy.get();
-        final boolean reingestIndices = false; // only set to true for the first run through
+        final boolean reingestIndices = true; // only set to true for the first run through
         final int negativeSamples = 5;
         final long maxDatapoints = 100000000L;
         final int alpha = 500;
