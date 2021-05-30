@@ -3,12 +3,12 @@
 
 drop table big_query_ai_value_family_size;
 create table big_query_ai_value_family_size (
-    family_id varchar(32) primary key,
+    application_number_formatted varchar(32) primary key,
     family_size integer not null
 );
 
-insert into big_query_ai_value_family_size (family_id,family_size) (
-    select family_id,count(*) from patents_global where family_id!='-1' group by family_id
+insert into big_query_ai_value_family_size (application_number_formatted,family_size) (
+    select application_number_formatted,count(*) from patents_global where application_number_formatted is not null group by application_number_formatted
 );
 
 -- drop table big_query_ai_value_claims;
@@ -33,34 +33,32 @@ insert into big_query_ai_value_claims (
 
 drop table big_query_ai_value_assignments;
 create table big_query_ai_value_assignments (
-    family_id varchar(32) primary key,
+    publication_number_full varchar(32) primary key,
     num_assignments integer not null
 );
 
-insert into big_query_ai_value_assignments (family_id,num_assignments) (
-    select family_id,count(distinct reel_frame) from
+insert into big_query_ai_value_assignments (publication_number_full,num_assignments) (
+    select publication_number_full,count(distinct reel_frame) from
         big_query_assignments left join big_query_assignment_documentid using (reel_frame)
     left outer join patents_global on
         (
            patents_global.application_number_formatted=big_query_assignment_documentid.application_number_formatted_with_country
         )
-    where patents_global.country_code='US' and family_id!='-1' and patents_global.country_code='US' -- update -> and not family_id in (select family_id from big_query_ai_value_assignments)
-    group by family_id
+    where patents_global.country_code='US' and patents_global.country_code='US'
+    group by publication_number_full
 );
 
 drop table big_query_ai_value_citations;
 create table big_query_ai_value_citations (
-    family_id varchar(32) primary key,
+    publication_number_full varchar(32) primary key,
     num_rcites integer not null
 );
 
 insert into big_query_ai_value_citations (
-    select family_id,count(distinct rcited_family_id) from (select
-        publication_number_full,t2.rcited_family_id from big_query_reverse_citations_by_pub as t,unnest(t.rcite_family_id) with ordinality as t2(rcited_family_id,n)
-    ) temp left outer join patents_global on
-        (patents_global.publication_number_full=temp.publication_number_full)
-    where family_id !='-1'
-    group by family_id
+    select publication_number_full,count(distinct rcite_publication_number_full) from (select
+        publication_number_full,t2.rcite_publication_number_full from big_query_reverse_citations_by_pub as t,unnest(t.rcite_publication_number_full) with ordinality as t2(rcite_publication_number_full,n)
+    ) temp
+    group by publication_number_full
 );
 
 -- helper function to compute sigmoid
@@ -99,10 +97,10 @@ insert into big_query_ai_value_all (publication_number_full,means_present,num_cl
     num_assignments,
     family_size
     from big_query_family_id as p
-    join big_query_ai_value_family_size as f on (f.family_id=p.family_id)
-    left outer join big_query_ai_value_citations as ci on (ci.family_id=p.family_id)
+    join big_query_ai_value_family_size as f on (f.application_number_formatted=p.application_number_formatted)
+    left outer join big_query_ai_value_citations as ci on (ci.publication_number_full=p.publication_number_full)
     left outer join big_query_ai_value_claims as cl on (p.publication_number_full=cl.publication_number_full)
-    left outer join big_query_ai_value_assignments as a on (a.family_id=p.family_id)
+    left outer join big_query_ai_value_assignments as a on (a.publication_number_full=p.publication_number_full)
 );
 
 drop table big_query_ai_value_weights;
@@ -119,19 +117,20 @@ insert into big_query_ai_value_weights (date,weights,intercept) values (
     -1.0491014::double precision
 );
 
-drop table big_query_gather_wipo_stats_by_pub;
-create table big_query_gather_wipo_stats_by_pub (
-    publication_number_full varchar(32) primary key,
-    score double precision not null
-);
 
-insert into big_query_gather_wipo_stats_by_pub (publication_number_full,score) (
-    select f.publication_number_full,(frequency)*(select max(frequency) as max from big_query_gather_wipo_stats) as score
-    from big_query_family_id as f
-    join big_query_wipo_by_family as g on (f.family_id=g.family_id)
-    join big_query_gather_wipo_stats as t on (g.wipo_technology[1]=t.technology)
-    where f.family_id != '-1'
-);
+--drop table big_query_gather_wipo_stats_by_pub;
+--create table big_query_gather_wipo_stats_by_pub (
+--    publication_number_full varchar(32) primary key,
+--    score double precision not null
+--);
+
+--insert into big_query_gather_wipo_stats_by_pub (publication_number_full,score) (
+--    select f.publication_number_full,(frequency)*(select max(frequency) as max from big_query_gather_wipo_stats) as score
+--    from big_query_family_id as f
+--    join big_query_wipo_by_family as g on (f.family_id=g.family_id)
+--    join big_query_gather_wipo_stats as t on (g.wipo_technology[1]=t.technology)
+--    where f.family_id != '-1'
+--);
 
 
 drop table big_query_ai_value;
@@ -166,9 +165,10 @@ insert into big_query_ai_value (publication_number_full,value) (
             coalesce(length_smallest_ind_claim,average.avg_length_smallest_ind_claim),
             coalesce(num_rcites,average.avg_num_rcites)
          ]
-    )::double precision[],weights,intercept)*(0.85))+(0.15*coalesce(cpc_stats.score,0.0)) as value
-    from big_query_ai_value_all as ai
-    left outer join big_query_gather_wipo_stats_by_pub as cpc_stats
-       on (cpc_stats.publication_number_full=ai.publication_number_full),
+    --)::double precision[],weights,intercept)*(0.85))+(0.15*coalesce(cpc_stats.score,0.0)) as value
+    )::double precision[],weights,intercept)) as value
+    from big_query_ai_value_all as ai,
+    --left outer join big_query_gather_wipo_stats_by_pub as cpc_stats
+    --   on (cpc_stats.publication_number_full=ai.publication_number_full),
     average,weights,intercept
 );

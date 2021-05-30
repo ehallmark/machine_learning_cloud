@@ -65,7 +65,7 @@ public class SetupCPCSimForKeras {
 
         System.out.println("Iterating over patent data...");
         AtomicLong cnt = new AtomicLong(0);
-        File folder = new File("/home/ehallmark/Downloads/cpc_sim_data/");
+        File folder = new File("/home/ladmin/repos/machine_learning_cloud/data/cpc_sim_data/");
         if(!folder.exists()) {
             folder.mkdirs();
         }
