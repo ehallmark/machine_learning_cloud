@@ -68,7 +68,7 @@ create table patents_global_merged (
     --citation_count integer,
 
     -- value
-    --ai_value double precision,
+    ai_value double precision,
     --length_of_smallest_ind_claim integer,
     --means_present integer,
     --family_size integer,
@@ -114,7 +114,7 @@ create table patents_global_merged (
     --security_interest_fam_date date,
 
     -- embedding
-    --enc float[],
+    enc float[],
     -- assignments
     reel_frame text[],
     assignment_count integer,
@@ -226,7 +226,7 @@ insert into patents_global_merged (
         --cited_filing_date,
         --citation_count,
         -- value
-        --ai_value,
+        ai_value,
         --length_of_smallest_ind_claim,
         --means_present,
         --family_size,
@@ -269,7 +269,7 @@ insert into patents_global_merged (
         --security_interest_fam_holder,
         --security_interest_fam_date,
         -- embedding
-        --enc,
+        enc,
         -- assignments
         reel_frame,
         conveyance_text,
@@ -381,7 +381,7 @@ insert into patents_global_merged (
         --cites.cited_filing_date,
         --coalesce(array_length(cites.cited_publication_number_full,1),0),
         -- ai value
-        --ai_value.value,
+        ai_value.value,
         -- other value attrs
         --value_claims.length_smallest_ind_claim,
         --value_claims.means_present,
@@ -425,7 +425,7 @@ insert into patents_global_merged (
         --security_interest_fam.security_interest_holder,
         --security_interest_fam.date,
         -- embedding
-        --enc.enc,
+        enc.enc,
         -- assignments
         a.reel_frame,
         a.conveyance_text,
@@ -489,8 +489,8 @@ insert into patents_global_merged (
     --left outer join big_query_wipo_by_family as wipo_fam on (wipo_fam.family_id=p.family_id)
     --left outer join big_query_ai_value_claims as value_claims on (value_claims.publication_number_full=p.publication_number_full)
     --left outer join big_query_ai_value_family_size as value_family_size on (value_family_size.family_id=p.family_id)
-    --left outer join big_query_ai_value as ai_value on (ai_value.publication_number_full=p.publication_number_full)
-    --left outer join big_query_embedding_by_fam as enc on (enc.family_id=p.family_id)
+    left outer join big_query_ai_value as ai_value on (ai_value.publication_number_full=p.publication_number_full)
+    left outer join big_query_embedding_by_pub as enc on (enc.publication_number_full=p.publication_number_full)
     left outer join big_query_cpc_tree as cpc_tree on (cpc_tree.publication_number_full=p.publication_number_full)
     --left outer join big_query_cpc_tree_by_fam as cpc_tree_by_fam on (cpc_tree_by_fam.family_id=p.family_id)
     --left outer join big_query_gather_with_pub as gather on (gather.publication_number_full=p.publication_number_full)
