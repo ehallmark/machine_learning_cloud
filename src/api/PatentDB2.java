@@ -151,9 +151,6 @@ public class PatentDB2 {
                 try {
                     if (findEpo) {
                         String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
-                        if (resolvedNumber.length()==11) {
-                            resolvedNumber = resolvedNumber.substring(0, 4) + resolvedNumber.substring(5);
-                        }
                         final Map<String, Object> data = EPO.getEpoData("US"+resolvedNumber);
                         return resultsFormatter(data);
 
