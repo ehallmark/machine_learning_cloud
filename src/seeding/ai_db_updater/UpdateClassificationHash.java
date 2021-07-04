@@ -27,12 +27,15 @@ public class UpdateClassificationHash {
         if (!conn.getAutoCommit()) {
             conn.setAutoCommit(true);
         }
-        /*{
+        {
             AppCPCDataDownloader downloader = new AppCPCDataDownloader();
             downloader.pullMostRecentData();
             setupClassificationsHash(downloader.getDestinationFile(), new AppCPCHandler(conn));
             downloader.cleanUp();
-        }*/
+        }
+        if (!conn.getAutoCommit()) {
+            conn.setAutoCommit(true);
+        }
         {
             PatentCPCDataDownloader downloader = new PatentCPCDataDownloader();
             downloader.pullMostRecentData();
@@ -49,22 +52,6 @@ public class UpdateClassificationHash {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static void ingestResults(Map<String,Set<String>> map, Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement("update patents_global set code = ? where publication_number_full=? and code is null");
-        long count = 0L;
-        for(Map.Entry<String,Set<String>> entry : map.entrySet()) {
-            ps.setArray(1, conn.createArrayOf("varchar", entry.getValue().toArray(new String[entry.getValue().size()])));
-            ps.setString(2, entry.getKey());
-            ps.executeUpdate();
-            if(count % 100000 == 99999) {
-                System.out.println("Finished "+count);
-                conn.commit();
-            }
-            count++;
-        }
-        conn.commit();
     }
 
     public static void setupClassificationsHash(File destinationFile, LineHandler handler) {
