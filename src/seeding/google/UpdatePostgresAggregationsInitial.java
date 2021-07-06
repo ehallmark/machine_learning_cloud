@@ -33,6 +33,16 @@ public class UpdatePostgresAggregationsInitial {
             service.execute(() -> {
                 // cpc trees
                 try {
+                    runSqlTable(new File("src/seeding/google/postgres/attribute_tables/cpc_aggs.sql"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Failed to execute cpc_aggs...");
+                    emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute cpc_aggs...", e);
+                    System.exit(1);
+                }
+
+                // cpc trees
+                try {
                     runSqlTable(new File("src/seeding/google/postgres/attribute_tables/cpc_tree.sql"));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -100,7 +110,7 @@ public class UpdatePostgresAggregationsInitial {
                 }
             });
 
-            service.execute(() -> {
+            /*service.execute(() -> {
                 try {
                     runSqlTable(new File("src/seeding/google/postgres/attribute_tables/ptab_aggs.sql"));
                 } catch (Exception e) {
@@ -109,7 +119,7 @@ public class UpdatePostgresAggregationsInitial {
                     emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute ptab_aggs...", e);
                     System.exit(1);
                 }
-            });
+            });*/
 
 
             service.execute(() -> {

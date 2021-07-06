@@ -18,17 +18,6 @@ public class UpdatePostgresAggregationsPost {
     public static void main(String[] args) {
         final Mailer emailer = new Mailer();
         final String DEFAULT_MAIL_SUBJECT = "PSP Post Aggregations Error";
-        /*try {
-            System.out.println("Predicting keywords...");
-            PredictKeywords.main(args);
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/patent_keywords_aggs.sql"));
-            FilterKeywordsByTFIDF.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to execute patent_keyword_aggs...");
-            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute patent_keyword_aggs...", e);
-            System.exit(1);
-        }*/
 
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/assignment_aggs.sql"));
@@ -48,15 +37,6 @@ public class UpdatePostgresAggregationsPost {
             System.exit(1);
         }
 
-        // assignee guesses
-        try {
-            AssigneeGuess.main(args);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Error during assignee guessing...");
-            emailer.sendMail(DEFAULT_MAIL_SUBJECT, "Failed to execute assignee guessing...", e);
-            System.exit(1);
-        }
 
         try {
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/granted.sql"));
@@ -80,7 +60,7 @@ public class UpdatePostgresAggregationsPost {
         // SIMILARITY
         try {
             System.out.println("Predicting similarity vectors...");
-            runProcess(". "+new File("scripts/production/update_similarity.sh"));
+            runProcess(". "+new File("scripts/proxmox/update_similarity.sh"));
             runSqlTable(new File("src/seeding/google/postgres/attribute_tables/embedding_aggs.sql"));
             //if(monthUpdate) {
             //    runProcess(". "+new File("scripts/production/update_cpc_similarity.sh"));
@@ -97,7 +77,7 @@ public class UpdatePostgresAggregationsPost {
         // wipo prediction
         try {
             System.out.println("Predicting wipo technologies for missing vectors...");
-            runProcess(". "+new File("scripts/production/update_wipo.sh"));
+            runProcess(". "+new File("scripts/proxmox/update_wipo.sh"));
             //if(monthUpdate) {
             //    runProcess(". "+new File("scripts/production/update_cpc_similarity.sh"));
             //    IngestAssigneeEmbeddingsToPostgres.main(args);
