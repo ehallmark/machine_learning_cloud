@@ -37,6 +37,8 @@ public class PatentDB2 {
             "claims"
     };
 
+    private static final Map<String, String> PRIORITY_DATE_CACHE = Collections.synchronizedMap(new HashMap<>());
+
     private static final Map<String, String> FIELD_TO_SUBSTATEMENT_MAP = Collections.synchronizedMap(new HashMap<>());
     static {
         FIELD_TO_SUBSTATEMENT_MAP.put("title", "invention_title[array_position(invention_title_lang,'en')] as title");
@@ -156,20 +158,23 @@ public class PatentDB2 {
 
                     } else {
                         String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
-                        final Map<String, Object> epoData = EPO.getEpoData("US"+resolvedNumber, true);
+                        String updatedPriorityDate = PRIORITY_DATE_CACHE.get(resolvedNumber);
                         String earliestMember = null;
-                        String earliestDate = null;
-                        for (Map<String, Object> epoResult : (List<Map<String,Object>>)epoData.getOrDefault("family_members", Collections.emptyList())) {
-                            if (epoResult.get("country").equals("US")) {
-                                String date = (String)epoResult.get("date");
-                                String member = "US"+epoResult.get("number")+epoResult.get("kind");
-                                if (earliestDate == null) {
-                                    earliestDate = date;
-                                    earliestMember = member;
-                                } else {
-                                    if (earliestDate.compareTo(date)>0) {
+                        if (updatedPriorityDate == null) {
+                            final Map<String, Object> epoData = EPO.getEpoData("US" + resolvedNumber, true);
+                            String earliestDate = null;
+                            for (Map<String, Object> epoResult : (List<Map<String, Object>>) epoData.getOrDefault("family_members", Collections.emptyList())) {
+                                if (epoResult.get("country").equals("US")) {
+                                    String date = (String) epoResult.get("date");
+                                    String member = "US" + epoResult.get("number") + epoResult.get("kind");
+                                    if (earliestDate == null) {
                                         earliestDate = date;
                                         earliestMember = member;
+                                    } else {
+                                        if (earliestDate.compareTo(date) > 0) {
+                                            earliestDate = date;
+                                            earliestMember = member;
+                                        }
                                     }
                                 }
                             }
@@ -178,10 +183,11 @@ public class PatentDB2 {
                         final boolean includeClaims = req.queryParamOrDefault("include_claims", "true").toLowerCase().startsWith("t");
                         final Map<String, Object> data = getData(resolved, includeDescription, includeClaims);
                         if (earliestMember != null && data.size() > 0) {
-                            String updatedPriorityDate = getUpdatedPriorityDateEstimation(earliestMember);
-                            if (updatedPriorityDate != null) {
-                                data.put("priority_date", updatedPriorityDate);
-                            }
+                            updatedPriorityDate = getUpdatedPriorityDateEstimation(earliestMember);
+                        }
+                        if (updatedPriorityDate != null) {
+                            PRIORITY_DATE_CACHE.put(resolvedNumber, updatedPriorityDate);
+                            data.put("priority_date", updatedPriorityDate);
                         }
                         System.out.println("Found data!");
                         return resultsFormatter(data);
