@@ -151,13 +151,38 @@ public class PatentDB2 {
                 try {
                     if (findEpo) {
                         String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
-                        final Map<String, Object> data = EPO.getEpoData("US"+resolvedNumber);
+                        final Map<String, Object> data = EPO.getEpoData("US"+resolvedNumber, false);
                         return resultsFormatter(data);
 
                     } else {
+                        String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
+                        final Map<String, Object> epoData = EPO.getEpoData("US"+resolvedNumber, true);
+                        String earliestMember = null;
+                        String earliestDate = null;
+                        for (Map<String, Object> epoResult : (List<Map<String,Object>>)epoData.getOrDefault("family_members", Collections.emptyList())) {
+                            if (epoResult.get("country").equals("US")) {
+                                String date = (String)epoResult.get("date");
+                                String member = "US"+epoResult.get("number")+epoResult.get("kind");
+                                if (earliestDate == null) {
+                                    earliestDate = date;
+                                    earliestMember = member;
+                                } else {
+                                    if (earliestDate.compareTo(date)>0) {
+                                        earliestDate = date;
+                                        earliestMember = member;
+                                    }
+                                }
+                            }
+                        }
                         final boolean includeDescription = req.queryParamOrDefault("include_description", "true").toLowerCase().startsWith("t");
                         final boolean includeClaims = req.queryParamOrDefault("include_claims", "true").toLowerCase().startsWith("t");
                         final Map<String, Object> data = getData(resolved, includeDescription, includeClaims);
+                        if (earliestMember != null && data.size() > 0) {
+                            String updatedPriorityDate = getUpdatedPriorityDateEstimation(earliestMember);
+                            if (updatedPriorityDate != null) {
+                                data.put("priority_date", updatedPriorityDate);
+                            }
+                        }
                         System.out.println("Found data!");
                         return resultsFormatter(data);
                     }
@@ -279,7 +304,7 @@ public class PatentDB2 {
 
 
     private static String getUpdatedPriorityDateEstimation(String numberFull) {
-        String query = "select priority_date_est::text as priority_date_est from big_query_priority_and_expiration where publication_number_full=?";
+        String query = "select filing_date::text as filing_date from patents_global where publication_number_full=? limit 1";
         Consumer<PreparedStatement> statementConsumer = ps -> {
             try {
                 ps.setString(1, numberFull);
@@ -287,9 +312,9 @@ public class PatentDB2 {
                 e.printStackTrace();
             }
         };
-        List<Map<String,Object>> data = HANDLER.runQuery(query, Collections.singletonList("priority_date_est"), statementConsumer, 3);
+        List<Map<String,Object>> data = HANDLER.runQuery(query, Collections.singletonList("filing_date"), statementConsumer, 3);
         if (data.size() > 0) {
-            String priorityDate = (String)data.get(0).get("priority_date_est");
+            String priorityDate = (String)data.get(0).get("filing_date");
             System.out.println("Found updated priority date: "+priorityDate);
             return priorityDate;
         } else {
@@ -298,7 +323,6 @@ public class PatentDB2 {
     }
 
     public static Map<String, Object> getData(Map<String, String> resolved, boolean includeDescription, boolean includeClaims) {
-        String familyId = resolved.get("family_id");
         String publicationNumber = resolved.get("publication_number");
         String applicationNumber = resolved.get("application_number");
         String grantNumber = resolved.get("grant_number");

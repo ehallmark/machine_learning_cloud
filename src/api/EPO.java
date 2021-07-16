@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class EPO {
 
-    public static Map<String, Object> getEpoData(String asset) throws Exception {
+    public static Map<String, Object> getEpoData(String asset, boolean includeSelf) throws Exception {
         String docDbAsset;
         if (asset.length()==11) {
             docDbAsset = asset.substring(0, 4) + asset.substring(5);
@@ -66,14 +66,13 @@ public class EPO {
 
         }
         List<Map<String, Object>> familyMembers = familyMembersMap.values().stream().filter(p->{
-            return !asset.equals((String)p.get("country")+p.get("number"));
+            return includeSelf || !asset.equals((String)p.get("country")+p.get("number"));
         }).collect(Collectors.toList());
         return Collections.singletonMap("family_members", familyMembers);
     }
 
 
     public static void main(String[] args) throws Exception {
-        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(getEpoData("US9487035")));
-        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(getEpoData("US9497035")));
+        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(getEpoData("US9781219", true)));
     }
 }
