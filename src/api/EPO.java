@@ -27,6 +27,10 @@ public class EPO {
         //System.out.println("Doc: "+document.html());
         Elements family = document.select("ops|family-member");
         Map<String, Map<String, Object>> familyMembersMap = new HashMap<>(family.size());
+        String familyId = null;
+        if (family.size() > 0) {
+            familyId = family.get(0).attr("family-id");
+        }
         if (family.size()>1) {
             for (Element member : family) {
                 Element pubRefNode = member.select("publication-reference").first();
@@ -68,7 +72,10 @@ public class EPO {
         List<Map<String, Object>> familyMembers = familyMembersMap.values().stream().filter(p->{
             return includeSelf || !asset.equals((String)p.get("country")+p.get("number"));
         }).collect(Collectors.toList());
-        return Collections.singletonMap("family_members", familyMembers);
+        Map<String, Object> data = new HashMap<>();
+        data.put("family_members", familyMembers);
+        data.put("family_id", familyId);
+        return data;
     }
 
 
