@@ -10,6 +10,7 @@ import seeding.google.postgres.epo.ScrapeEPO;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class EPO {
@@ -21,7 +22,21 @@ public class EPO {
         } else {
             docDbAsset = asset;
         }
-        String familyData = new ScrapeEPO().getFamilyMembersForAssetHelper(docDbAsset, ScrapeEPO.generateNewAuthToken(), null);
+        final int retries = 3;
+        String familyData = null;
+        for (int i = 0; i < retries; i++) {
+            try {
+                familyData = new ScrapeEPO().getFamilyMembersForAssetHelper(docDbAsset, ScrapeEPO.generateNewAuthToken(), null);
+                break;
+            } catch (Exception e) {
+                e.printStackTrace();
+                TimeUnit.SECONDS.sleep(1+i);
+            }
+        }
+
+        if (familyData == null) {
+            return null;
+        }
 
         Document document = Jsoup.parse(familyData);
         //System.out.println("Doc: "+document.html());

@@ -38,6 +38,7 @@ public class PatentDB2 {
     };
 
     private static final Map<String, String> PRIORITY_DATE_CACHE = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<String, String> FAMILY_ID_CACHE = Collections.synchronizedMap(new HashMap<>());
 
     private static final Map<String, String> FIELD_TO_SUBSTATEMENT_MAP = Collections.synchronizedMap(new HashMap<>());
     static {
@@ -159,9 +160,11 @@ public class PatentDB2 {
                     } else {
                         String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
                         String updatedPriorityDate = PRIORITY_DATE_CACHE.get(resolvedNumber);
+                        String familyId = FAMILY_ID_CACHE.get(resolvedNumber);
                         String earliestMember = null;
-                        if (updatedPriorityDate == null) {
+                        if (updatedPriorityDate == null || familyId == null) {
                             final Map<String, Object> epoData = EPO.getEpoData("US" + resolvedNumber, true);
+                            familyId = (String)epoData.get("family_id");
                             String earliestDate = null;
                             for (Map<String, Object> epoResult : (List<Map<String, Object>>) epoData.getOrDefault("family_members", Collections.emptyList())) {
                                 if (epoResult.get("country").equals("US")) {
@@ -189,6 +192,8 @@ public class PatentDB2 {
                             PRIORITY_DATE_CACHE.put(resolvedNumber, updatedPriorityDate);
                             data.put("priority_date", updatedPriorityDate);
                         }
+                        FAMILY_ID_CACHE.put(resolvedNumber, familyId);
+                        data.put("family_id", familyId);
                         System.out.println("Found data!");
                         return resultsFormatter(data);
                     }
