@@ -95,6 +95,7 @@ public class EPO {
 
 
     public static void main(String[] args) throws Exception {
-        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(getEpoData("US9781219", true)));
+        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(getEpoData("USRE43127", true)));
+        //System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(getEpoData("US9781219", true)));
     }
 }

@@ -154,7 +154,8 @@ public class PatentDB2 {
                 try {
                     if (findEpo) {
                         String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
-                        final Map<String, Object> data = EPO.getEpoData("US"+resolvedNumber, false);
+
+                        final Map<String, Object> data = EPO.getEpoData("US"+resolvedNumber.replace("RE0", "RE"), false);
                         return resultsFormatter(data);
 
                     } else {
@@ -163,7 +164,7 @@ public class PatentDB2 {
                         String familyId = FAMILY_ID_CACHE.get(resolvedNumber);
                         String earliestMember = null;
                         if (updatedPriorityDate == null || familyId == null) {
-                            final Map<String, Object> epoData = EPO.getEpoData("US" + resolvedNumber, true);
+                            final Map<String, Object> epoData = EPO.getEpoData("US" + resolvedNumber.replace("RE0", "RE"), true);
                             familyId = (String)epoData.get("family_id");
                             String earliestDate = null;
                             for (Map<String, Object> epoResult : (List<Map<String, Object>>) epoData.getOrDefault("family_members", Collections.emptyList())) {
