@@ -154,12 +154,17 @@ public class PatentDB2 {
                 try {
                     if (findEpo) {
                         String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
-
+                        if (resolvedNumber.startsWith("RE") && !resolvedNumber.startsWith("RE0")) {
+                            resolvedNumber = "RE0"+resolvedNumber.substring(2);
+                        }
                         final Map<String, Object> data = EPO.getEpoData("US"+resolvedNumber.replace("RE0", "RE"), false);
                         return resultsFormatter(data);
 
                     } else {
                         String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
+                        if (resolvedNumber.startsWith("RE") && !resolvedNumber.startsWith("RE0")) {
+                            resolvedNumber = "RE0"+resolvedNumber.substring(2);
+                        }
                         String updatedPriorityDate = PRIORITY_DATE_CACHE.get(resolvedNumber);
                         String familyId = FAMILY_ID_CACHE.get(resolvedNumber);
                         String earliestMember = null;
