@@ -142,8 +142,11 @@ public class PatentDB2 {
         try {
             res.header("Access-Control-Allow-Origin", "*"); // CORS
             res.header("Content-Type", "application/json"); // JSON
-            final String number = req.queryParams("number");
-           System.out.println("Looking for " + patentType.toString() + ": " + number);
+            String number = req.queryParams("number");
+            if (number.startsWith("RE") && !number.startsWith("RE0")) {
+                number = "RE0"+number.substring(2);
+            }
+            System.out.println("Looking for " + patentType.toString() + ": " + number);
             try {
                 final Map<String, String> resolved = resolvePatentNumbers(number, patentType);
                 if (resolved.values().stream().filter(x->x!=null).count() <= 1) {
@@ -154,17 +157,11 @@ public class PatentDB2 {
                 try {
                     if (findEpo) {
                         String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
-                        if (resolvedNumber.startsWith("RE") && !resolvedNumber.startsWith("RE0")) {
-                            resolvedNumber = "RE0"+resolvedNumber.substring(2);
-                        }
                         final Map<String, Object> data = EPO.getEpoData("US"+resolvedNumber.replace("RE0", "RE"), false);
                         return resultsFormatter(data);
 
                     } else {
                         String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
-                        if (resolvedNumber.startsWith("RE") && !resolvedNumber.startsWith("RE0")) {
-                            resolvedNumber = "RE0"+resolvedNumber.substring(2);
-                        }
                         String updatedPriorityDate = PRIORITY_DATE_CACHE.get(resolvedNumber);
                         String familyId = FAMILY_ID_CACHE.get(resolvedNumber);
                         String earliestMember = null;
