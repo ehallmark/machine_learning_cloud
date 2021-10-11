@@ -1,3 +1,5 @@
+\connect patentdb
+
 -- TODO make this a global thing
 drop table big_query_granted;
 create table big_query_granted (
