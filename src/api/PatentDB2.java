@@ -306,13 +306,24 @@ public class PatentDB2 {
 
         Map<String, String> ret = new HashMap<>();
 
-        ret.put("family_id", familyId);
-        ret.put("publication_number", publicationNumber);
-        ret.put("application_number", applicationNumber);
-        ret.put("grant_number", grantNumber);
-        ret.put("publication_number_full", publicationNumberFull);
-        ret.put("grant_number_full", grantNumberFull);
-
+        if (familyId != null) {
+            ret.put("family_id", familyId);
+        }
+        if (publicationNumber != null) {
+            ret.put("publication_number", publicationNumber);
+        }
+        if (applicationNumber != null) {
+            ret.put("application_number", applicationNumber);
+        }
+        if (grantNumber != null) {
+            ret.put("grant_number", grantNumber);
+        }
+        if (publicationNumberFull != null) {
+            ret.put("publication_number_full", publicationNumberFull);
+        }
+        if (grantNumberFull != null) {
+            ret.put("grant_number_full", grantNumberFull);
+        }
         return ret;
     }
 

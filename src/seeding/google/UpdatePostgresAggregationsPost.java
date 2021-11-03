@@ -61,7 +61,6 @@ public class UpdatePostgresAggregationsPost {
         try {
             System.out.println("Predicting similarity vectors...");
             runProcess(". "+new File("scripts/proxmox/update_similarity.sh"));
-            runSqlTable(new File("src/seeding/google/postgres/attribute_tables/embedding_aggs.sql"));
             //if(monthUpdate) {
             //    runProcess(". "+new File("scripts/production/update_cpc_similarity.sh"));
             //    IngestAssigneeEmbeddingsToPostgres.main(args);
