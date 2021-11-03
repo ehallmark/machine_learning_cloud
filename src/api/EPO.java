@@ -17,8 +17,8 @@ public class EPO {
 
     public static Map<String, Object> getEpoData(String asset, boolean includeSelf) throws Exception {
         String docDbAsset;
-        if (asset.length()==11) {
-            docDbAsset = asset.substring(0, 4) + asset.substring(5);
+        if (asset.length()==13) {
+            docDbAsset = asset.substring(0, 6) + asset.substring(7);
         } else {
             docDbAsset = asset;
         }
@@ -95,7 +95,7 @@ public class EPO {
 
 
     public static void main(String[] args) throws Exception {
-        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(getEpoData("USRE43127", true)));
+        System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(getEpoData("US2021250327", true)));
         //System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(getEpoData("US9781219", true)));
     }
 }
