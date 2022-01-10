@@ -67,7 +67,7 @@ public class UpdateAll {
                 } else if (arg.equals("5")) {
                     UpdateMaintenanceFeeData.main(args);
                 } else if (arg.equals("6")) {
-                    UpdateClassificationHash.main(args);
+                    UpdateAppClassificationHash.main(args);
                 } else if (arg.equals("7")) {
                     UpdateWIPOTechnologies.main(args);
                 } else if (arg.equals("8")) {

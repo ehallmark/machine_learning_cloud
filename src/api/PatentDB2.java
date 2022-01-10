@@ -312,9 +312,7 @@ public class PatentDB2 {
         if (publicationNumber != null) {
             ret.put("publication_number", publicationNumber);
         }
-        if (applicationNumber != null) {
-            ret.put("application_number", applicationNumber);
-        }
+        ret.put("application_number", applicationNumber);
         if (grantNumber != null) {
             ret.put("grant_number", grantNumber);
         }

@@ -1,12 +1,9 @@
 package seeding.ai_db_updater.handlers;
 
-import seeding.ai_db_updater.UpdateClassificationHash;
+import seeding.ai_db_updater.UpdateAppClassificationHash;
 import tools.ClassCodeHandler;
 
 import java.sql.Connection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by ehallmark on 7/12/17.
@@ -32,7 +29,7 @@ public class AppCPCHandler implements LineHandler {
             String cpcSubclass = cpcClass + line.substring(24, 25);
             String cpcMainGroup = cpcSubclass + line.substring(25, 29);
             String cpcSubGroup = cpcMainGroup + line.substring(30, 36);
-            UpdateClassificationHash.ingestResult(full_publication_number,  ClassCodeHandler.convertToHumanFormat(cpcSubGroup), conn);
+            UpdateAppClassificationHash.ingestResult(full_publication_number,  ClassCodeHandler.convertToHumanFormat(cpcSubGroup), conn);
         }
     }
 

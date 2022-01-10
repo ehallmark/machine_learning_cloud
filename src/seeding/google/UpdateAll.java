@@ -1,15 +1,10 @@
 package seeding.google;
 
-import cpc_normalization.CPCHierarchy;
 import mailer.Mailer;
-import seeding.Database;
 import seeding.ai_db_updater.UpdateBasePatentData;
-import seeding.ai_db_updater.UpdateClassificationHash;
+import seeding.ai_db_updater.UpdateAppClassificationHash;
+import seeding.ai_db_updater.UpdateGrantClassificationHash;
 import seeding.google.postgres.*;
-import seeding.google.postgres.epo.IngestScrapedXMLIntoPostgres;
-import seeding.google.postgres.epo.ScrapeEPO;
-
-import java.sql.Connection;
 
 public class UpdateAll {
     public static void main(String[] args) {
@@ -88,7 +83,8 @@ public class UpdateAll {
 
         // cpc backup datasource
         try {
-            UpdateClassificationHash.main(args);
+            UpdateAppClassificationHash.main(args);
+            UpdateGrantClassificationHash.main(args);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Exited during stage UpdateClassificationHash...");

@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by ehallmark on 1/20/17.
  */
-public class UpdateClassificationHash {
+public class UpdateAppClassificationHash {
     private static AtomicInteger cnt = new AtomicInteger(0);
     public static void main(String[] args) throws Exception {
         Connection conn = Database.getConn();
@@ -31,15 +31,6 @@ public class UpdateClassificationHash {
             AppCPCDataDownloader downloader = new AppCPCDataDownloader();
             downloader.pullMostRecentData();
             setupClassificationsHash(downloader.getDestinationFile(), new AppCPCHandler(conn));
-            downloader.cleanUp();
-        }
-        if (!conn.getAutoCommit()) {
-            conn.setAutoCommit(true);
-        }
-        {
-            PatentCPCDataDownloader downloader = new PatentCPCDataDownloader();
-            downloader.pullMostRecentData();
-            setupClassificationsHash(downloader.getDestinationFile(), new PatentCPCHandler(conn));
             downloader.cleanUp();
         }
     }
