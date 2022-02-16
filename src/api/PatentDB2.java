@@ -186,8 +186,8 @@ public class PatentDB2 {
                                 }
                             }
                         }
-                        final boolean includeDescription = req.queryParamOrDefault("include_description", "true").toLowerCase().startsWith("t");
-                        final boolean includeClaims = req.queryParamOrDefault("include_claims", "true").toLowerCase().startsWith("t");
+                        final boolean includeDescription = req.queryParamOrDefault("include_description", "f").toLowerCase().startsWith("t");
+                        final boolean includeClaims = req.queryParamOrDefault("include_claims", "t").toLowerCase().startsWith("t");
                         final Map<String, Object> data = getData(resolved, includeDescription, includeClaims);
                         if (earliestMember != null && data.size() > 0) {
                             updatedPriorityDate = getUpdatedPriorityDateEstimation(earliestMember);
