@@ -161,11 +161,12 @@ public class PatentDB2 {
                         return resultsFormatter(data);
 
                     } else {
+                        final boolean includeEpo = req.queryParamOrDefault("include_epo", "f").toLowerCase().startsWith("t");
                         String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
                         String updatedPriorityDate = PRIORITY_DATE_CACHE.get(resolvedNumber);
                         String familyId = FAMILY_ID_CACHE.get(resolvedNumber);
                         String earliestMember = null;
-                        if (updatedPriorityDate == null || familyId == null) {
+                        if (includeEpo && (updatedPriorityDate == null || familyId == null)) {
                             final Map<String, Object> epoData = EPO.getEpoData("US" + resolvedNumber.replace("RE0", "RE"), true);
                             familyId = (String)epoData.get("family_id");
                             String earliestDate = null;
@@ -195,8 +196,10 @@ public class PatentDB2 {
                             PRIORITY_DATE_CACHE.put(resolvedNumber, updatedPriorityDate);
                             data.put("priority_date", updatedPriorityDate);
                         }
-                        FAMILY_ID_CACHE.put(resolvedNumber, familyId);
-                        data.put("family_id", familyId);
+                        if (familyId != null) {
+                            FAMILY_ID_CACHE.put(resolvedNumber, familyId);
+                            data.put("family_id", familyId);
+                        }
                         System.out.println("Found data!");
                         return resultsFormatter(data);
                     }
