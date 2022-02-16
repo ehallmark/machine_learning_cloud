@@ -142,78 +142,92 @@ public class PatentDB2 {
         try {
             res.header("Access-Control-Allow-Origin", "*"); // CORS
             res.header("Content-Type", "application/json"); // JSON
-            String number = req.queryParams("number");
-            if (number.startsWith("RE") && !number.startsWith("RE0")) {
-                number = "RE0"+number.substring(2);
-            }
-            System.out.println("Looking for " + patentType.toString() + ": " + number);
-            try {
-                final Map<String, String> resolved = resolvePatentNumbers(number, patentType);
-                if (resolved.values().stream().filter(x->x!=null).count() <= 1) {
-                    throw new RuntimeException("Not found");
+            final String[] numbers = req.queryParams("number").split(";");
+            final List<Map<String, Object>> results = new ArrayList<>(numbers.length);
+            for (String number: numbers) {
+                if (number.startsWith("RE") && !number.startsWith("RE0")) {
+                    number = "RE0" + number.substring(2);
                 }
-                System.out.println("Successfully resolved!");
-                System.out.println("Num resolved: "+resolved.size());
+                System.out.println("Looking for " + patentType.toString() + ": " + number);
                 try {
-                    if (findEpo) {
-                        String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
-                        final Map<String, Object> data = EPO.getEpoData("US"+resolvedNumber.replace("RE0", "RE"), false);
-                        return resultsFormatter(data);
+                    final Map<String, String> resolved = resolvePatentNumbers(number, patentType);
+                    if (resolved.values().stream().filter(x -> x != null).count() <= 1) {
+                        results.add(Collections.singletonMap("error", "Not found."));
+                        continue;
+                    }
+                    System.out.println("Successfully resolved!");
+                    System.out.println("Num resolved: " + resolved.size());
+                    try {
+                        if (findEpo) {
+                            String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
+                            final Map<String, Object> data = EPO.getEpoData("US" + resolvedNumber.replace("RE0", "RE"), false);
+                            results.add(data);
 
-                    } else {
-                        final boolean includeEpo = req.queryParamOrDefault("include_epo", "f").toLowerCase().startsWith("t");
-                        String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
-                        String updatedPriorityDate = PRIORITY_DATE_CACHE.get(resolvedNumber);
-                        String familyId = FAMILY_ID_CACHE.get(resolvedNumber);
-                        String earliestMember = null;
-                        if (includeEpo && (updatedPriorityDate == null || familyId == null)) {
-                            final Map<String, Object> epoData = EPO.getEpoData("US" + resolvedNumber.replace("RE0", "RE"), true);
-                            familyId = (String)epoData.get("family_id");
-                            String earliestDate = null;
-                            for (Map<String, Object> epoResult : (List<Map<String, Object>>) epoData.getOrDefault("family_members", Collections.emptyList())) {
-                                if (epoResult.get("country").equals("US")) {
-                                    String date = (String) epoResult.get("date");
-                                    String member = "US" + epoResult.get("number") + epoResult.get("kind");
-                                    if (earliestDate == null) {
-                                        earliestDate = date;
-                                        earliestMember = member;
-                                    } else {
-                                        if (earliestDate.compareTo(date) > 0) {
+                        } else {
+                            final boolean includeEpo = req.queryParamOrDefault("include_epo", "f").toLowerCase().startsWith("t");
+                            String resolvedNumber = resolved.getOrDefault("grant_number", resolved.get("publication_number"));
+                            String updatedPriorityDate = PRIORITY_DATE_CACHE.get(resolvedNumber);
+                            String familyId = FAMILY_ID_CACHE.get(resolvedNumber);
+                            String earliestMember = null;
+                            if (includeEpo && (updatedPriorityDate == null || familyId == null)) {
+                                final Map<String, Object> epoData = EPO.getEpoData("US" + resolvedNumber.replace("RE0", "RE"), true);
+                                familyId = (String) epoData.get("family_id");
+                                String earliestDate = null;
+                                for (Map<String, Object> epoResult : (List<Map<String, Object>>) epoData.getOrDefault("family_members", Collections.emptyList())) {
+                                    if (epoResult.get("country").equals("US")) {
+                                        String date = (String) epoResult.get("date");
+                                        String member = "US" + epoResult.get("number") + epoResult.get("kind");
+                                        if (earliestDate == null) {
                                             earliestDate = date;
                                             earliestMember = member;
+                                        } else {
+                                            if (earliestDate.compareTo(date) > 0) {
+                                                earliestDate = date;
+                                                earliestMember = member;
+                                            }
                                         }
                                     }
                                 }
                             }
+                            final boolean includeDescription = req.queryParamOrDefault("include_description", "f").toLowerCase().startsWith("t");
+                            final boolean includeClaims = req.queryParamOrDefault("include_claims", "t").toLowerCase().startsWith("t");
+                            final Map<String, Object> data = getData(resolved, includeDescription, includeClaims);
+                            if (earliestMember != null && data.size() > 0) {
+                                updatedPriorityDate = getUpdatedPriorityDateEstimation(earliestMember);
+                            }
+                            if (updatedPriorityDate != null) {
+                                PRIORITY_DATE_CACHE.put(resolvedNumber, updatedPriorityDate);
+                                data.put("priority_date", updatedPriorityDate);
+                            }
+                            if (familyId != null) {
+                                FAMILY_ID_CACHE.put(resolvedNumber, familyId);
+                                data.put("family_id", familyId);
+                            }
+                            System.out.println("Found data!");
+                            results.add(data);
                         }
-                        final boolean includeDescription = req.queryParamOrDefault("include_description", "f").toLowerCase().startsWith("t");
-                        final boolean includeClaims = req.queryParamOrDefault("include_claims", "t").toLowerCase().startsWith("t");
-                        final Map<String, Object> data = getData(resolved, includeDescription, includeClaims);
-                        if (earliestMember != null && data.size() > 0) {
-                            updatedPriorityDate = getUpdatedPriorityDateEstimation(earliestMember);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        if (numbers.length == 1) {
+                            res.status(500);
                         }
-                        if (updatedPriorityDate != null) {
-                            PRIORITY_DATE_CACHE.put(resolvedNumber, updatedPriorityDate);
-                            data.put("priority_date", updatedPriorityDate);
-                        }
-                        if (familyId != null) {
-                            FAMILY_ID_CACHE.put(resolvedNumber, familyId);
-                            data.put("family_id", familyId);
-                        }
-                        System.out.println("Found data!");
-                        return resultsFormatter(data);
+                        results.add(Collections.singletonMap("error", "Unknown server error"));
                     }
-                } catch(Exception e) {
-                    e.printStackTrace();
-                    res.status(500);
-                    return new Gson().toJson(Collections.singletonMap("error", "Unknown server error"));
-                }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                res.status(404); // not found
-                return new Gson().toJson(Collections.singletonMap("error", "Not found"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    if (numbers.length == 1) {
+                        res.status(404); // not found
+                    }
+                    results.add(Collections.singletonMap("error", "Not found"));
+                }
             }
+            if (numbers.length == 1) {
+                return new Gson().toJson(results.get(0));
+            } else {
+                return new Gson().toJson(results);
+            }
+
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -222,13 +236,7 @@ public class PatentDB2 {
         }
     }
 
-    public static String resultsFormatter(Map<String, Object> data) {
-        data.forEach((k, v) -> {
-            System.out.println("K: "+k);
-            System.out.println("V: "+new Gson().toJson(v));
-        });
-        return new Gson().toJson(data);
-    }
+
 
     public static Map<String, String> resolvePatentNumbers(String number, PatentType patentType) {
         return resolvePatentNumbers(number, patentType, false);
